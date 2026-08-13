@@ -1,0 +1,6 @@
+@ToggleAvailability.Server_HostAddress = http://localhost:5036
+
+GET {{ToggleAvailability.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

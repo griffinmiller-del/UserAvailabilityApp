@@ -1,0 +1,49 @@
+.users-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.user-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+    background: white;
+}
+
+.user-name {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.user-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-circle {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+    .status-circle.available {
+        background-color: limegreen;
+    }
+
+    .status-circle.unavailable {
+        background-color: red;
+    }
+
+.connection-error {
+    padding: 15px;
+    margin: 20px 0;
+    background-color: #ffdddd;
+    border: 1px solid red;
+    color: #990000;
+    font-weight: bold;
+}

@@ -1,0 +1,139 @@
+﻿@page "/"
+
+@using ToggleAvailabilityBlazor.Models
+@using ToggleAvailabilityBlazor.Services
+
+@implements IDisposable
+
+@rendermode InteractiveServer
+
+@inject AvailabilityService AvailabilityService
+
+<PageTitle>User Availability</PageTitle>
+
+<h1>User Availability</h1>
+
+<p>
+    Connection:
+
+    @if (AvailabilityService.IsConnected)
+    {
+        <strong style="color: green;">
+            Connected
+        </strong>
+    }
+    else
+    {
+        <strong style="color: red;">
+            Disconnected
+        </strong>
+    }
+</p>
+
+<p>
+    Users received: @_users.Count
+</p>
+
+@if (_users.Count == 0)
+{
+    <p>Waiting for Users...</p>
+}
+else
+{
+    <div class="users-container">
+
+        @foreach (var user in _users)
+        {
+            <div class="user-row">
+
+                <div class="user-name">
+                    @user.Name
+                </div>
+
+                <div class="user-status">
+
+                    <span class="status-circle @(user.IsAvailable
+                                                ? "available"
+                                                : "unavailable")">
+                    </span>
+
+                    <span>
+                        @(user.IsAvailable
+                            ? "Available"
+                            : "Unavailable")
+                    </span>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
+
+@code
+{
+    private List<User> _users = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine(
+            "[Blazor Page] Initializing.");
+
+        AvailabilityService.UserUpdated +=
+            OnUserUpdated;
+
+        await AvailabilityService.ConnectAsync();
+
+        _users =
+            AvailabilityService.Users
+                .Select(CloneUser)
+                .ToList();
+
+        Console.WriteLine(
+            $"[Blazor Page] Initial users: " +
+            $"{_users.Count}");
+    }
+
+    private async Task OnUserUpdated(User user)
+    {
+        Console.WriteLine(
+            $"[Blazor Page] OnUserUpdated: " +
+            $"{user.Name} = " +
+            $"{user.IsAvailable}");
+
+        await InvokeAsync(() =>
+        {
+            // Take a fresh copy of the users.
+            _users =
+                AvailabilityService.Users
+                    .Select(CloneUser)
+                    .ToList();
+
+            Console.WriteLine(
+                $"[Blazor Page] Calling StateHasChanged. " +
+                $"Users: {_users.Count}");
+
+            StateHasChanged();
+        });
+    }
+
+    private static User CloneUser(User user)
+    {
+        return new User
+        {
+            UserId = user.UserId,
+            Name = user.Name,
+            IsAvailable = user.IsAvailable
+        };
+    }
+
+    public void Dispose()
+    {
+        Console.WriteLine(
+            "[Blazor Page] Disposing component.");
+
+        AvailabilityService.UserUpdated -=
+            OnUserUpdated;
+    }
+}
