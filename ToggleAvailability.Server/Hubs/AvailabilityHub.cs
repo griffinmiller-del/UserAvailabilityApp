@@ -43,9 +43,9 @@ public class AvailabilityHub : Hub
     }
 
     public async Task SetAvailability(
-        int userId,
-        bool isAvailable,
-        Status status)
+            int userId,
+            bool isAvailable,
+            Status status)
     {
         var user =
             UserStore.GetUser(userId);
@@ -64,11 +64,15 @@ public class AvailabilityHub : Hub
         user.Status =
             status;
 
+        UserStore.UpdateUser(user);
+
         Console.WriteLine(
             $"User updated: " +
             $"{user.Name} ({user.UserId}) - " +
             $"{user.Status} - " +
-            $"{(user.IsAvailable ? "Available" : "Unavailable")}");
+            $"{(user.IsAvailable
+                ? "Available"
+                : "Unavailable")}");
 
         await Clients.All.SendAsync(
             "UserUpdated",

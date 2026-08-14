@@ -5,7 +5,7 @@ namespace ToggleAvailabilityApp.Services
     public class AvailabilityService : IAsyncDisposable
     {
         private readonly HubConnection _connection;
-
+        public event Action<List<User>>? UserListReceived;
         public event Action<User>? UserUpdated;
 
         public bool IsConnected =>
@@ -20,6 +20,19 @@ namespace ToggleAvailabilityApp.Services
                 .WithAutomaticReconnect()
                 .Build();
 
+            _connection.On<List<User>>(
+                "UserList",
+                users =>
+                {
+                    Console.WriteLine(
+                        $"Received UserList: " +
+                        $"{users.Count} users.");
+
+                    UserListReceived?.Invoke(
+                        users);
+
+                    return Task.CompletedTask;
+                });
             // Receive updates from the server.
             //
             // This will fire when ANY client changes

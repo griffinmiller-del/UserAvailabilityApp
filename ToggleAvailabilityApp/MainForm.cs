@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ToggleAvailabilityApp.Services;
 
 namespace ToggleAvailabilityApp;
@@ -8,15 +9,7 @@ public class MainForm : Form
 
     private readonly AvailabilityService _availabilityService;
 
-    private readonly List<User> _users =
-    [
-        new User(1, "Bob", Status.InOffice, true),
-        new User(2, "Rob", Status.InOffice, true),
-        new User(3, "John", Status.InOffice, true),
-        new User(4, "Jane", Status.InOffice, true),
-        new User(5, "Joe", Status.InOffice, true),
-        new User(6, "Frank", Status.InOffice, true)
-    ];
+    private readonly List<User> _users = [];
 
     public MainForm()
     {
@@ -38,9 +31,14 @@ public class MainForm : Form
         _availabilityService =
             new AvailabilityService();
 
-        // Listen for changes made by other clients
+        // Listen for the initial user list.
+        _availabilityService.UserListReceived +=
+            AvailabilityService_UserListReceived;
+
+        // Listen for changes made by other clients.
         _availabilityService.UserUpdated +=
             AvailabilityService_UserUpdated;
+
 
         // Title
         var title = new Label
@@ -91,15 +89,11 @@ public class MainForm : Form
 
         Controls.Add(tlp_Users);
         Controls.Add(title);
-
-        // Load the initial local users
-        LoadUsers();
-
         // Connect to the SignalR server once
         // the form has loaded.
         Load += MainForm_Load;
     }
-
+    
     private async void MainForm_Load(
         object? sender,
         EventArgs e)
@@ -121,6 +115,31 @@ public class MainForm : Form
                 MessageBoxIcon.Error);
         }
     }
+
+
+    private void AvailabilityService_UserListReceived(
+    List<User> users)
+    {
+        if (InvokeRequired)
+        {
+            Invoke(() =>
+                AvailabilityService_UserListReceived(
+                    users));
+
+            return;
+        }
+
+        Console.WriteLine(
+            $"Loading {users.Count} users " +
+            $"received from server.");
+
+        _users.Clear();
+
+        _users.AddRange(users);
+
+        LoadUsers();
+    }
+
 
     private void LoadUsers()
     {
