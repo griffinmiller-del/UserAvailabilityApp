@@ -1,12 +1,14 @@
-﻿using ToggleAvailabilityBlazor.Models;
-
-public class User
+﻿
+namespace ToggleAvailabilityBlazor.Models
 {
-    public int UserId { get; set; }
+    public class User
+    {
+        public int UserId { get; set; }
 
-    public string Name { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
-    public bool IsAvailable { get; set; }
+        public bool IsAvailable { get; set; }
 
-    public Status Status { get; set; }
+        public Status Status { get; set; }
+    }
 }

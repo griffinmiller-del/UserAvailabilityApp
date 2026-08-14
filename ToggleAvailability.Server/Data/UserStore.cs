@@ -8,7 +8,7 @@ public static class UserStore
 {
     private static readonly object _lock = new();
     private static readonly JsonSerializerOptions _jsonOptions =
-        new JsonSerializerOptions
+        new()
         {
             WriteIndented = true,
 
