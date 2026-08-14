@@ -44,19 +44,13 @@ public class AvailabilityHub : Hub
 
     public async Task SetAvailability(
         int userId,
-        bool isAvailable)
+        bool isAvailable,
+        Status status)
     {
-        Console.WriteLine(
-            $"SetAvailability received: " +
-            $"UserId={userId}, " +
-            $"IsAvailable={isAvailable}");
+        var user =
+            UserStore.GetUser(userId);
 
-        bool success =
-            UserStore.SetAvailability(
-                userId,
-                isAvailable);
-
-        if (!success)
+        if (user is null)
         {
             Console.WriteLine(
                 $"User {userId} was not found.");
@@ -64,18 +58,17 @@ public class AvailabilityHub : Hub
             return;
         }
 
-        var user =
-            UserStore.GetUser(userId);
+        user.IsAvailable =
+            isAvailable;
 
-        if (user is null)
-            return;
+        user.Status =
+            status;
 
         Console.WriteLine(
-            $"Broadcasting UserUpdated: " +
-            $"{user.Name} = " +
-            $"{(user.IsAvailable
-                ? "Available"
-                : "Unavailable")}");
+            $"User updated: " +
+            $"{user.Name} ({user.UserId}) - " +
+            $"{user.Status} - " +
+            $"{(user.IsAvailable ? "Available" : "Unavailable")}");
 
         await Clients.All.SendAsync(
             "UserUpdated",

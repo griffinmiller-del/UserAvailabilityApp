@@ -10,17 +10,17 @@ public class MainForm : Form
 
     private readonly List<User> _users =
     [
-        new User(1, "Bob", true),
-        new User(2, "Rob", false),
-        new User(3, "John", true),
-        new User(4, "Jane", false),
-        new User(5, "Joe", true),
-        new User(6, "Frank", false)
+        new User(1, "Bob", Status.InOffice, true),
+        new User(2, "Rob", Status.InOffice, true),
+        new User(3, "John", Status.InOffice, true),
+        new User(4, "Jane", Status.InOffice, true),
+        new User(5, "Joe", Status.InOffice, true),
+        new User(6, "Frank", Status.InOffice, true)
     ];
 
     public MainForm()
     {
-        Text = "Toggle Availability";
+        Text = "Toggle Status";
 
         StartPosition =
             FormStartPosition.CenterScreen;
@@ -49,7 +49,7 @@ public class MainForm : Form
 
             Height = 60,
 
-            Text = "User Availability",
+            Text = "Office Presence",
 
             TextAlign =
                 ContentAlignment.MiddleCenter,
@@ -188,32 +188,18 @@ public class MainForm : Form
         User user)
     {
         Console.WriteLine(
-            $"{user.Name} ({user.UserId}) is now " +
-            $"{(user.IsAvailable ? "Available" : "Unavailable")}");
+            $"{user.Name} ({user.UserId}) - " +
+            $"{user.Status} - " +
+            $"{(user.IsAvailable
+                ? "In Office"
+                : "Out")}");
 
-        try
-        {
-            // Send the change to the central
-            // SignalR server.
-            await _availabilityService
-                .SetAvailabilityAsync(user);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(
-                $"Failed to update {user.Name}: " +
-                $"{ex.Message}");
-
-            MessageBox.Show(
-                $"Unable to update {user.Name}.\n\n{ex.Message}",
-                "Update Error",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-        }
+        await _availabilityService
+            .SetAvailabilityAsync(user);
     }
 
     private void AvailabilityService_UserUpdated(
-        User updatedUser)
+    User updatedUser)
     {
         // SignalR receives messages on a background
         // thread. WinForms controls must be updated
@@ -230,6 +216,7 @@ public class MainForm : Form
         Console.WriteLine(
             $"Received update: {updatedUser.Name} " +
             $"({updatedUser.UserId}) = " +
+            $"{updatedUser.Status} - " +
             $"{(updatedUser.IsAvailable
                 ? "Available"
                 : "Unavailable")}");
@@ -249,9 +236,12 @@ public class MainForm : Form
             return;
         }
 
-        // Update the local state.
+        // Update BOTH pieces of state.
         localUser.IsAvailable =
             updatedUser.IsAvailable;
+
+        localUser.Status =
+            updatedUser.Status;
 
         // Find the corresponding UserButton.
         var button =
@@ -270,12 +260,10 @@ public class MainForm : Form
             return;
         }
 
-        // Update the button's User object.
-        button.User =
-            localUser;
-
-        // Force the UserButton to redraw.
-        button.Invalidate();
+        // Synchronize the visual state without
+        // triggering another SignalR update.
+        button.UpdateFromServer(
+            updatedUser);
     }
 
     protected override async void OnFormClosed(

@@ -87,23 +87,13 @@ namespace ToggleAvailabilityApp.Services
             }
         }
 
-        public async Task SetAvailabilityAsync(
-            User user)
+        public async Task SetAvailabilityAsync(User user)
         {
-            if (_connection.State !=
-                HubConnectionState.Connected)
-            {
-                Console.WriteLine(
-                    "Cannot update availability. " +
-                    "SignalR is not connected.");
-
-                return;
-            }
-
             await _connection.InvokeAsync(
                 "SetAvailability",
                 user.UserId,
-                user.IsAvailable);
+                user.IsAvailable,
+                user.Status);
         }
 
         public async ValueTask DisposeAsync()

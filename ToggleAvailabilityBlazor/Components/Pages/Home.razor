@@ -53,14 +53,12 @@ else
                 <div class="user-status">
 
                     <span class="status-circle @(user.IsAvailable
-                                                ? "available"
-                                                : "unavailable")">
+                                ? "available"
+                                : "unavailable")">
                     </span>
 
                     <span>
-                        @(user.IsAvailable
-                            ? "Available"
-                            : "Unavailable")
+                        @GetStatusText(user)
                     </span>
 
                 </div>
@@ -95,6 +93,19 @@ else
             $"{_users.Count}");
     }
 
+    private static string GetStatusText(User user)
+    {
+        return user.Status switch
+        {
+            Status.InOffice => "In Office",
+            Status.Break => "Break",
+            Status.Meeting => "Meeting",
+            Status.OtherSide => "Other Side",
+            Status.Other => "Other",
+            _ => "Unknown"
+        };
+    }
+
     private async Task OnUserUpdated(User user)
     {
         Console.WriteLine(
@@ -124,7 +135,8 @@ else
         {
             UserId = user.UserId,
             Name = user.Name,
-            IsAvailable = user.IsAvailable
+            IsAvailable = user.IsAvailable,
+            Status = user.Status
         };
     }
 

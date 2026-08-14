@@ -14,6 +14,8 @@ public class AvailabilityService
 
     public event Func<User, Task>? UserUpdated;
 
+    public event Func<Task>? UsersChanged;
+
     public AvailabilityService()
     {
         _connection = new HubConnectionBuilder()
@@ -21,12 +23,17 @@ public class AvailabilityService
             .WithAutomaticReconnect()
             .Build();
 
+        // --------------------------------------------------
+        // Initial user list
+        // --------------------------------------------------
+
         _connection.On<List<User>>(
             "UserList",
             users =>
             {
                 Console.WriteLine(
-                    $"[Blazor] Received UserList: {users.Count} users.");
+                    $"[Blazor] Received UserList: " +
+                    $"{users.Count} users.");
 
                 Users = users
                     .Select(CloneUser)
@@ -35,14 +42,20 @@ public class AvailabilityService
                 return Task.CompletedTask;
             });
 
+        // --------------------------------------------------
+        // Individual user update
+        // --------------------------------------------------
+
         _connection.On<User>(
             "UserUpdated",
             async user =>
             {
                 Console.WriteLine(
                     $"[Blazor] Received UserUpdated: " +
-                    $"{user.UserId} - {user.Name} - " +
-                    $"{user.IsAvailable}");
+                    $"{user.UserId} - " +
+                    $"{user.Name} - " +
+                    $"{user.IsAvailable} - " +
+                    $"{user.Status}");
 
                 UpdateUser(user);
 
@@ -50,28 +63,48 @@ public class AvailabilityService
                 {
                     await UserUpdated.Invoke(user);
                 }
+
+                if (UsersChanged is not null)
+                {
+                    await UsersChanged.Invoke();
+                }
             });
+
+        // --------------------------------------------------
+        // Reconnecting
+        // --------------------------------------------------
 
         _connection.Reconnecting += error =>
         {
             Console.WriteLine(
-                $"[Blazor] Reconnecting: {error?.Message}");
+                $"[Blazor] Reconnecting: " +
+                $"{error?.Message}");
 
             return Task.CompletedTask;
         };
+
+        // --------------------------------------------------
+        // Reconnected
+        // --------------------------------------------------
 
         _connection.Reconnected += connectionId =>
         {
             Console.WriteLine(
-                $"[Blazor] Reconnected: {connectionId}");
+                $"[Blazor] Reconnected: " +
+                $"{connectionId}");
 
             return Task.CompletedTask;
         };
 
+        // --------------------------------------------------
+        // Closed
+        // --------------------------------------------------
+
         _connection.Closed += error =>
         {
             Console.WriteLine(
-                $"[Blazor] Connection closed: {error?.Message}");
+                $"[Blazor] Connection closed: " +
+                $"{error?.Message}");
 
             return Task.CompletedTask;
         };
@@ -100,6 +133,9 @@ public class AvailabilityService
 
             existingUser.IsAvailable =
                 user.IsAvailable;
+
+            existingUser.Status =
+                user.Status;
         }
 
         Users = updatedUsers;
@@ -110,8 +146,14 @@ public class AvailabilityService
         return new User
         {
             UserId = user.UserId,
+
             Name = user.Name,
-            IsAvailable = user.IsAvailable
+
+            IsAvailable =
+                user.IsAvailable,
+
+            Status =
+                user.Status
         };
     }
 

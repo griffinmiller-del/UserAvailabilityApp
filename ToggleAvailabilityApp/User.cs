@@ -6,10 +6,13 @@ public class User
     public string Name { get; set; }
     public bool IsAvailable { get; set; }
 
-    public User(int userId, string name, bool isAvailable = false)
+    public Status Status { get; set; }
+
+    public User(int userId, string name, Status status, bool isAvailable = false)
     {
         UserId = userId;
         Name = name;
         IsAvailable = isAvailable;
+        Status = status;
     }
 }
