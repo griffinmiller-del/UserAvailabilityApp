@@ -60,7 +60,7 @@ public class AvailabilityHub : Hub
 
         user.IsAvailable =
             isAvailable;
-
+        
         user.Status =
             status;
 

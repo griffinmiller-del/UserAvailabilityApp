@@ -41,8 +41,9 @@ public class UserButton : UserControl
         Padding = Padding.Empty;
 
         BackColor = Color.White;
+        BorderStyle = BorderStyle.None;
 
-        BorderStyle = BorderStyle.FixedSingle;
+
 
         // --------------------------------------------------
         // Name
@@ -171,6 +172,23 @@ public class UserButton : UserControl
         Resize += (_, _) => Invalidate();
     }
 
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+
+        using var pen = new Pen(
+            Color.Black,
+            2);
+
+        e.Graphics.DrawRectangle(
+            pen,
+            0,
+            0,
+            ClientSize.Width - 1,
+            ClientSize.Height - 1);
+    }
+
     private Button CreateStatusButton(
         string text,
         Status status)
@@ -194,7 +212,6 @@ public class UserButton : UserControl
             BackColor = Color.White,
 
             ForeColor = Color.Black,
-
             Cursor = Cursors.Hand,
 
             Tag = status

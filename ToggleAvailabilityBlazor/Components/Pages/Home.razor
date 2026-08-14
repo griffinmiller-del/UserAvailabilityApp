@@ -81,6 +81,9 @@ else
         AvailabilityService.UserUpdated +=
             OnUserUpdated;
 
+        AvailabilityService.UsersChanged +=
+            OnUsersChanged;
+
         await AvailabilityService.ConnectAsync();
 
         _users =
@@ -106,6 +109,26 @@ else
         };
     }
 
+    private async Task OnUsersChanged()
+    {
+        Console.WriteLine(
+            "[Blazor Page] User list changed.");
+
+        await InvokeAsync(() =>
+        {
+            _users =
+                AvailabilityService.Users
+                    .Select(CloneUser)
+                    .ToList();
+
+            Console.WriteLine(
+                $"[Blazor Page] Refreshing user list: " +
+                $"{_users.Count} users.");
+
+            StateHasChanged();
+        });
+    }
+
     private async Task OnUserUpdated(User user)
     {
         Console.WriteLine(
@@ -115,15 +138,10 @@ else
 
         await InvokeAsync(() =>
         {
-            // Take a fresh copy of the users.
             _users =
                 AvailabilityService.Users
                     .Select(CloneUser)
                     .ToList();
-
-            Console.WriteLine(
-                $"[Blazor Page] Calling StateHasChanged. " +
-                $"Users: {_users.Count}");
 
             StateHasChanged();
         });
@@ -147,5 +165,8 @@ else
 
         AvailabilityService.UserUpdated -=
             OnUserUpdated;
+
+        AvailabilityService.UsersChanged -=
+            OnUsersChanged;
     }
 }

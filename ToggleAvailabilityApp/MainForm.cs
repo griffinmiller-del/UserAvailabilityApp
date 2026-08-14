@@ -183,7 +183,8 @@ public class MainForm : Form
 
                 Dock = DockStyle.Fill,
 
-                Margin = Padding.Empty
+                Margin = new Padding(1),
+                BorderStyle = BorderStyle.FixedSingle
             };
 
             button.AvailabilityChanged +=

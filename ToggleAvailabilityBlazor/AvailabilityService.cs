@@ -10,7 +10,8 @@ public class AvailabilityService
     public List<User> Users { get; private set; } = [];
 
     public bool IsConnected =>
-        _connection.State == HubConnectionState.Connected;
+        _connection.State ==
+        HubConnectionState.Connected;
 
     public event Func<User, Task>? UserUpdated;
 
@@ -19,17 +20,18 @@ public class AvailabilityService
     public AvailabilityService()
     {
         _connection = new HubConnectionBuilder()
-            .WithUrl("http://localhost:5000/availability")
+            .WithUrl(
+                "http://localhost:5000/availability")
             .WithAutomaticReconnect()
             .Build();
 
         // --------------------------------------------------
-        // Initial user list
+        // Initial / complete user list
         // --------------------------------------------------
 
         _connection.On<List<User>>(
             "UserList",
-            users =>
+            async users =>
             {
                 Console.WriteLine(
                     $"[Blazor] Received UserList: " +
@@ -39,7 +41,10 @@ public class AvailabilityService
                     .Select(CloneUser)
                     .ToList();
 
-                return Task.CompletedTask;
+                if (UsersChanged is not null)
+                {
+                    await UsersChanged.Invoke();
+                }
             });
 
         // --------------------------------------------------
