@@ -7,7 +7,18 @@ namespace ToggleAvailability.Server.Data;
 public static class UserStore
 {
     private static readonly object _lock = new();
+    private static readonly JsonSerializerOptions _jsonOptions =
+        new JsonSerializerOptions
+        {
+            WriteIndented = true,
 
+            PropertyNameCaseInsensitive = true,
+
+            Converters =
+            {
+            new JsonStringEnumConverter()
+            }
+        };
     private static readonly string _filePath =
         Path.Combine(
             AppContext.BaseDirectory,
@@ -95,15 +106,7 @@ public static class UserStore
             _users =
                 JsonSerializer.Deserialize<List<User>>(
                     json,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-
-                        Converters =
-                        {
-                        new JsonStringEnumConverter()
-                        }
-                    })
+                    _jsonOptions)
                 ?? [];
 
             Console.WriteLine(
@@ -127,15 +130,7 @@ public static class UserStore
             string json =
                 JsonSerializer.Serialize(
                     _users,
-                    new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-
-                        Converters =
-                        {
-                        new JsonStringEnumConverter()
-                        }
-                    });
+                    _jsonOptions);
 
             File.WriteAllText(
                 _filePath,
@@ -144,11 +139,10 @@ public static class UserStore
         catch (Exception ex)
         {
             Console.WriteLine(
-                $"Failed to save users.json: " +
-                $"{ex.Message}");
+                $"Failed to save users.json: {ex.Message}");
         }
-
     }
+
     private static User CloneUser(User user)
     {
         return new User
