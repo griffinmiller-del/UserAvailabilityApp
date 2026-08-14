@@ -43,9 +43,9 @@ public class AvailabilityHub : Hub
     }
 
     public async Task SetAvailability(
-            int userId,
-            bool isAvailable,
-            Status status)
+        int userId,
+        bool isAvailable,
+        Status status)
     {
         var user =
             UserStore.GetUser(userId);
