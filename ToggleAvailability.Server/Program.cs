@@ -6,6 +6,9 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
-app.MapHub<AvailabilityHub>("/availability");
+app.UseHttpsRedirection();
+
+app.MapHub<AvailabilityHub>(
+    "/availability");
 
 app.Run();

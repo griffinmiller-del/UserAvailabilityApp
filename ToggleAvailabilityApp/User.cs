@@ -15,4 +15,9 @@ public class User
         IsAvailable = isAvailable;
         Status = status;
     }
+
+    public override string ToString()
+    {
+        return Name;
+    }
 }

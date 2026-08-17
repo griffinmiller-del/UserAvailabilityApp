@@ -1,4 +1,3 @@
-using System.Text.Json;
 using ToggleAvailabilityApp.Services;
 
 namespace ToggleAvailabilityApp;
@@ -10,6 +9,8 @@ public class MainForm : Form
     private readonly AvailabilityService _availabilityService;
 
     private readonly List<User> _users = [];
+
+    private readonly Button btn_Edit;
 
     public MainForm()
     {
@@ -27,27 +28,33 @@ public class MainForm : Form
         BackColor =
             Color.White;
 
-        // Create the SignalR service
+        // --------------------------------------------------
+        // SignalR service
+        // --------------------------------------------------
+
         _availabilityService =
             new AvailabilityService();
 
-        // Listen for the initial user list.
         _availabilityService.UserListReceived +=
             AvailabilityService_UserListReceived;
 
-        // Listen for changes made by other clients.
         _availabilityService.UserUpdated +=
             AvailabilityService_UserUpdated;
 
-
+        // --------------------------------------------------
         // Title
+        // --------------------------------------------------
+
         var title = new Label
         {
-            Dock = DockStyle.Top,
+            Dock =
+                DockStyle.Top,
 
-            Height = 60,
+            Height =
+                60,
 
-            Text = "Office Presence",
+            Text =
+                "Office Presence",
 
             TextAlign =
                 ContentAlignment.MiddleCenter,
@@ -59,27 +66,47 @@ public class MainForm : Form
                     FontStyle.Bold),
 
             BackColor =
-                Color.White
+                Color.White,
+
+            Margin =
+                Padding.Empty,
+
+            Padding =
+                Padding.Empty
         };
 
+        // --------------------------------------------------
         // User grid
-        tlp_Users = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
+        // --------------------------------------------------
 
-            ColumnCount = 4,
+        tlp_Users =
+            new TableLayoutPanel
+            {
+                Dock =
+                    DockStyle.Fill,
 
-            AutoScroll = true,
+                ColumnCount =
+                    4,
 
-            Margin = Padding.Empty,
+                RowCount =
+                    1,
 
-            Padding = Padding.Empty,
+                AutoScroll =
+                    true,
 
-            BackColor = Color.White
-        };
+                Margin =
+                    Padding.Empty,
 
-        // Four equal-width columns
-        for (int column = 0; column < 4; column++)
+                Padding =
+                    Padding.Empty,
+
+                BackColor =
+                    Color.White
+            };
+
+        for (int column = 0;
+             column < 4;
+             column++)
         {
             tlp_Users.ColumnStyles.Add(
                 new ColumnStyle(
@@ -87,13 +114,115 @@ public class MainForm : Form
                     25F));
         }
 
-        Controls.Add(tlp_Users);
-        Controls.Add(title);
-        // Connect to the SignalR server once
-        // the form has loaded.
-        Load += MainForm_Load;
+        // --------------------------------------------------
+        // Bottom panel
+        // --------------------------------------------------
+
+        var bottomPanel =
+            new Panel
+            {
+                Dock =
+                    DockStyle.Bottom,
+
+                Height =
+                    60,
+
+                BackColor =
+                    Color.White,
+
+                Padding =
+                    Padding.Empty,
+
+                Margin =
+                    Padding.Empty
+            };
+
+        // --------------------------------------------------
+        // Edit button
+        // --------------------------------------------------
+
+        btn_Edit =
+            new Button
+            {
+                Text =
+                    "Edit",
+
+                Width =
+                    120,
+
+                Height =
+                    40,
+
+                Font =
+                    new Font(
+                        "Segoe UI",
+                        12F),
+
+                Cursor =
+                    Cursors.Hand,
+
+                Anchor =
+                    AnchorStyles.Top |
+                    AnchorStyles.Right
+            };
+
+        btn_Edit.Click +=
+            Edit_Click;
+
+        bottomPanel.Controls.Add(
+            btn_Edit);
+
+        PositionEditButton(
+            bottomPanel);
+
+        bottomPanel.Resize += (_, _) =>
+        {
+            PositionEditButton(
+                bottomPanel);
+        };
+
+        // --------------------------------------------------
+        // Add controls
+        // --------------------------------------------------
+
+        Controls.Add(
+            tlp_Users);
+
+        Controls.Add(
+            bottomPanel);
+
+        Controls.Add(
+            title);
+
+        // --------------------------------------------------
+        // Connect
+        // --------------------------------------------------
+
+        Load +=
+            MainForm_Load;
     }
-    
+
+    // ------------------------------------------------------
+    // Position Edit button
+    // ------------------------------------------------------
+
+    private void PositionEditButton(
+        Panel panel)
+    {
+        btn_Edit.Location =
+            new Point(
+                panel.ClientSize.Width -
+                btn_Edit.Width -
+                10,
+
+                (panel.ClientSize.Height -
+                 btn_Edit.Height) / 2);
+    }
+
+    // ------------------------------------------------------
+    // Connect to SignalR
+    // ------------------------------------------------------
+
     private async void MainForm_Load(
         object? sender,
         EventArgs e)
@@ -116,9 +245,12 @@ public class MainForm : Form
         }
     }
 
+    // ------------------------------------------------------
+    // Initial/list update from server
+    // ------------------------------------------------------
 
     private void AvailabilityService_UserListReceived(
-    List<User> users)
+        List<User> users)
     {
         if (InvokeRequired)
         {
@@ -130,78 +262,122 @@ public class MainForm : Form
         }
 
         Console.WriteLine(
-            $"Loading {users.Count} users " +
-            $"received from server.");
+            $"Received user list: " +
+            $"{users.Count} users.");
 
+        ReplaceUsers(
+            users);
+    }
+
+    // ------------------------------------------------------
+    // Replace local user list
+    // ------------------------------------------------------
+
+    private void ReplaceUsers(
+        IEnumerable<User> users)
+    {
         _users.Clear();
 
-        _users.AddRange(users);
+        _users.AddRange(
+            users.Select(CloneUser));
 
         LoadUsers();
     }
 
+    // ------------------------------------------------------
+    // Clone user
+    // ------------------------------------------------------
+
+    private static User CloneUser(
+        User user)
+    {
+        return new User(
+            user.UserId,
+            user.Name,
+            user.Status,
+            user.IsAvailable);
+    }
+
+    // ------------------------------------------------------
+    // Build user grid
+    // ------------------------------------------------------
 
     private void LoadUsers()
     {
         tlp_Users.SuspendLayout();
 
-        tlp_Users.Controls.Clear();
-
-        tlp_Users.RowStyles.Clear();
-
-        int rowCount =
-            (int)Math.Ceiling(
-                _users.Count / 4.0);
-
-        if (rowCount == 0)
-            rowCount = 1;
-
-        tlp_Users.RowCount =
-            rowCount;
-
-        // Make every row the same height.
-        for (int row = 0;
-             row < rowCount;
-             row++)
+        try
         {
-            tlp_Users.RowStyles.Add(
-                new RowStyle(
-                    SizeType.Percent,
-                    100F / rowCount));
-        }
+            tlp_Users.Controls.Clear();
 
-        // Create a UserButton for every user.
-        for (int i = 0;
-             i < _users.Count;
-             i++)
-        {
-            var user = _users[i];
+            tlp_Users.RowStyles.Clear();
 
-            var button = new UserButton
+            int rowCount =
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling(
+                        _users.Count / 4.0));
+
+            tlp_Users.RowCount =
+                rowCount;
+
+            for (int row = 0;
+                 row < rowCount;
+                 row++)
             {
-                User = user,
+                tlp_Users.RowStyles.Add(
+                    new RowStyle(
+                        SizeType.Percent,
+                        100F / rowCount));
+            }
 
-                Dock = DockStyle.Fill,
+            for (int i = 0;
+                 i < _users.Count;
+                 i++)
+            {
+                var user =
+                    _users[i];
 
-                Margin = new Padding(1),
-                BorderStyle = BorderStyle.FixedSingle
-            };
+                var button =
+                    new UserButton
+                    {
+                        User =
+                            user,
 
-            button.AvailabilityChanged +=
-                UserButton_AvailabilityChanged;
+                        Dock =
+                            DockStyle.Fill,
 
-            int row = i / 4;
+                        Margin =
+                            new Padding(1),
 
-            int column = i % 4;
+                        BorderStyle =
+                            BorderStyle.FixedSingle
+                    };
 
-            tlp_Users.Controls.Add(
-                button,
-                column,
-                row);
+                button.AvailabilityChanged +=
+                    UserButton_AvailabilityChanged;
+
+                int row =
+                    i / 4;
+
+                int column =
+                    i % 4;
+
+                tlp_Users.Controls.Add(
+                    button,
+                    column,
+                    row);
+            }
         }
-
-        tlp_Users.ResumeLayout();
+        finally
+        {
+            tlp_Users.ResumeLayout();
+        }
     }
+
+    // ------------------------------------------------------
+    // UserButton changed
+    // ------------------------------------------------------
 
     private async void UserButton_AvailabilityChanged(
         object? sender,
@@ -214,16 +390,33 @@ public class MainForm : Form
                 ? "In Office"
                 : "Out")}");
 
-        await _availabilityService
-            .SetAvailabilityAsync(user);
+        try
+        {
+            await _availabilityService
+                .SetAvailabilityAsync(
+                    user);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"Failed to update user: " +
+                $"{ex.Message}");
+
+            MessageBox.Show(
+                $"Unable to update {user.Name}.\n\n{ex.Message}",
+                "Update Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
     }
 
+    // ------------------------------------------------------
+    // Individual user updated by server
+    // ------------------------------------------------------
+
     private void AvailabilityService_UserUpdated(
-    User updatedUser)
+        User updatedUser)
     {
-        // SignalR receives messages on a background
-        // thread. WinForms controls must be updated
-        // on the UI thread.
         if (InvokeRequired)
         {
             Invoke(() =>
@@ -234,18 +427,19 @@ public class MainForm : Form
         }
 
         Console.WriteLine(
-            $"Received update: {updatedUser.Name} " +
-            $"({updatedUser.UserId}) = " +
+            $"Received user update: " +
+            $"{updatedUser.Name} " +
+            $"({updatedUser.UserId}) - " +
             $"{updatedUser.Status} - " +
             $"{(updatedUser.IsAvailable
                 ? "Available"
                 : "Unavailable")}");
 
-        // Find our local copy of the user.
         var localUser =
             _users.FirstOrDefault(
-                x => x.UserId ==
-                     updatedUser.UserId);
+                x =>
+                    x.UserId ==
+                    updatedUser.UserId);
 
         if (localUser is null)
         {
@@ -256,35 +450,95 @@ public class MainForm : Form
             return;
         }
 
-        // Update BOTH pieces of state.
+        localUser.Name =
+            updatedUser.Name;
+
         localUser.IsAvailable =
             updatedUser.IsAvailable;
 
         localUser.Status =
             updatedUser.Status;
 
-        // Find the corresponding UserButton.
         var button =
             tlp_Users.Controls
                 .OfType<UserButton>()
                 .FirstOrDefault(
-                    x => x.User?.UserId ==
-                         updatedUser.UserId);
+                    x =>
+                        x.User?.UserId ==
+                        updatedUser.UserId);
 
         if (button is null)
         {
             Console.WriteLine(
                 $"UserButton for " +
-                $"{updatedUser.Name} was not found.");
+                $"{updatedUser.Name} " +
+                $"was not found.");
 
             return;
         }
 
-        // Synchronize the visual state without
-        // triggering another SignalR update.
         button.UpdateFromServer(
             updatedUser);
     }
+
+    // ------------------------------------------------------
+    // Edit users
+    // ------------------------------------------------------
+
+    private async void Edit_Click(
+        object? sender,
+        EventArgs e)
+    {
+        using var editForm =
+            new EditUsersForm(
+                _users);
+
+        if (editForm.ShowDialog(this) !=
+            DialogResult.OK)
+        {
+            return;
+        }
+
+        var updatedUsers =
+            editForm.Users
+                .Select(CloneUser)
+                .ToList();
+
+        Console.WriteLine(
+            $"Saving {updatedUsers.Count} " +
+            $"users to server...");
+
+        try
+        {
+            btn_Edit.Enabled =
+                false;
+
+            await _availabilityService
+                .UpdateUserListAsync(
+                    updatedUsers);
+
+            Console.WriteLine(
+                "User list successfully sent " +
+                "to the server.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Unable to save the user list to the server.\n\n{ex.Message}",
+                "Save Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        finally
+        {
+            btn_Edit.Enabled =
+                true;
+        }
+    }
+
+    // ------------------------------------------------------
+    // Cleanup
+    // ------------------------------------------------------
 
     protected override async void OnFormClosed(
         FormClosedEventArgs e)
@@ -296,7 +550,7 @@ public class MainForm : Form
         }
         catch
         {
-            // Ignore errors while closing.
+            // Ignore connection errors while closing.
         }
 
         base.OnFormClosed(e);
