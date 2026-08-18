@@ -3,9 +3,18 @@
     public enum Status
     {
         InOffice,
-        Break,
-        Meeting,
-        OtherSide,
-        Other
+        PTO,
+        Lunch,
+        WFH,
+        GoneForTheDay,
+        ClientMeeting,
+        Conference,
+        Appointment,
+        Chicago,
+        NewYork,
+        Colombia,
+        Peru,
+        Philippines,
+        Italy
     }
 }

@@ -11,109 +11,545 @@
 
 <PageTitle>User Availability</PageTitle>
 
-<h1>User Availability</h1>
 
-<p>
-    Connection:
+<div class="availability-page">
 
-    @if (AvailabilityService.IsConnected)
+    <!-- -------------------------------------------------- -->
+    <!-- Header -->
+    <!-- -------------------------------------------------- -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>
+                User Availability
+            </h1>
+
+            <div class="connection-status">
+
+                <span class="connection-indicator @(AvailabilityService.IsConnected
+                                                                            ? "connected"
+                                                                            : "disconnected")">
+                </span>
+
+                <span>
+                    @(AvailabilityService.IsConnected
+                        ? "Connected"
+                        : "Disconnected")
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- User count -->
+
+        <div class="user-count">
+
+            <span class="user-count-number">
+                @_users.Count
+            </span>
+
+            <span class="user-count-label">
+                Users
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- -------------------------------------------------- -->
+    <!-- User List -->
+    <!-- -------------------------------------------------- -->
+    @if (_users.Count == 0)
     {
-        <strong style="color: green;">
-            Connected
-        </strong>
+        <div class="empty-state">
+
+            <div class="empty-state-title">
+                Waiting for Users...
+            </div>
+
+            <div class="empty-state-subtitle">
+                Connecting to the availability server
+            </div>
+
+        </div>
     }
     else
     {
-        <strong style="color: red;">
-            Disconnected
-        </strong>
+        <div class="users-container">
+
+            @foreach (var user in _users)
+            {
+                bool isAvailable =
+                    user.IsAvailable ||
+                    user.Status == Status.InOffice;
+
+                <div class="user-card">
+
+                    <!-- User name -->
+
+                    <div class="user-name">
+                        @user.Name
+                    </div>
+
+
+                    <!-- User status -->
+
+                    <div class="user-status">
+
+                        <span class="status-circle @(isAvailable
+                                                                                    ? "available"
+                                                                                    : "unavailable")">
+                        </span>
+
+                        <span class="status-text">
+                            @GetStatusText(user)
+                        </span>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
     }
-</p>
 
-<p>
-    Users received: @_users.Count
-</p>
+</div>
 
-@if (_users.Count == 0)
-{
-    <p>Waiting for Users...</p>
-}
-else
-{
-    <div class="users-container">
 
-        @foreach (var user in _users)
-        {
-            <div class="user-row">
+<!-- ================================================== -->
+<!-- CSS -->
+<!-- ================================================== -->
 
-                <div class="user-name">
-                    @user.Name
-                </div>
+<style>
 
-                <div class="user-status">
+    /* -------------------------------------------------- */
+    /* Page */
+    /* -------------------------------------------------- */
 
-                    <span class="status-circle @(user.IsAvailable
-                                ? "available"
-                                : "unavailable")">
-                    </span>
+    .availability-page {
+        min-height: 100vh;
+        padding: 32px;
+        box-sizing: border-box;
+        background: #111111;
+        color: #ffffff;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
 
-                    <span>
-                        @GetStatusText(user)
-                    </span>
 
-                </div>
+    /* -------------------------------------------------- */
+    /* Header */
+    /* -------------------------------------------------- */
 
-            </div>
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto 28px auto;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #2d2d2d;
+    }
+
+
+        .page-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 30px;
+            font-weight: 500;
+            letter-spacing: -0.4px;
+            color: #ffffff;
         }
 
-    </div>
-}
+
+    /* -------------------------------------------------- */
+    /* Connection Status */
+    /* -------------------------------------------------- */
+
+    .connection-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 12px;
+        background: #1c1c1c;
+        border: 1px solid #303030;
+        border-radius: 7px;
+        color: #a8a8a8;
+        font-size: 13px;
+    }
+
+
+    .connection-indicator {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+
+        /* Connected */
+
+        .connection-indicator.connected {
+            background: #f2c94c;
+            box-shadow: 0 0 0 3px rgba(242, 201, 76, 0.12), 0 0 9px rgba(242, 201, 76, 0.25);
+        }
+
+
+        /* Disconnected */
+
+        .connection-indicator.disconnected {
+            background: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.10);
+        }
+
+
+    /* -------------------------------------------------- */
+    /* User Count */
+    /* -------------------------------------------------- */
+
+    .user-count {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        color: #858585;
+    }
+
+
+    .user-count-number {
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 500;
+        color: #f2c94c;
+    }
+
+
+    .user-count-label {
+        margin-top: 5px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #777777;
+    }
+
+
+    /* -------------------------------------------------- */
+    /* Users Container */
+    /* -------------------------------------------------- */
+
+    .users-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat( auto-fit, minmax(280px, 1fr) );
+        gap: 12px;
+    }
+
+
+    /* -------------------------------------------------- */
+    /* User Card */
+    /* -------------------------------------------------- */
+
+    .user-card {
+        min-height: 105px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        box-sizing: border-box;
+        background: #1c1c1c;
+        border: 1px solid #303030;
+        border-radius: 10px;
+        transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+
+
+        .user-card:hover {
+            background: #222222;
+            border-color: #454545;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.30);
+            transform: translateY(-1px);
+        }
+
+
+    /* -------------------------------------------------- */
+    /* User Name */
+    /* -------------------------------------------------- */
+
+    .user-name {
+        margin-bottom: 10px;
+        font-size: 20px;
+        font-weight: 500;
+        color: #ffffff;
+        text-align: center;
+    }
+
+
+    /* -------------------------------------------------- */
+    /* User Status */
+    /* -------------------------------------------------- */
+
+    .user-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        color: #a8a8a8;
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+
+    .status-text {
+        white-space: nowrap;
+    }
+
+
+    /* -------------------------------------------------- */
+    /* Status Circle */
+    /* -------------------------------------------------- */
+
+    .status-circle {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+
+        /* -------------------------------------------------- */
+        /* Available */
+        /* -------------------------------------------------- */
+
+        .status-circle.available {
+            background: #f2c94c;
+            box-shadow: 0 0 0 3px rgba(242, 201, 76, 0.10), 0 0 10px rgba(242, 201, 76, 0.25);
+        }
+
+
+        /* -------------------------------------------------- */
+        /* Unavailable */
+        /* -------------------------------------------------- */
+
+        .status-circle.unavailable {
+            background: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.08);
+        }
+
+
+    /* -------------------------------------------------- */
+    /* Empty State */
+    /* -------------------------------------------------- */
+
+    .empty-state {
+        width: 100%;
+        max-width: 1200px;
+        min-height: 180px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        background: #1c1c1c;
+        border: 1px solid #303030;
+        border-radius: 10px;
+    }
+
+
+    .empty-state-title {
+        margin-bottom: 7px;
+        font-size: 18px;
+        color: #ffffff;
+    }
+
+
+    .empty-state-subtitle {
+        font-size: 14px;
+        color: #777777;
+    }
+
+
+    /* -------------------------------------------------- */
+    /* Tablet */
+    /* -------------------------------------------------- */
+
+    @@media (max-width: 700px) {
+
+        .availability-page {
+            padding: 20px;
+        }
+
+
+        .page-header {
+            margin-bottom: 20px;
+        }
+
+
+            .page-header h1 {
+                font-size: 25px;
+            }
+
+
+        .users-container {
+            grid-template-columns: repeat( 2, minmax(0, 1fr) );
+            gap: 8px;
+        }
+
+
+        .user-card {
+            min-height: 95px;
+            padding: 14px;
+        }
+
+
+        .user-name {
+            font-size: 18px;
+        }
+    }
+
+
+    /* -------------------------------------------------- */
+    /* Very Small Screens */
+    /* -------------------------------------------------- */
+
+    @@media (max-width: 450px) {
+
+        .availability-page {
+            padding: 12px;
+        }
+
+
+        .users-container {
+            grid-template-columns: 1fr;
+        }
+
+
+        .user-count {
+            display: none;
+        }
+
+
+        .page-header h1 {
+            font-size: 23px;
+        }
+    }
+
+</style>
+
 
 @code
 {
     private List<User> _users = [];
+
+
+    // --------------------------------------------------
+    // Initialization
+    // --------------------------------------------------
 
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine(
             "[Blazor Page] Initializing.");
 
+
         AvailabilityService.UserUpdated +=
             OnUserUpdated;
+
 
         AvailabilityService.UsersChanged +=
             OnUsersChanged;
 
+
         await AvailabilityService.ConnectAsync();
+
 
         _users =
             AvailabilityService.Users
                 .Select(CloneUser)
                 .ToList();
 
+
         Console.WriteLine(
             $"[Blazor Page] Initial users: " +
             $"{_users.Count}");
     }
 
-    private static string GetStatusText(User user)
+
+    // --------------------------------------------------
+    // Status Text
+    // --------------------------------------------------
+
+    private static string GetStatusText(
+        User user)
     {
         return user.Status switch
         {
-            Status.InOffice => "In Office",
-            Status.Break => "Break",
-            Status.Meeting => "Meeting",
-            Status.OtherSide => "Other Side",
-            Status.Other => "Other",
-            _ => "Unknown"
+            Status.InOffice =>
+                "In Office",
+
+            Status.PTO =>
+                "PTO",
+
+            Status.Lunch =>
+                "Lunch",
+
+            Status.WFH =>
+                "WFH",
+
+            Status.GoneForTheDay =>
+                "Gone for the Day",
+
+            Status.ClientMeeting =>
+                "Client Meeting",
+
+            Status.Conference =>
+                "Conference",
+
+            Status.Appointment =>
+                "Appointment",
+
+            Status.Chicago =>
+                "Chicago",
+
+            Status.NewYork =>
+                "New York",
+
+            Status.Colombia =>
+                "Colombia",
+
+            Status.Peru =>
+                "Peru",
+
+            Status.Philippines =>
+                "Philippines",
+
+            Status.Italy =>
+                "Italy",
+
+            _ =>
+                "Unknown"
         };
     }
+
+
+    // --------------------------------------------------
+    // Users Changed
+    // --------------------------------------------------
 
     private async Task OnUsersChanged()
     {
         Console.WriteLine(
             "[Blazor Page] User list changed.");
 
+
         await InvokeAsync(() =>
         {
             _users =
@@ -121,21 +557,30 @@ else
                     .Select(CloneUser)
                     .ToList();
 
+
             Console.WriteLine(
                 $"[Blazor Page] Refreshing user list: " +
                 $"{_users.Count} users.");
+
 
             StateHasChanged();
         });
     }
 
-    private async Task OnUserUpdated(User user)
+
+    // --------------------------------------------------
+    // User Updated
+    // --------------------------------------------------
+
+    private async Task OnUserUpdated(
+        User user)
     {
         Console.WriteLine(
             $"[Blazor Page] OnUserUpdated: " +
             $"{user.Name} = " +
             $"{user.IsAvailable}");
 
+
         await InvokeAsync(() =>
         {
             _users =
@@ -143,28 +588,49 @@ else
                     .Select(CloneUser)
                     .ToList();
 
+
             StateHasChanged();
         });
     }
 
-    private static User CloneUser(User user)
+
+    // --------------------------------------------------
+    // Clone User
+    // --------------------------------------------------
+
+    private static User CloneUser(
+        User user)
     {
         return new User
         {
-            UserId = user.UserId,
-            Name = user.Name,
-            IsAvailable = user.IsAvailable,
-            Status = user.Status
+            UserId =
+                user.UserId,
+
+            Name =
+                user.Name,
+
+            IsAvailable =
+                user.IsAvailable,
+
+            Status =
+                user.Status
         };
     }
+
+
+    // --------------------------------------------------
+    // Dispose
+    // --------------------------------------------------
 
     public void Dispose()
     {
         Console.WriteLine(
             "[Blazor Page] Disposing component.");
 
+
         AvailabilityService.UserUpdated -=
             OnUserUpdated;
+
 
         AvailabilityService.UsersChanged -=
             OnUsersChanged;

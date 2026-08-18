@@ -12,21 +12,60 @@ public class MainForm : Form
 
     private readonly Button btn_Edit;
 
+    // --------------------------------------------------
+    // UI Colors
+    // --------------------------------------------------
+
+    private static readonly Color Background =
+        Color.FromArgb(12, 14, 16);
+
+    private static readonly Color CardBackground =
+        Color.FromArgb(25, 27, 30);
+
+    private static readonly Color Yellow =
+        Color.FromArgb(255, 195, 0);
+
+    private static readonly Color TextColor =
+        Color.White;
+
+    private static readonly Color SecondaryText =
+        Color.FromArgb(170, 170, 170);
+
+
+    // --------------------------------------------------
+    // Constructor
+    // --------------------------------------------------
+
     public MainForm()
     {
-        Text = "Toggle Status";
+        Text =
+            "Toggle Status";
 
         StartPosition =
             FormStartPosition.CenterScreen;
 
         MinimumSize =
-            new Size(700, 450);
+            new Size(800, 500);
 
         Size =
-            new Size(1000, 600);
+            new Size(1100, 700);
 
         BackColor =
-            Color.White;
+            Background;
+
+        ForeColor =
+            TextColor;
+
+        Font =
+            new Font(
+                "Segoe UI",
+                10F);
+
+        FormBorderStyle =
+            FormBorderStyle.None;
+
+        WindowState =
+            FormWindowState.Maximized;
 
         // --------------------------------------------------
         // SignalR service
@@ -40,40 +79,6 @@ public class MainForm : Form
 
         _availabilityService.UserUpdated +=
             AvailabilityService_UserUpdated;
-
-        // --------------------------------------------------
-        // Title
-        // --------------------------------------------------
-
-        var title = new Label
-        {
-            Dock =
-                DockStyle.Top,
-
-            Height =
-                60,
-
-            Text =
-                "Office Presence",
-
-            TextAlign =
-                ContentAlignment.MiddleCenter,
-
-            Font =
-                new Font(
-                    "Segoe UI",
-                    18F,
-                    FontStyle.Bold),
-
-            BackColor =
-                Color.White,
-
-            Margin =
-                Padding.Empty,
-
-            Padding =
-                Padding.Empty
-        };
 
         // --------------------------------------------------
         // User grid
@@ -94,15 +99,19 @@ public class MainForm : Form
                 AutoScroll =
                     true,
 
+                BackColor =
+                    Background,
+
                 Margin =
                     Padding.Empty,
 
                 Padding =
-                    Padding.Empty,
-
-                BackColor =
-                    Color.White
+                    new Padding(12)
             };
+
+        // --------------------------------------------------
+        // Columns
+        // --------------------------------------------------
 
         for (int column = 0;
              column < 4;
@@ -125,13 +134,17 @@ public class MainForm : Form
                     DockStyle.Bottom,
 
                 Height =
-                    60,
+                    70,
 
                 BackColor =
-                    Color.White,
+                    Background,
 
                 Padding =
-                    Padding.Empty,
+                    new Padding(
+                        12,
+                        8,
+                        12,
+                        8),
 
                 Margin =
                     Padding.Empty
@@ -145,25 +158,40 @@ public class MainForm : Form
             new Button
             {
                 Text =
-                    "Edit",
+                    "Edit Users",
 
                 Width =
-                    120,
+                    130,
 
                 Height =
-                    40,
+                    42,
+
+                FlatStyle =
+                    FlatStyle.Flat,
+
+                BackColor =
+                    Yellow,
+
+                ForeColor =
+                    Color.Black,
 
                 Font =
                     new Font(
                         "Segoe UI",
-                        12F),
+                        10F,
+                        FontStyle.Bold),
 
                 Cursor =
                     Cursors.Hand,
 
                 Anchor =
                     AnchorStyles.Top |
-                    AnchorStyles.Right
+                    AnchorStyles.Right,
+
+                FlatAppearance =
+                {
+                    BorderSize = 0
+                }
             };
 
         btn_Edit.Click +=
@@ -175,14 +203,17 @@ public class MainForm : Form
         PositionEditButton(
             bottomPanel);
 
-        bottomPanel.Resize += (_, _) =>
-        {
-            PositionEditButton(
-                bottomPanel);
-        };
+        bottomPanel.Resize +=
+            (_, _) =>
+            {
+                PositionEditButton(
+                    bottomPanel);
+            };
 
         // --------------------------------------------------
         // Add controls
+        //
+        // No title/header.
         // --------------------------------------------------
 
         Controls.Add(
@@ -191,9 +222,6 @@ public class MainForm : Form
         Controls.Add(
             bottomPanel);
 
-        Controls.Add(
-            title);
-
         // --------------------------------------------------
         // Connect
         // --------------------------------------------------
@@ -201,6 +229,7 @@ public class MainForm : Form
         Load +=
             MainForm_Load;
     }
+
 
     // ------------------------------------------------------
     // Position Edit button
@@ -213,11 +242,12 @@ public class MainForm : Form
             new Point(
                 panel.ClientSize.Width -
                 btn_Edit.Width -
-                10,
+                12,
 
                 (panel.ClientSize.Height -
                  btn_Edit.Height) / 2);
     }
+
 
     // ------------------------------------------------------
     // Connect to SignalR
@@ -245,6 +275,7 @@ public class MainForm : Form
         }
     }
 
+
     // ------------------------------------------------------
     // Initial/list update from server
     // ------------------------------------------------------
@@ -269,6 +300,7 @@ public class MainForm : Form
             users);
     }
 
+
     // ------------------------------------------------------
     // Replace local user list
     // ------------------------------------------------------
@@ -284,6 +316,7 @@ public class MainForm : Form
         LoadUsers();
     }
 
+
     // ------------------------------------------------------
     // Clone user
     // ------------------------------------------------------
@@ -297,6 +330,7 @@ public class MainForm : Form
             user.Status,
             user.IsAvailable);
     }
+
 
     // ------------------------------------------------------
     // Build user grid
@@ -348,10 +382,13 @@ public class MainForm : Form
                             DockStyle.Fill,
 
                         Margin =
-                            new Padding(1),
+                            new Padding(5),
 
                         BorderStyle =
-                            BorderStyle.FixedSingle
+                            BorderStyle.None,
+
+                        BackColor =
+                            CardBackground
                     };
 
                 button.AvailabilityChanged +=
@@ -374,6 +411,7 @@ public class MainForm : Form
             tlp_Users.ResumeLayout();
         }
     }
+
 
     // ------------------------------------------------------
     // UserButton changed
@@ -409,6 +447,7 @@ public class MainForm : Form
                 MessageBoxIcon.Error);
         }
     }
+
 
     // ------------------------------------------------------
     // Individual user updated by server
@@ -481,6 +520,7 @@ public class MainForm : Form
             updatedUser);
     }
 
+
     // ------------------------------------------------------
     // Edit users
     // ------------------------------------------------------
@@ -535,6 +575,7 @@ public class MainForm : Form
                 true;
         }
     }
+
 
     // ------------------------------------------------------
     // Cleanup
