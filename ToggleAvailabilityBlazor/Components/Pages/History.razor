@@ -1,0 +1,147 @@
+﻿@page "/history"
+
+@using ToggleAvailabilityBlazor.Models
+@using ToggleAvailabilityBlazor.Services
+
+@inject AvailabilityService AvailabilityService
+
+<PageTitle>Office History</PageTitle>
+
+
+<div class="history-page">
+
+    <div class="history-header">
+
+        <div>
+            <h1>Office Time History</h1>
+
+            <p>
+                Select a person to view their daily office time.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="people-list">
+
+        @foreach (var user in AvailabilityService.Users)
+        {
+            <NavLink href="@($"/history/{user.UserId}")"
+                     class="person-row">
+
+                <span class="person-name">
+                    @user.Name
+                </span>
+
+                <span class="person-arrow">
+                    ›
+                </span>
+
+            </NavLink>
+        }
+
+    </div>
+
+</div>
+
+
+<style>
+
+    .history-page {
+        min-height: 100vh;
+        padding: 32px;
+        box-sizing: border-box;
+        background: #111111;
+        color: #ffffff;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+
+    .history-header {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto 28px auto;
+    }
+
+
+        .history-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 500;
+        }
+
+
+        .history-header p {
+            margin: 7px 0 0 0;
+            color: #777777;
+            font-size: 14px;
+        }
+
+
+    .people-list {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+
+    .person-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 58px;
+        padding: 0 18px;
+        box-sizing: border-box;
+        background: #1c1c1c;
+        border: 1px solid #303030;
+        border-bottom: none;
+        color: #ffffff;
+        text-decoration: none;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+
+        .person-row:first-child {
+            border-radius: 9px 9px 0 0;
+        }
+
+
+        .person-row:last-child {
+            border-bottom: 1px solid #303030;
+            border-radius: 0 0 9px 9px;
+        }
+
+
+        .person-row:only-child {
+            border-radius: 9px;
+            border-bottom: 1px solid #303030;
+        }
+
+
+        .person-row:hover {
+            background: #232323;
+            border-color: #454545;
+        }
+
+
+    .person-name {
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+
+    .person-arrow {
+        font-size: 25px;
+        line-height: 1;
+        color: #666666;
+    }
+
+
+    .person-row:hover .person-arrow {
+        color: #f2c94c;
+    }
+
+</style>

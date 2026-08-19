@@ -1,1 +1,112 @@
-﻿
+﻿<div class="sidebar">
+
+    <div class="sidebar-header">
+        <div class="app-title">
+            Office Presence
+        </div>
+    </div>
+
+
+    <nav class="sidebar-nav">
+
+        <NavLink href="/"
+                 Match="NavLinkMatch.All"
+                 class="nav-item">
+
+            <span class="nav-icon">
+                ●
+            </span>
+
+            <span>
+                Dashboard
+            </span>
+
+        </NavLink>
+
+
+        <NavLink href="/history"
+                 class="nav-item">
+
+            <span class="nav-icon">
+                ◷
+            </span>
+
+            <span>
+                History
+            </span>
+
+        </NavLink>
+
+    </nav>
+
+</div>
+
+
+<style>
+
+    .sidebar {
+        width: 230px;
+        min-width: 230px;
+        height: 100vh;
+        background: #151515;
+        border-right: 1px solid #2d2d2d;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+    }
+
+
+    .sidebar-header {
+        padding: 24px 20px;
+        border-bottom: 1px solid #2d2d2d;
+    }
+
+
+    .app-title {
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        color: #ffffff;
+    }
+
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        gap: 4px;
+    }
+
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 7px;
+        color: #999999;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+
+        .nav-item:hover {
+            background: #202020;
+            color: #ffffff;
+        }
+
+
+        .nav-item.active {
+            background: #242424;
+            color: #f2c94c;
+        }
+
+
+    .nav-icon {
+        width: 18px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+</style>

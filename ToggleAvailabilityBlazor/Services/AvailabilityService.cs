@@ -124,6 +124,16 @@ public class AvailabilityService
         };
     }
 
+    public async Task<List<OfficeHistory>>
+    GetUserHistoryAsync(
+        int userId)
+    {
+        return await _connection.InvokeAsync<
+            List<OfficeHistory>>(
+            "GetUserHistory",
+            userId);
+    }
+
     private void UpdateUser(User user)
     {
         var updatedUsers =

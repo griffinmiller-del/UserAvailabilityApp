@@ -53,6 +53,67 @@ public class AvailabilityHub : Hub
     }
 
     // --------------------------------------------------
+    // Get office history for user
+    // --------------------------------------------------
+
+    public Task<List<OfficeHistory>> GetUserHistory(
+        int userId)
+    {
+        return Task.FromResult(
+            OfficeHistoryStore.GetUserHistory(
+                userId));
+    }
+
+    private static void RecordOfficeSession(
+    User user,
+    DateTime endTime)
+    {
+        if (user.InOfficeStartTime is null)
+        {
+            return;
+        }
+
+        DateTime startTime =
+            user.InOfficeStartTime.Value;
+
+        if (endTime <= startTime)
+        {
+            return;
+        }
+
+        DateTime current =
+            startTime;
+
+        while (current.Date < endTime.Date)
+        {
+            DateTime midnight =
+                current.Date.AddDays(1);
+
+            TimeSpan duration =
+                midnight - current;
+
+            OfficeHistoryStore.AddOfficeTime(
+                user.UserId,
+                DateOnly.FromDateTime(current),
+                duration);
+
+            current =
+                midnight;
+        }
+
+        if (current < endTime)
+        {
+            TimeSpan duration =
+                endTime - current;
+
+            OfficeHistoryStore.AddOfficeTime(
+                user.UserId,
+                DateOnly.FromDateTime(current),
+                duration);
+        }
+    }
+
+    // --------------------------------------------------
     // Send user list to current client
     // --------------------------------------------------
 
@@ -297,17 +358,26 @@ public class AvailabilityHub : Hub
             status != Status.InOffice &&
             user.InOfficeStartTime is not null)
         {
+            DateTime now =
+                DateTime.UtcNow;
+
             TimeSpan currentSession =
-                DateTime.UtcNow -
+                now -
                 user.InOfficeStartTime.Value;
 
             if (currentSession > TimeSpan.Zero)
             {
+                // Existing lifetime total.
                 user.TotalTimeInOffice +=
                     currentSession;
+
+                // New daily history.
+                RecordOfficeSession(
+                    user,
+                    now);
             }
 
-            // The active session is now finished.
+            // End active session.
             user.InOfficeStartTime = null;
         }
 

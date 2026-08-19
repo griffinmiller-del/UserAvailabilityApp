@@ -1,0 +1,219 @@
+﻿@page "/history/{UserId:int}"
+
+@using ToggleAvailabilityBlazor.Models
+@using ToggleAvailabilityBlazor.Services
+
+@inject AvailabilityService AvailabilityService
+
+<PageTitle>Office Time History</PageTitle>
+
+
+<div class="history-page">
+
+    <div class="history-header">
+
+        <NavLink href="/history"
+                 class="back-link">
+
+            ← History
+
+        </NavLink>
+
+
+        @if (_user is not null)
+        {
+            <h1>
+                @_user.Name
+            </h1>
+
+            <p>
+                Daily time in office
+            </p>
+        }
+
+    </div>
+
+
+    @if (_loading)
+    {
+        <div class="loading">
+            Loading history...
+        </div>
+    }
+    else if (_history.Count == 0)
+    {
+        <div class="empty-history">
+            No office time has been recorded yet.
+        </div>
+    }
+    else
+    {
+        <div class="history-list">
+
+            @foreach (var record in _history)
+            {
+                <div class="history-row">
+
+                    <span class="history-date">
+                        @record.Date.ToString("MM/dd/yyyy")
+                    </span>
+
+                    <span class="history-time">
+                        Time in Office:
+                        @FormatDuration(
+                            record.TimeInOffice)
+                    </span>
+
+                </div>
+            }
+
+        </div>
+    }
+
+</div>
+
+
+<style>
+
+    .history-page {
+        min-height: 100vh;
+        padding: 32px;
+        box-sizing: border-box;
+        background: #111111;
+        color: #ffffff;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+
+    .history-header {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto 28px auto;
+    }
+
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 18px;
+        color: #777777;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+
+        .back-link:hover {
+            color: #f2c94c;
+        }
+
+
+    .history-header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 500;
+    }
+
+
+    .history-header p {
+        margin: 7px 0 0 0;
+        color: #777777;
+        font-size: 14px;
+    }
+
+
+    .history-list {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+
+    .history-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 58px;
+        padding: 0 18px;
+        box-sizing: border-box;
+        background: #1c1c1c;
+        border: 1px solid #303030;
+        border-radius: 8px;
+    }
+
+
+    .history-date {
+        font-size: 15px;
+        color: #ffffff;
+    }
+
+
+    .history-time {
+        font-size: 15px;
+        color: #a8a8a8;
+        font-variant-numeric: tabular-nums;
+    }
+
+
+    .loading,
+    .empty-history {
+        max-width: 900px;
+        margin: 40px auto;
+        text-align: center;
+        color: #777777;
+    }
+
+</style>
+
+
+@code
+{
+    [Parameter]
+    public int UserId { get; set; }
+
+
+    private User? _user;
+
+    private List<OfficeHistory> _history = [];
+
+    private bool _loading = true;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user =
+            AvailabilityService.Users
+                .FirstOrDefault(
+                    x => x.UserId == UserId);
+
+
+        if (_user is not null)
+        {
+            _history =
+                await AvailabilityService
+                    .GetUserHistoryAsync(
+                        UserId);
+        }
+
+
+        _loading = false;
+    }
+
+
+    private static string FormatDuration(
+        TimeSpan duration)
+    {
+        int totalMinutes =
+            (int)duration.TotalMinutes;
+
+        int hours =
+            totalMinutes / 60;
+
+        int minutes =
+            totalMinutes % 60;
+
+        return
+            $"{hours:00}:{minutes:00}";
+    }
+}

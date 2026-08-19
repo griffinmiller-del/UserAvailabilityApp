@@ -1,0 +1,157 @@
+[
+  {
+    "UserId": 1,
+    "Date": "2026-08-18",
+    "TimeInOffice": "08:15:00"
+  },
+  {
+    "UserId": 1,
+    "Date": "2026-08-17",
+    "TimeInOffice": "07:42:00"
+  },
+  {
+    "UserId": 1,
+    "Date": "2026-08-14",
+    "TimeInOffice": "08:03:00"
+  },
+  {
+    "UserId": 1,
+    "Date": "2026-08-13",
+    "TimeInOffice": "06:51:00"
+  },
+  {
+    "UserId": 1,
+    "Date": "2026-08-12",
+    "TimeInOffice": "07:28:00"
+  },
+
+  {
+    "UserId": 2,
+    "Date": "2026-08-18",
+    "TimeInOffice": "07:34:00"
+  },
+  {
+    "UserId": 2,
+    "Date": "2026-08-17",
+    "TimeInOffice": "08:11:00"
+  },
+  {
+    "UserId": 2,
+    "Date": "2026-08-14",
+    "TimeInOffice": "07:56:00"
+  },
+  {
+    "UserId": 2,
+    "Date": "2026-08-13",
+    "TimeInOffice": "08:22:00"
+  },
+  {
+    "UserId": 2,
+    "Date": "2026-08-12",
+    "TimeInOffice": "07:47:00"
+  },
+
+  {
+    "UserId": 3,
+    "Date": "2026-08-18",
+    "TimeInOffice": "06:58:00"
+  },
+  {
+    "UserId": 3,
+    "Date": "2026-08-17",
+    "TimeInOffice": "07:25:00"
+  },
+  {
+    "UserId": 3,
+    "Date": "2026-08-14",
+    "TimeInOffice": "08:04:00"
+  },
+  {
+    "UserId": 3,
+    "Date": "2026-08-13",
+    "TimeInOffice": "07:36:00"
+  },
+  {
+    "UserId": 3,
+    "Date": "2026-08-12",
+    "TimeInOffice": "06:49:00"
+  },
+
+  {
+    "UserId": 4,
+    "Date": "2026-08-18",
+    "TimeInOffice": "08:07:00"
+  },
+  {
+    "UserId": 4,
+    "Date": "2026-08-17",
+    "TimeInOffice": "07:53:00"
+  },
+  {
+    "UserId": 4,
+    "Date": "2026-08-14",
+    "TimeInOffice": "06:42:00"
+  },
+  {
+    "UserId": 4,
+    "Date": "2026-08-13",
+    "TimeInOffice": "07:18:00"
+  },
+  {
+    "UserId": 4,
+    "Date": "2026-08-12",
+    "TimeInOffice": "08:31:00"
+  },
+
+  {
+    "UserId": 5,
+    "Date": "2026-08-18",
+    "TimeInOffice": "07:46:00"
+  },
+  {
+    "UserId": 5,
+    "Date": "2026-08-17",
+    "TimeInOffice": "08:02:00"
+  },
+  {
+    "UserId": 5,
+    "Date": "2026-08-14",
+    "TimeInOffice": "07:39:00"
+  },
+  {
+    "UserId": 5,
+    "Date": "2026-08-13",
+    "TimeInOffice": "06:55:00"
+  },
+  {
+    "UserId": 5,
+    "Date": "2026-08-12",
+    "TimeInOffice": "07:21:00"
+  },
+
+  {
+    "UserId": 6,
+    "Date": "2026-08-18",
+    "TimeInOffice": "08:19:00"
+  },
+  {
+    "UserId": 6,
+    "Date": "2026-08-17",
+    "TimeInOffice": "07:37:00"
+  },
+  {
+    "UserId": 6,
+    "Date": "2026-08-14",
+    "TimeInOffice": "08:16:00"
+  },
+  {
+    "UserId": 6,
+    "Date": "2026-08-13",
+    "TimeInOffice": "07:05:00"
+  },
+  {
+    "UserId": 6,
+    "Date": "2026-08-12",
+    "TimeInOffice": "07:58:00"
+  }
+]
