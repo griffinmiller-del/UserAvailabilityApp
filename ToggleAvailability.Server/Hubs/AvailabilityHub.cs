@@ -359,7 +359,7 @@ public class AvailabilityHub : Hub
             user.InOfficeStartTime is not null)
         {
             DateTime now =
-                DateTime.UtcNow;
+                DateTime.Now;
 
             TimeSpan currentSession =
                 now -
@@ -371,14 +371,15 @@ public class AvailabilityHub : Hub
                 user.TotalTimeInOffice +=
                     currentSession;
 
-                // New daily history.
+                // Record the current session.
                 RecordOfficeSession(
                     user,
                     now);
             }
 
             // End active session.
-            user.InOfficeStartTime = null;
+            user.InOfficeStartTime =
+                null;
         }
 
 
@@ -389,10 +390,8 @@ public class AvailabilityHub : Hub
         if (status == Status.InOffice &&
             user.Status != Status.InOffice)
         {
-            // DO NOT reset TotalTimeInOffice here.
-
             user.InOfficeStartTime =
-                DateTime.UtcNow;
+                DateTime.Now;
         }
 
 
@@ -408,7 +407,7 @@ public class AvailabilityHub : Hub
 
 
         // ==================================================
-        // Save the updated user
+        // Save updated user
         // ==================================================
 
         UserStore.UpdateUser(user);

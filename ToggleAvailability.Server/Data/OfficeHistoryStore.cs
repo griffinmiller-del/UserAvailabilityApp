@@ -109,6 +109,46 @@ public static class OfficeHistoryStore
 
 
     // ==================================================
+    // Create a new daily record
+    // ==================================================
+
+    public static void CreateDailyRecord(
+        int userId,
+        DateOnly date)
+    {
+        lock (_lock)
+        {
+            bool exists =
+                _history.Any(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date);
+
+            if (exists)
+            {
+                return;
+            }
+
+            _history.Add(
+                new OfficeHistory
+                {
+                    UserId =
+                        userId,
+
+                    Date =
+                        date,
+
+                    TimeInOffice =
+                        TimeSpan.Zero
+                });
+
+            Save();
+        }
+    }
+
+
+
+    // ==================================================
     // Load
     // ==================================================
 

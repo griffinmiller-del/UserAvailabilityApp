@@ -40,40 +40,116 @@
             Loading history...
         </div>
     }
-    else if (_history.Count == 0)
+    else if (_user is null)
     {
         <div class="empty-history">
-            No office time has been recorded yet.
+            User not found.
         </div>
     }
     else
     {
-        <div class="history-list">
+        <!-- ================================================== -->
+        <!-- Date Search -->
+        <!-- ================================================== -->
 
-            @foreach (var record in _history)
-            {
-                <div class="history-row">
+        <div class="date-search">
 
-                    <span class="history-date">
-                        @record.Date.ToString("MM/dd/yyyy")
-                    </span>
+            <div class="date-field">
 
-                    <span class="history-time">
-                        Time in Office:
-                        @FormatDuration(
-                            record.TimeInOffice)
-                    </span>
+                <label for="fromDate">
+                    From
+                </label>
 
-                </div>
-            }
+                <input id="fromDate"
+                       type="date"
+                       @bind="_fromDate" />
+
+            </div>
+
+
+            <div class="date-field">
+
+                <label for="toDate">
+                    To
+                </label>
+
+                <input id="toDate"
+                       type="date"
+                       @bind="_toDate" />
+
+            </div>
+
+
+            <div class="date-actions">
+
+                <button class="search-button"
+                        @onclick="SearchHistory">
+
+                    Search
+
+                </button>
+
+
+                <button class="clear-button"
+                        @onclick="ClearSearch">
+
+                    Clear
+
+                </button>
+
+            </div>
 
         </div>
+
+
+        <!-- ================================================== -->
+        <!-- History -->
+        <!-- ================================================== -->
+        @if (_filteredHistory.Count == 0)
+        {
+            <div class="empty-history">
+
+                No office time was recorded
+                for the selected date range.
+
+            </div>
+        }
+        else
+        {
+            <div class="history-list">
+
+                @foreach (var record in _filteredHistory)
+                {
+                    <div class="history-row">
+
+                        <span class="history-date">
+                            @record.Date.ToString("MM/dd/yyyy")
+                        </span>
+
+                        <span class="history-time">
+
+                            Time in Office:
+
+                            @FormatDuration(
+                                record.TimeInOffice)
+
+                        </span>
+
+                    </div>
+                }
+
+            </div>
+        }
     }
 
 </div>
 
 
 <style>
+
+    /* -------------------------------------------------- */
+    /* Page */
+    /* -------------------------------------------------- */
 
     .history-page {
         min-height: 100vh;
@@ -84,6 +160,10 @@
         font-family: "Segoe UI", Arial, sans-serif;
     }
 
+
+    /* -------------------------------------------------- */
+    /* Header */
+    /* -------------------------------------------------- */
 
     .history-header {
         width: 100%;
@@ -120,6 +200,112 @@
     }
 
 
+    /* -------------------------------------------------- */
+    /* Date Search */
+    /* -------------------------------------------------- */
+
+    .date-search {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto 20px auto;
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        padding: 16px;
+        box-sizing: border-box;
+        background: #1c1c1c;
+        border: 1px solid #303030;
+        border-radius: 8px;
+    }
+
+
+    .date-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+
+        .date-field label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #777777;
+        }
+
+
+        .date-field input {
+            height: 38px;
+            padding: 0 10px;
+            box-sizing: border-box;
+            background: #111111;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            color: #ffffff;
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 14px;
+        }
+
+
+            .date-field input:focus {
+                outline: none;
+                border-color: #f2c94c;
+            }
+
+
+    /* -------------------------------------------------- */
+    /* Search Buttons */
+    /* -------------------------------------------------- */
+
+    .date-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+
+    .search-button,
+    .clear-button {
+        height: 38px;
+        padding: 0 16px;
+        border-radius: 6px;
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+
+    .search-button {
+        background: #f2c94c;
+        border: 1px solid #f2c94c;
+        color: #111111;
+        font-weight: 500;
+    }
+
+
+        .search-button:hover {
+            background: #e5bc3f;
+            border-color: #e5bc3f;
+        }
+
+
+    .clear-button {
+        background: #242424;
+        border: 1px solid #3a3a3a;
+        color: #a8a8a8;
+    }
+
+
+        .clear-button:hover {
+            background: #2d2d2d;
+            color: #ffffff;
+        }
+
+
+    /* -------------------------------------------------- */
+    /* History List */
+    /* -------------------------------------------------- */
+
     .history-list {
         width: 100%;
         max-width: 900px;
@@ -129,6 +315,10 @@
         gap: 8px;
     }
 
+
+    /* -------------------------------------------------- */
+    /* History Row */
+    /* -------------------------------------------------- */
 
     .history-row {
         display: flex;
@@ -156,12 +346,64 @@
     }
 
 
+    /* -------------------------------------------------- */
+    /* Loading / Empty */
+    /* -------------------------------------------------- */
+
     .loading,
     .empty-history {
         max-width: 900px;
         margin: 40px auto;
         text-align: center;
         color: #777777;
+    }
+
+
+    /* -------------------------------------------------- */
+    /* Mobile */
+    /* -------------------------------------------------- */
+
+    @@media (max-width: 650px) {
+
+        .history-page {
+            padding: 20px;
+        }
+
+
+        .date-search {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+
+        .date-field {
+            width: 100%;
+        }
+
+
+            .date-field input {
+                width: 100%;
+            }
+
+
+        .date-actions {
+            width: 100%;
+        }
+
+
+        .search-button,
+        .clear-button {
+            flex: 1;
+        }
+
+
+        .history-row {
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 5px;
+            padding: 12px 18px;
+        }
     }
 
 </style>
@@ -177,8 +419,19 @@
 
     private List<OfficeHistory> _history = [];
 
+    private List<OfficeHistory> _filteredHistory = [];
+
     private bool _loading = true;
 
+
+    private DateOnly? _fromDate;
+
+    private DateOnly? _toDate;
+
+
+    // ==================================================
+    // Initialization
+    // ==================================================
 
     protected override async Task OnInitializedAsync()
     {
@@ -194,12 +447,98 @@
                 await AvailabilityService
                     .GetUserHistoryAsync(
                         UserId);
+
+            _filteredHistory =
+                _history
+                    .ToList();
         }
 
 
         _loading = false;
     }
 
+
+    // ==================================================
+    // Search
+    // ==================================================
+
+    private void SearchHistory()
+    {
+        IEnumerable<OfficeHistory> results =
+            _history;
+
+
+        // ----------------------------------------------
+        // From date
+        // ----------------------------------------------
+
+        if (_fromDate.HasValue)
+        {
+            results =
+                results.Where(
+                    x =>
+                        x.Date >=
+                        _fromDate.Value);
+        }
+
+
+        // ----------------------------------------------
+        // To date
+        // ----------------------------------------------
+
+        if (_toDate.HasValue)
+        {
+            results =
+                results.Where(
+                    x =>
+                        x.Date <=
+                        _toDate.Value);
+        }
+
+
+        // ----------------------------------------------
+        // Validate reversed range
+        // ----------------------------------------------
+
+        if (_fromDate.HasValue &&
+            _toDate.HasValue &&
+            _fromDate.Value > _toDate.Value)
+        {
+            _filteredHistory = [];
+
+            return;
+        }
+
+
+        _filteredHistory =
+            results
+                .OrderByDescending(
+                    x => x.Date)
+                .ToList();
+    }
+
+
+    // ==================================================
+    // Clear Search
+    // ==================================================
+
+    private void ClearSearch()
+    {
+        _fromDate = null;
+
+        _toDate = null;
+
+        _filteredHistory =
+            _history
+                .OrderByDescending(
+                    x => x.Date)
+                .ToList();
+    }
+
+
+    // ==================================================
+    // Format Duration
+    // ==================================================
 
     private static string FormatDuration(
         TimeSpan duration)
