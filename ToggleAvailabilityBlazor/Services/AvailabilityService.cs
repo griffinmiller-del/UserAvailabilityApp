@@ -5,6 +5,8 @@ namespace ToggleAvailabilityBlazor.Services;
 
 public class AvailabilityService
 {
+
+    private readonly IConfiguration _configuration;
     private readonly HubConnection _connection;
 
     public List<User> Users { get; private set; } = [];
@@ -17,13 +19,20 @@ public class AvailabilityService
 
     public event Func<Task>? UsersChanged;
 
-    public AvailabilityService()
+    public AvailabilityService(IConfiguration configuration)
     {
-        _connection = new HubConnectionBuilder()
-            .WithUrl(
-                "http://localhost:5000/availability")
-            .WithAutomaticReconnect()
-            .Build();
+        _configuration = configuration;
+
+        string serverUrl =
+            _configuration["AvailabilityServer:BaseUrl"]
+            ?? throw new InvalidOperationException(
+                "AvailabilityServer:BaseUrl is not configured.");
+
+        _connection =
+            new HubConnectionBuilder()
+                .WithUrl($"{serverUrl}/availability")
+                .WithAutomaticReconnect()
+                .Build();
 
         // --------------------------------------------------
         // Initial / complete user list

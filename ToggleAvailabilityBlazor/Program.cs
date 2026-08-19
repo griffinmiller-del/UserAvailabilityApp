@@ -8,7 +8,8 @@ builder.Services
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<AvailabilityService>();
-
+builder.WebHost.UseUrls(
+    "http://10.10.100.199:5036");
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -20,7 +21,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 

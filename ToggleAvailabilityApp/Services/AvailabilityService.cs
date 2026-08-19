@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Configuration;
 using ToggleAvailabilityApp;
 
 namespace ToggleAvailabilityApp.Services;
@@ -6,6 +7,9 @@ namespace ToggleAvailabilityApp.Services;
 public class AvailabilityService : IAsyncDisposable
 {
     private readonly HubConnection _connection;
+
+    private readonly string _serverUrl;
+
 
     // --------------------------------------------------
     // Events
@@ -17,18 +21,54 @@ public class AvailabilityService : IAsyncDisposable
 
     public event Action<User>? UserUpdated;
 
+
     // --------------------------------------------------
     // Constructor
     // --------------------------------------------------
 
     public AvailabilityService()
     {
+        // --------------------------------------------------
+        // Load configuration
+        // --------------------------------------------------
+
+        IConfiguration configuration =
+            new ConfigurationBuilder()
+                .SetBasePath(
+                    AppContext.BaseDirectory)
+                .AddJsonFile(
+                    "appsettings.json",
+                    optional: false,
+                    reloadOnChange: true)
+                .Build();
+
+
+        // --------------------------------------------------
+        // Get Availability Server URL
+        // --------------------------------------------------
+
+        _serverUrl =
+            configuration[
+                "AvailabilityServer:BaseUrl"]
+            ?? throw new InvalidOperationException(
+                "AvailabilityServer:BaseUrl is not configured.");
+
+
+        _serverUrl =
+            _serverUrl.TrimEnd('/');
+
+
+        // --------------------------------------------------
+        // Create SignalR connection
+        // --------------------------------------------------
+
         _connection =
             new HubConnectionBuilder()
                 .WithUrl(
-                    "http://localhost:5000/availability")
+                    $"{_serverUrl}/availability")
                 .WithAutomaticReconnect()
                 .Build();
+
 
         // --------------------------------------------------
         // Initial user list
@@ -46,6 +86,7 @@ public class AvailabilityService : IAsyncDisposable
                     users);
             });
 
+
         // --------------------------------------------------
         // Updated complete user list
         // --------------------------------------------------
@@ -61,6 +102,7 @@ public class AvailabilityService : IAsyncDisposable
                 UserListUpdated?.Invoke(
                     users);
             });
+
 
         // --------------------------------------------------
         // Individual user update
@@ -80,6 +122,7 @@ public class AvailabilityService : IAsyncDisposable
                 UserUpdated?.Invoke(
                     user);
             });
+
 
         // --------------------------------------------------
         // Reconnecting
@@ -101,6 +144,7 @@ public class AvailabilityService : IAsyncDisposable
                 return Task.CompletedTask;
             };
 
+
         // --------------------------------------------------
         // Reconnected
         // --------------------------------------------------
@@ -117,6 +161,7 @@ public class AvailabilityService : IAsyncDisposable
 
                 return Task.CompletedTask;
             };
+
 
         // --------------------------------------------------
         // Closed
@@ -139,6 +184,7 @@ public class AvailabilityService : IAsyncDisposable
             };
     }
 
+
     // --------------------------------------------------
     // Connection state
     // --------------------------------------------------
@@ -146,6 +192,7 @@ public class AvailabilityService : IAsyncDisposable
     public bool IsConnected =>
         _connection.State ==
         HubConnectionState.Connected;
+
 
     // --------------------------------------------------
     // Connect
@@ -162,30 +209,39 @@ public class AvailabilityService : IAsyncDisposable
             return;
         }
 
+
         Console.WriteLine(
             "[WinForms] Connecting to:");
 
         Console.WriteLine(
-            "https://localhost:7035/availability");
+            $"{_serverUrl}/availability");
+
 
         try
         {
             await _connection.StartAsync();
 
+
             Console.WriteLine(
                 "[WinForms] SignalR connected.");
+
 
             Console.WriteLine(
                 $"[WinForms] Connection state: " +
                 $"{_connection.State}");
 
+
+            // --------------------------------------------------
             // Explicitly request the user list.
             //
             // OnConnectedAsync on the server already
             // sends it, but this guarantees that the
             // client gets it after the connection starts.
+            // --------------------------------------------------
+
             await _connection.InvokeAsync(
                 "GetUsers");
+
 
             Console.WriteLine(
                 "[WinForms] Requested user list.");
@@ -195,13 +251,16 @@ public class AvailabilityService : IAsyncDisposable
             Console.WriteLine(
                 "[WinForms] SignalR connection FAILED.");
 
+
             Console.WriteLine(
                 $"Exception type: " +
                 $"{ex.GetType().FullName}");
 
+
             Console.WriteLine(
                 $"Message: " +
                 $"{ex.Message}");
+
 
             if (ex.InnerException is not null)
             {
@@ -210,9 +269,11 @@ public class AvailabilityService : IAsyncDisposable
                     $"{ex.InnerException.Message}");
             }
 
+
             throw;
         }
     }
+
 
     // --------------------------------------------------
     // Set availability
@@ -223,12 +284,14 @@ public class AvailabilityService : IAsyncDisposable
     {
         EnsureConnected();
 
+
         await _connection.InvokeAsync(
             "SetAvailability",
             user.UserId,
             user.IsAvailable,
             user.Status);
     }
+
 
     // --------------------------------------------------
     // Add user
@@ -239,10 +302,12 @@ public class AvailabilityService : IAsyncDisposable
     {
         EnsureConnected();
 
+
         await _connection.InvokeAsync(
             "AddUser",
             name);
     }
+
 
     // --------------------------------------------------
     // Update user
@@ -254,11 +319,13 @@ public class AvailabilityService : IAsyncDisposable
     {
         EnsureConnected();
 
+
         await _connection.InvokeAsync(
             "UpdateUser",
             userId,
             name);
     }
+
 
     // --------------------------------------------------
     // Delete user
@@ -269,10 +336,12 @@ public class AvailabilityService : IAsyncDisposable
     {
         EnsureConnected();
 
+
         await _connection.InvokeAsync(
             "DeleteUser",
             userId);
     }
+
 
     // --------------------------------------------------
     // Replace complete user list
@@ -283,10 +352,12 @@ public class AvailabilityService : IAsyncDisposable
     {
         EnsureConnected();
 
+
         await _connection.InvokeAsync(
             "UpdateUserList",
             users);
     }
+
 
     // --------------------------------------------------
     // Ensure connected
@@ -300,6 +371,7 @@ public class AvailabilityService : IAsyncDisposable
                 "The Availability Server is not connected.");
         }
     }
+
 
     // --------------------------------------------------
     // Dispose
