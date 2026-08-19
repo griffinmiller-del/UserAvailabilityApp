@@ -150,6 +150,12 @@ public class AvailabilityService
 
             existingUser.Status =
                 user.Status;
+
+            existingUser.InOfficeStartTime =
+                user.InOfficeStartTime;
+
+            existingUser.TotalTimeInOffice =
+                user.TotalTimeInOffice;
         }
 
         Users = updatedUsers;
@@ -159,15 +165,23 @@ public class AvailabilityService
     {
         return new User
         {
-            UserId = user.UserId,
+            UserId =
+                user.UserId,
 
-            Name = user.Name,
+            Name =
+                user.Name,
 
             IsAvailable =
                 user.IsAvailable,
 
             Status =
-                user.Status
+                user.Status,
+
+            InOfficeStartTime =
+                user.InOfficeStartTime,
+
+            TotalTimeInOffice =
+                user.TotalTimeInOffice
         };
     }
 

@@ -146,6 +146,16 @@ public static class UserStore
             existing.Status =
                 user.Status;
 
+            // ----------------------------------------------
+            // Office time tracking
+            // ----------------------------------------------
+
+            existing.InOfficeStartTime =
+                user.InOfficeStartTime;
+
+            existing.TotalTimeInOffice =
+                user.TotalTimeInOffice;
+
             SaveUsers();
         }
     }
@@ -309,6 +319,10 @@ public static class UserStore
     // Clone user
     // --------------------------------------------------
 
+    // --------------------------------------------------
+    // Clone user
+    // --------------------------------------------------
+
     private static User CloneUser(
         User user)
     {
@@ -324,7 +338,13 @@ public static class UserStore
                 user.IsAvailable,
 
             Status =
-                user.Status
+                user.Status,
+
+            InOfficeStartTime =
+                user.InOfficeStartTime,
+
+            TotalTimeInOffice =
+                user.TotalTimeInOffice
         };
     }
 }

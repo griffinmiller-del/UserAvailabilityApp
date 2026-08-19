@@ -14,9 +14,9 @@
 
 <div class="availability-page">
 
-    <!-- -------------------------------------------------- -->
+    <!-- ================================================== -->
     <!-- Header -->
-    <!-- -------------------------------------------------- -->
+    <!-- ================================================== -->
 
     <div class="page-header">
 
@@ -25,8 +25,8 @@
             <div class="connection-status">
 
                 <span class="connection-indicator @(AvailabilityService.IsConnected
-                                                                            ? "connected"
-                                                                            : "disconnected")">
+                                        ? "connected"
+                                        : "disconnected")">
                 </span>
 
                 <span>
@@ -57,9 +57,9 @@
     </div>
 
 
-    <!-- -------------------------------------------------- -->
+    <!-- ================================================== -->
     <!-- User List -->
-    <!-- -------------------------------------------------- -->
+    <!-- ================================================== -->
     @if (_users.Count == 0)
     {
         <div class="empty-state">
@@ -84,26 +84,57 @@
                     user.IsAvailable ||
                     user.Status == Status.InOffice;
 
+
                 <div class="user-card">
 
-                    <!-- User name -->
+                    <!-- ========================================== -->
+                    <!-- User Name -->
+                    <!-- ========================================== -->
 
                     <div class="user-name">
                         @user.Name
                     </div>
 
 
-                    <!-- User status -->
+                    <!-- ========================================== -->
+                    <!-- User Status -->
+                    <!-- ========================================== -->
 
                     <div class="user-status">
 
                         <span class="status-circle @(isAvailable
-                                                                                    ? "available"
-                                                                                    : "unavailable")">
+                                                        ? "available"
+                                                        : "unavailable")">
                         </span>
 
                         <span class="status-text">
                             @GetStatusText(user)
+                        </span>
+
+                    </div>
+
+
+                    <!-- ========================================== -->
+                    <!-- Time In Office -->
+                    <!-- ========================================== -->
+                    <!--
+                        ALWAYS render the timer.
+
+                        The timer does not disappear when the user
+                        leaves the office.
+
+                        GetTimeInOffice() handles whether the timer
+                        is actively running or paused.
+                    -->
+
+                    <div class="office-timer">
+
+                        <span class="office-timer-label">
+                            Time in Office
+                        </span>
+
+                        <span class="office-timer-value">
+                            @GetTimeInOffice(user)
                         </span>
 
                     </div>
@@ -188,15 +219,11 @@
     }
 
 
-        /* Connected */
-
         .connection-indicator.connected {
             background: #f2c94c;
             box-shadow: 0 0 0 3px rgba(242, 201, 76, 0.12), 0 0 9px rgba(242, 201, 76, 0.25);
         }
 
-
-        /* Disconnected */
 
         .connection-indicator.disconnected {
             background: #e74c3c;
@@ -242,7 +269,7 @@
         max-width: 1200px;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: repeat( auto-fit, minmax(280px, 1fr) );
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 12px;
     }
 
@@ -252,7 +279,7 @@
     /* -------------------------------------------------- */
 
     .user-card {
-        min-height: 105px;
+        min-height: 125px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -320,24 +347,49 @@
     }
 
 
-        /* -------------------------------------------------- */
-        /* Available */
-        /* -------------------------------------------------- */
-
         .status-circle.available {
             background-color: #2ecc71;
             box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.12), 0 0 10px rgba(46, 204, 113, 0.25);
         }
 
 
-        /* -------------------------------------------------- */
-        /* Unavailable */
-        /* -------------------------------------------------- */
-
         .status-circle.unavailable {
             background: #e74c3c;
             box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.08);
         }
+
+
+    /* -------------------------------------------------- */
+    /* Office Timer */
+    /* -------------------------------------------------- */
+
+    .office-timer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #2d2d2d;
+        min-width: 130px;
+    }
+
+
+    .office-timer-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #666666;
+        margin-bottom: 2px;
+    }
+
+
+    .office-timer-value {
+        font-size: 16px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: #f2c94c;
+        letter-spacing: 0.5px;
+    }
 
 
     /* -------------------------------------------------- */
@@ -395,13 +447,13 @@
 
 
         .users-container {
-            grid-template-columns: repeat( 2, minmax(0, 1fr) );
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
         }
 
 
         .user-card {
-            min-height: 95px;
+            min-height: 120px;
             padding: 14px;
         }
 
@@ -445,10 +497,14 @@
 {
     private List<User> _users = [];
 
+    private PeriodicTimer? _timer;
 
-    // --------------------------------------------------
+    private CancellationTokenSource _timerCts = new();
+
+
+    // ==================================================
     // Initialization
-    // --------------------------------------------------
+    // ==================================================
 
     protected override async Task OnInitializedAsync()
     {
@@ -476,12 +532,118 @@
         Console.WriteLine(
             $"[Blazor Page] Initial users: " +
             $"{_users.Count}");
+
+
+        _ = RunTimerAsync(
+            _timerCts.Token);
     }
 
 
-    // --------------------------------------------------
+    // ==================================================
+    // UI Refresh Timer
+    // ==================================================
+
+    private async Task RunTimerAsync(
+        CancellationToken cancellationToken)
+    {
+        _timer =
+            new PeriodicTimer(
+                TimeSpan.FromSeconds(1));
+
+
+        try
+        {
+            while (await _timer.WaitForNextTickAsync(
+                cancellationToken))
+            {
+                await InvokeAsync(() =>
+                {
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when component is disposed.
+        }
+        finally
+        {
+            _timer?.Dispose();
+
+            _timer = null;
+        }
+    }
+
+
+    // ==================================================
+    // Time In Office
+    // ==================================================
+
+    private static string GetTimeInOffice(
+        User user)
+    {
+        /*
+         * TotalTimeInOffice is the accumulated
+         * time from all COMPLETED office sessions.
+         *
+         * InOfficeStartTime is only populated while
+         * the user is CURRENTLY in the office.
+         */
+
+        TimeSpan total =
+            user.TotalTimeInOffice;
+
+
+        /*
+         * If the user is currently in the office,
+         * add the current active session.
+         */
+
+        if (user.Status == Status.InOffice &&
+            user.InOfficeStartTime is not null)
+        {
+            TimeSpan currentSession =
+                DateTime.UtcNow -
+                user.InOfficeStartTime.Value;
+
+
+            if (currentSession > TimeSpan.Zero)
+            {
+                total += currentSession;
+            }
+        }
+
+
+        /*
+         * If the user is NOT in the office,
+         * this method adds nothing.
+         *
+         * Therefore:
+         *
+         *     TotalTimeInOffice
+         *
+         * is displayed unchanged.
+         *
+         * The UI continues refreshing every second,
+         * but the displayed value remains frozen.
+         */
+
+        if (total < TimeSpan.Zero)
+        {
+            total = TimeSpan.Zero;
+        }
+
+
+        return
+            $"{(int)total.TotalHours:00}:" +
+            $"{total.Minutes:00}:" +
+            $"{total.Seconds:00}";
+    }
+
+
+    // ==================================================
     // Status Text
-    // --------------------------------------------------
+    // ==================================================
 
     private static string GetStatusText(
         User user)
@@ -536,9 +698,9 @@
     }
 
 
-    // --------------------------------------------------
+    // ==================================================
     // Users Changed
-    // --------------------------------------------------
+    // ==================================================
 
     private async Task OnUsersChanged()
     {
@@ -564,17 +726,20 @@
     }
 
 
-    // --------------------------------------------------
+    // ==================================================
     // User Updated
-    // --------------------------------------------------
+    // ==================================================
 
     private async Task OnUserUpdated(
         User user)
     {
         Console.WriteLine(
             $"[Blazor Page] OnUserUpdated: " +
-            $"{user.Name} = " +
-            $"{user.IsAvailable}");
+            $"{user.Name} | " +
+            $"Status={user.Status} | " +
+            $"Available={user.IsAvailable} | " +
+            $"Start={user.InOfficeStartTime} | " +
+            $"Total={user.TotalTimeInOffice}");
 
 
         await InvokeAsync(() =>
@@ -590,9 +755,9 @@
     }
 
 
-    // --------------------------------------------------
+    // ==================================================
     // Clone User
-    // --------------------------------------------------
+    // ==================================================
 
     private static User CloneUser(
         User user)
@@ -609,14 +774,20 @@
                 user.IsAvailable,
 
             Status =
-                user.Status
+                user.Status,
+
+            InOfficeStartTime =
+                user.InOfficeStartTime,
+
+            TotalTimeInOffice =
+                user.TotalTimeInOffice
         };
     }
 
 
-    // --------------------------------------------------
+    // ==================================================
     // Dispose
-    // --------------------------------------------------
+    // ==================================================
 
     public void Dispose()
     {
@@ -630,5 +801,12 @@
 
         AvailabilityService.UsersChanged -=
             OnUsersChanged;
+
+
+        _timerCts.Cancel();
+
+        _timerCts.Dispose();
+
+        _timer?.Dispose();
     }
 }

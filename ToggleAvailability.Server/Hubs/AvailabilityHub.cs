@@ -106,17 +106,15 @@ public class AvailabilityHub : Hub
 
         var user = new User
         {
-            UserId =
-                userId,
+            UserId = userId,
 
-            Name =
-                name,
+            Name = name,
 
-            IsAvailable =
-                true,
+            IsAvailable = true,
 
-            Status =
-                Status.InOffice
+            Status = Status.InOffice,
+
+            InOfficeStartTime = DateTime.UtcNow
         };
 
         UserStore.AddUser(
@@ -278,21 +276,59 @@ public class AvailabilityHub : Hub
     // --------------------------------------------------
 
     public async Task SetAvailability(
-        int userId,
-        bool isAvailable,
-        Status status)
+    int userId,
+    bool isAvailable,
+    Status status)
     {
-        var user =
-            UserStore.GetUser(
-                userId);
+        User? user =
+            UserStore.GetUser(userId);
 
         if (user is null)
         {
-            Console.WriteLine(
-                $"User {userId} was not found.");
-
             return;
         }
+
+
+        // ==================================================
+        // Leaving the office
+        // ==================================================
+
+        if (user.Status == Status.InOffice &&
+            status != Status.InOffice &&
+            user.InOfficeStartTime is not null)
+        {
+            TimeSpan currentSession =
+                DateTime.UtcNow -
+                user.InOfficeStartTime.Value;
+
+            if (currentSession > TimeSpan.Zero)
+            {
+                user.TotalTimeInOffice +=
+                    currentSession;
+            }
+
+            // The active session is now finished.
+            user.InOfficeStartTime = null;
+        }
+
+
+        // ==================================================
+        // Returning to the office
+        // ==================================================
+
+        if (status == Status.InOffice &&
+            user.Status != Status.InOffice)
+        {
+            // DO NOT reset TotalTimeInOffice here.
+
+            user.InOfficeStartTime =
+                DateTime.UtcNow;
+        }
+
+
+        // ==================================================
+        // Update normal status information
+        // ==================================================
 
         user.IsAvailable =
             isAvailable;
@@ -300,16 +336,26 @@ public class AvailabilityHub : Hub
         user.Status =
             status;
 
-        UserStore.UpdateUser(
-            user);
+
+        // ==================================================
+        // Save the updated user
+        // ==================================================
+
+        UserStore.UpdateUser(user);
+
 
         Console.WriteLine(
-            $"User updated: " +
-            $"{user.Name} ({user.UserId}) - " +
-            $"{user.Status} - " +
-            $"{(user.IsAvailable
-                ? "Available"
-                : "Unavailable")}");
+            $"[Server] User updated: " +
+            $"{user.Name} | " +
+            $"Status={user.Status} | " +
+            $"Available={user.IsAvailable} | " +
+            $"Start={user.InOfficeStartTime} | " +
+            $"Total={user.TotalTimeInOffice}");
+
+
+        // ==================================================
+        // Notify Blazor clients
+        // ==================================================
 
         await Clients.All.SendAsync(
             "UserUpdated",

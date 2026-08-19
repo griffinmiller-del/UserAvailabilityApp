@@ -7,6 +7,7 @@ public class User
     public bool IsAvailable { get; set; }
 
     public Status Status { get; set; }
+    public DateTime? InOfficeStartTime { get; set; }
 
     public User(int userId, string name, Status status, bool isAvailable = false)
     {
