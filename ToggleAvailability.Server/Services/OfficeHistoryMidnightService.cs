@@ -1,10 +1,23 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Hosting;
 using ToggleAvailability.Server.Data;
+using ToggleAvailability.Server.Hubs;
 
 namespace ToggleAvailability.Server.Services;
 
 public class OfficeHistoryMidnightService : BackgroundService
 {
+    private readonly IHubContext<AvailabilityHub> _hubContext;
+
+
+    public OfficeHistoryMidnightService(
+        IHubContext<AvailabilityHub> hubContext)
+    {
+        _hubContext =
+            hubContext;
+    }
+
+
     protected override async Task ExecuteAsync(
         CancellationToken stoppingToken)
     {
@@ -44,7 +57,7 @@ public class OfficeHistoryMidnightService : BackgroundService
 
             try
             {
-                PerformMidnightRollover();
+                await PerformMidnightRollover();
             }
             catch (Exception ex)
             {
@@ -59,7 +72,7 @@ public class OfficeHistoryMidnightService : BackgroundService
     }
 
 
-    private static void PerformMidnightRollover()
+    private async Task PerformMidnightRollover()
     {
         DateTime midnight =
             DateTime.Now.Date;
@@ -81,9 +94,9 @@ public class OfficeHistoryMidnightService : BackgroundService
 
         foreach (var user in users)
         {
-            // ------------------------------------------
+            // ==========================================
             // User is currently in the office
-            // ------------------------------------------
+            // ==========================================
 
             if (user.Status == Models.Status.InOffice &&
                 user.InOfficeStartTime is not null)
@@ -96,32 +109,53 @@ public class OfficeHistoryMidnightService : BackgroundService
 
                 if (duration > TimeSpan.Zero)
                 {
-                    // Add the time to yesterday.
+                    // Finish yesterday's time.
                     OfficeHistoryStore.AddOfficeTime(
                         user.UserId,
                         previousDate,
                         duration);
-
-                    // Add the same time to the user's
-                    // lifetime total.
-                    user.TotalTimeInOffice +=
-                        duration;
                 }
 
-                // Reset the active timer to midnight.
+                // ======================================
+                // RESET DAILY TIMER
+                // ======================================
+
+                user.TotalTimeInOffice =
+                    TimeSpan.Zero;
+
+                // Start today's timer at midnight.
                 user.InOfficeStartTime =
                     midnight;
 
                 UserStore.UpdateUser(user);
             }
+            else
+            {
+                // User isn't in the office.
+                // Make sure their daily timer is zero.
 
-            // ------------------------------------------
+                user.TotalTimeInOffice =
+                    TimeSpan.Zero;
+
+                UserStore.UpdateUser(user);
+            }
+
+            // ==========================================
             // Create today's history record
-            // ------------------------------------------
+            // ==========================================
 
             OfficeHistoryStore.CreateDailyRecord(
                 user.UserId,
                 currentDate);
+
+
+            // ==========================================
+            // Notify Blazor clients
+            // ==========================================
+
+            await _hubContext.Clients.All.SendAsync(
+                "UserUpdated",
+                user);
         }
 
         Console.WriteLine(

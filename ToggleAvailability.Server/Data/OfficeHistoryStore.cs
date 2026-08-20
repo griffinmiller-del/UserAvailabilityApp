@@ -8,7 +8,8 @@ public static class OfficeHistoryStore
 {
     private static readonly string _filePath =
         Path.Combine(
-            AppContext.BaseDirectory,
+            Directory.GetParent(
+                AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName,
             "Data",
             "office-history.json");
 

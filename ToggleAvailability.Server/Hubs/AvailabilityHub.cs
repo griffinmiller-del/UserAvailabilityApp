@@ -175,7 +175,7 @@ public class AvailabilityHub : Hub
 
             Status = Status.InOffice,
 
-            InOfficeStartTime = DateTime.UtcNow
+            InOfficeStartTime = DateTime.Now
         };
 
         UserStore.AddUser(

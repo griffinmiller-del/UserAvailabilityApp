@@ -85,26 +85,18 @@
                     user.Status == Status.InOffice;
 
 
-                <div class="user-card">
-
-                    <!-- ========================================== -->
-                    <!-- User Name -->
-                    <!-- ========================================== -->
+                <div class="user-card"
+                     @onclick="() => OpenUserDetails(user)">
 
                     <div class="user-name">
                         @user.Name
                     </div>
 
-
-                    <!-- ========================================== -->
-                    <!-- User Status -->
-                    <!-- ========================================== -->
-
                     <div class="user-status">
 
                         <span class="status-circle @(isAvailable
-                                                        ? "available"
-                                                        : "unavailable")">
+                                                                    ? "available"
+                                                                    : "unavailable")">
                         </span>
 
                         <span class="status-text">
@@ -112,20 +104,6 @@
                         </span>
 
                     </div>
-
-
-                    <!-- ========================================== -->
-                    <!-- Time In Office -->
-                    <!-- ========================================== -->
-                    <!--
-                        ALWAYS render the timer.
-
-                        The timer does not disappear when the user
-                        leaves the office.
-
-                        GetTimeInOffice() handles whether the timer
-                        is actively running or paused.
-                    -->
 
                     <div class="office-timer">
 
@@ -143,6 +121,168 @@
             }
 
         </div>
+
+        @if (_selectedUser is not null)
+        {
+            <div class="user-details-overlay"
+                 @onclick="CloseUserDetails">
+
+                <div class="user-details-card"
+                     @onclick:stopPropagation="true">
+
+                    <!-- ========================================== -->
+                    <!-- Header -->
+                    <!-- ========================================== -->
+
+                    <div class="details-header">
+
+                        <div>
+
+                            <div class="details-user-name">
+                                @_selectedUser.Name
+                            </div>
+
+                            <div class="details-user-status">
+
+                                <span class="status-circle @(IsUserAvailable(_selectedUser)
+                                                                                            ? "available"
+                                                                                            : "unavailable")">
+                                </span>
+
+                                <span>
+                                    @GetStatusText(_selectedUser)
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <button class="details-close"
+                                @onclick="CloseUserDetails">
+
+                            ×
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- ========================================== -->
+                    <!-- Current Timer -->
+                    <!-- ========================================== -->
+
+                    <div class="details-current-time">
+
+                        <span class="details-current-label">
+                            Today's Time in Office
+                        </span>
+
+                        <span class="details-current-value">
+                            @GetTimeInOffice(_selectedUser)
+                        </span>
+
+                    </div>
+
+
+                    <!-- ========================================== -->
+                    <!-- Time Range -->
+                    <!-- ========================================== -->
+
+                    <div class="graph-controls">
+
+                        <button class="range-button @(_selectedRange == GraphRange.Week ? "selected" : "")"
+                                @onclick="() => SetRange(GraphRange.Week)">
+                            Week
+                        </button>
+
+                        <button class="range-button @(_selectedRange == GraphRange.Month ? "selected" : "")"
+                                @onclick="() => SetRange(GraphRange.Month)">
+                            Month
+                        </button>
+
+                        <button class="range-button @(_selectedRange == GraphRange.Year ? "selected" : "")"
+                                @onclick="() => SetRange(GraphRange.Year)">
+                            Year
+                        </button>
+
+                        <button class="range-button @(_selectedRange == GraphRange.Custom ? "selected" : "")"
+                                @onclick="() => SetRange(GraphRange.Custom)">
+                            Custom
+                        </button>
+
+                    </div>
+
+
+                    @if (_selectedRange == GraphRange.Custom)
+                    {
+                        <div class="custom-date-controls">
+
+                            <div class="date-control">
+
+                                <label>
+                                    Start
+                                </label>
+
+                                <input type="date"
+                                       @bind="_customStartDate"
+                                       @bind:after="CustomDateChanged" />
+
+                            </div>
+
+
+                            <div class="date-control">
+
+                                <label>
+                                    End
+                                </label>
+
+                                <input type="date"
+                                       @bind="_customEndDate"
+                                       @bind:after="CustomDateChanged" />
+
+                            </div>
+
+                        </div>
+                    }
+
+
+                    <!-- ========================================== -->
+                    <!-- Graph -->
+                    <!-- ========================================== -->
+
+                    <div class="graph-section">
+
+                        <div class="graph-title">
+                            Time in Office
+                        </div>
+
+                        <div class="graph-subtitle">
+                            @GetGraphDateDescription()
+                        </div>
+
+
+                        @if (_graphData.Count == 0)
+                        {
+                            <div class="graph-empty">
+                                No office history available for this period.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="graph-wrapper @(_graphAnimating ? "graph-changing" : "")">
+
+                                @BuildGraph()
+
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
     }
 
 </div>
@@ -328,6 +468,413 @@
         font-weight: 400;
     }
 
+    /* ================================================== */
+    /* Clickable User Card */
+    /* ================================================== */
+
+    .user-card {
+        cursor: pointer;
+    }
+
+
+    /* ================================================== */
+    /* Expanded User Overlay */
+    /* ================================================== */
+
+    .user-details-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.78);
+        animation: overlayFadeIn 0.22s ease-out;
+    }
+
+
+    @@keyframes overlayFadeIn {
+
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+
+    /* ================================================== */
+    /* Expanded Card */
+    /* ================================================== */
+
+    .user-details-card {
+        width: min(1200px, 100%);
+        height: min(850px, 92vh);
+        display: flex;
+        flex-direction: column;
+        padding: 32px;
+        box-sizing: border-box;
+        background: #181818;
+        border: 1px solid #383838;
+        border-radius: 16px;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+        animation: cardExpand 0.28s cubic-bezier(.2,.8,.2,1);
+    }
+
+
+    @@keyframes cardExpand {
+
+        from {
+            transform: scale(0.88);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+
+    /* ================================================== */
+    /* Details Header */
+    /* ================================================== */
+
+    .details-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #303030;
+    }
+
+
+    .details-user-name {
+        font-size: 30px;
+        font-weight: 500;
+        color: #ffffff;
+    }
+
+
+    .details-user-status {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 7px;
+        font-size: 14px;
+        color: #999999;
+    }
+
+
+    .details-close {
+        width: 42px;
+        height: 42px;
+        border: none;
+        border-radius: 8px;
+        background: #242424;
+        color: #aaaaaa;
+        font-size: 30px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+
+        .details-close:hover {
+            background: #303030;
+            color: #ffffff;
+        }
+
+
+    /* ================================================== */
+    /* Current Time */
+    /* ================================================== */
+
+    .details-current-time {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 25px 0 20px;
+    }
+
+
+    .details-current-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #666666;
+    }
+
+
+    .details-current-value {
+        margin-top: 5px;
+        font-size: 32px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: #f2c94c;
+    }
+
+
+    /* ================================================== */
+    /* Graph Controls */
+    /* ================================================== */
+
+    .graph-controls {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 15px;
+        padding: 5px;
+        background: #111111;
+        border: 1px solid #292929;
+        border-radius: 9px;
+    }
+
+
+    .range-button {
+        padding: 8px 18px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: #888888;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    }
+
+
+        .range-button:hover {
+            color: #ffffff;
+            background: #242424;
+        }
+
+
+        .range-button.selected {
+            background: #2a2a2a;
+            color: #f2c94c;
+        }
+
+
+    /* ================================================== */
+    /* Custom Dates */
+    /* ================================================== */
+
+    .custom-date-controls {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+
+    .date-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #777777;
+        font-size: 12px;
+    }
+
+
+        .date-control input {
+            padding: 7px 9px;
+            border: 1px solid #353535;
+            border-radius: 6px;
+            background: #222222;
+            color: #ffffff;
+        }
+
+
+    /* ================================================== */
+    /* Graph Section */
+    /* ================================================== */
+
+    .graph-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+
+    .graph-title {
+        font-size: 18px;
+        font-weight: 500;
+        color: #ffffff;
+    }
+
+
+    .graph-subtitle {
+        margin-top: 3px;
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: #666666;
+    }
+
+
+    .graph-wrapper {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        align-items: stretch;
+        justify-content: stretch;
+        transform-origin: center bottom;
+        animation: graphGrow 0.35s cubic-bezier(.2,.8,.2,1);
+    }
+
+
+    .graph-changing {
+        animation: graphShrinkGrow 0.42s cubic-bezier(.2,.8,.2,1);
+    }
+
+
+    @@keyframes graphGrow {
+
+        from {
+            opacity: 0;
+            transform: scaleY(0.85);
+        }
+
+        to {
+            opacity: 1;
+            transform: scaleY(1);
+        }
+    }
+
+
+    @@keyframes graphShrinkGrow {
+
+        0% {
+            opacity: 1;
+            transform: scaleY(1);
+        }
+
+        45% {
+            opacity: 0.35;
+            transform: scaleY(0.72);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scaleY(1);
+        }
+    }
+
+
+    .office-history-graph {
+        width: 100%;
+        height: 100%;
+        min-height: 280px;
+        display: block;
+        overflow: visible;
+    }
+
+
+    .graph-empty {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666666;
+        font-size: 14px;
+    }
+
+
+    /* ================================================== */
+    /* Graph */
+    /* ================================================== */
+
+    .graph-grid-line {
+        stroke: #2a2a2a;
+        stroke-width: 1;
+    }
+
+
+    .graph-axis-label {
+        fill: #666666;
+        font-size: 11px;
+    }
+
+
+    .graph-date-label {
+        fill: #777777;
+        font-size: 10px;
+    }
+
+
+    .graph-line {
+        fill: none;
+        stroke: #f2c94c;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow( 0 0 5px rgba(242, 201, 76, 0.25) );
+    }
+
+
+    .graph-point {
+        fill: #181818;
+        stroke: #f2c94c;
+        stroke-width: 2;
+    }
+
+
+        .graph-point:hover {
+            fill: #f2c94c;
+        }
+
+
+    /* ================================================== */
+    /* Mobile */
+    /* ================================================== */
+
+    @@media (max-width: 700px) {
+
+        .user-details-overlay {
+            padding: 10px;
+        }
+
+
+        .user-details-card {
+            width: 100%;
+            height: 96vh;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+
+        .details-user-name {
+            font-size: 24px;
+        }
+
+
+        .details-current-value {
+            font-size: 27px;
+        }
+
+
+        .graph-controls {
+            width: 100%;
+        }
+
+
+        .range-button {
+            flex: 1;
+            padding: 9px 5px;
+        }
+
+
+        .custom-date-controls {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
 
     .status-text {
         white-space: nowrap;
@@ -495,6 +1042,22 @@
 
 @code
 {
+    private User? _selectedUser;
+
+    private List<OfficeHistory> _userHistory = [];
+
+    private GraphRange _selectedRange = GraphRange.Week;
+
+    private DateOnly _customStartDate =
+        DateOnly.FromDateTime(DateTime.Now.AddDays(-6));
+
+    private List<GraphPoint> _graphData = [];
+
+    private DateOnly _customEndDate =
+        DateOnly.FromDateTime(DateTime.Now);
+
+    private bool _graphAnimating;
+
     private List<User> _users = [];
 
     private PeriodicTimer? _timer;
@@ -603,7 +1166,7 @@
             user.InOfficeStartTime is not null)
         {
             TimeSpan currentSession =
-                DateTime.UtcNow -
+                DateTime.Now -
                 user.InOfficeStartTime.Value;
 
 
@@ -808,5 +1371,598 @@
         _timerCts.Dispose();
 
         _timer?.Dispose();
+    }
+
+    private async Task OpenUserDetails(User user)
+    {
+        _selectedUser = CloneUser(user);
+
+        _selectedRange = GraphRange.Week;
+
+        _customStartDate =
+            DateOnly.FromDateTime(
+                DateTime.Now.AddDays(-6));
+
+        _customEndDate =
+            DateOnly.FromDateTime(
+                DateTime.Now);
+
+        _graphAnimating = false;
+
+        _userHistory =
+            await AvailabilityService.GetUserHistory(
+                user.UserId);
+
+        UpdateGraphData();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateGraphData()
+    {
+        _graphData =
+            GetGraphPoints();
+    }
+
+    private async Task SetRange(
+        GraphRange range)
+    {
+        if (_selectedUser is null)
+        {
+            return;
+        }
+
+        if (_selectedRange == range)
+        {
+            return;
+        }
+
+        // Start graph animation
+        _graphAnimating = true;
+
+        await InvokeAsync(StateHasChanged);
+
+        await Task.Delay(180);
+
+        _selectedRange = range;
+
+        if (range == GraphRange.Custom)
+        {
+            _customStartDate =
+                DateOnly.FromDateTime(
+                    DateTime.Now.AddDays(-6));
+
+            _customEndDate =
+                DateOnly.FromDateTime(
+                    DateTime.Now);
+        }
+
+        // Rebuild graph for the new range
+        UpdateGraphData();
+
+        _graphAnimating = false;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CustomDateChanged()
+    {
+        if (_customEndDate < _customStartDate)
+        {
+            return;
+        }
+
+        _graphAnimating = true;
+
+        await InvokeAsync(StateHasChanged);
+
+        await Task.Delay(180);
+
+        UpdateGraphData();
+
+        _graphAnimating = false;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    private async Task FinishCustomDateAnimation()
+    {
+        await Task.Delay(180);
+
+        _graphAnimating = false;
+
+        await InvokeAsync(
+            StateHasChanged);
+    }
+
+    private List<GraphPoint> GetGraphPoints()
+    {
+        DateOnly today =
+            DateOnly.FromDateTime(
+                DateTime.Now);
+
+        DateOnly startDate;
+        DateOnly endDate =
+            today;
+
+        switch (_selectedRange)
+        {
+            case GraphRange.Week:
+
+                startDate =
+                    today.AddDays(-6);
+
+                break;
+
+
+            case GraphRange.Month:
+
+                startDate =
+                    today.AddDays(-29);
+
+                break;
+
+
+            case GraphRange.Year:
+
+                startDate =
+                    today.AddDays(-364);
+
+                break;
+
+
+            case GraphRange.Custom:
+
+                startDate =
+                    _customStartDate;
+
+                endDate =
+                    _customEndDate;
+
+                break;
+
+
+            default:
+
+                startDate =
+                    today.AddDays(-6);
+
+                break;
+        }
+
+
+        var history =
+            _userHistory
+                .GroupBy(x => x.Date)
+                .ToDictionary(
+                    x => x.Key,
+                    x => x.Sum(y => y.TimeInOffice.TotalHours));
+
+
+        var points =
+            new List<GraphPoint>();
+
+
+        for (
+            DateOnly date = startDate;
+            date <= endDate;
+            date = date.AddDays(1))
+        {
+            history.TryGetValue(
+                date,
+                out double hours);
+
+
+            points.Add(
+                new GraphPoint
+                {
+                    Date = date,
+                    Hours = hours
+                });
+        }
+
+
+        return points;
+    }
+
+
+    private RenderFragment BuildGraph()
+    {
+        return builder =>
+        {
+            var points =
+                _graphData;
+
+            if (points.Count == 0)
+            {
+                return;
+            }
+
+
+            const double width = 1200;
+            const double height = 500;
+
+            const double left = 65;
+            const double right = 25;
+            const double top = 25;
+            const double bottom = 55;
+
+            double graphWidth =
+                width - left - right;
+
+            double graphHeight =
+                height - top - bottom;
+
+
+            double maxHours =
+                Math.Max(
+                    8,
+                    Math.Ceiling(
+                        points.Max(x => x.Hours)));
+
+
+            double xStep =
+                points.Count == 1
+                    ? 0
+                    : graphWidth /
+                      (points.Count - 1);
+
+
+            string BuildPath()
+            {
+                var path = "";
+
+                for (int i = 0; i < points.Count; i++)
+                {
+                    double x =
+                        left +
+                        (i * xStep);
+
+                    double y =
+                        top +
+                        graphHeight -
+                        (
+                            points[i].Hours /
+                            maxHours *
+                            graphHeight
+                        );
+
+
+                    path +=
+                        i == 0
+                            ? $"M {x:F2} {y:F2}"
+                            : $" L {x:F2} {y:F2}";
+                }
+
+                return path;
+            }
+
+
+            builder.OpenElement(
+                0,
+                "svg");
+
+            builder.AddAttribute(
+                1,
+                "class",
+                "office-history-graph");
+
+            builder.AddAttribute(
+                2,
+                "viewBox",
+                $"0 0 {width} {height}");
+
+            builder.AddAttribute(
+                3,
+                "preserveAspectRatio",
+                "xMidYMid meet");
+
+
+            // ----------------------------------------------
+            // Horizontal grid lines
+            // ----------------------------------------------
+
+            int gridLines = 4;
+
+            for (int i = 0; i <= gridLines; i++)
+            {
+                double hours =
+                    maxHours *
+                    i /
+                    gridLines;
+
+                double y =
+                    top +
+                    graphHeight -
+                    (
+                        i *
+                        graphHeight /
+                        gridLines
+                    );
+
+
+                builder.OpenElement(
+                    10 + i,
+                    "line");
+
+                builder.AddAttribute(
+                    11 + i,
+                    "x1",
+                    left);
+
+                builder.AddAttribute(
+                    12 + i,
+                    "x2",
+                    width - right);
+
+                builder.AddAttribute(
+                    13 + i,
+                    "y1",
+                    y);
+
+                builder.AddAttribute(
+                    14 + i,
+                    "y2",
+                    y);
+
+                builder.AddAttribute(
+                    15 + i,
+                    "class",
+                    "graph-grid-line");
+
+                builder.CloseElement();
+
+
+                // Y-axis label
+
+                builder.OpenElement(
+                    30 + i,
+                    "text");
+
+                builder.AddAttribute(
+                    31 + i,
+                    "x",
+                    left - 10);
+
+                builder.AddAttribute(
+                    32 + i,
+                    "y",
+                    y + 4);
+
+                builder.AddAttribute(
+                    33 + i,
+                    "text-anchor",
+                    "end");
+
+                builder.AddAttribute(
+                    34 + i,
+                    "class",
+                    "graph-axis-label");
+
+                builder.AddContent(
+                    35 + i,
+                    $"{hours:0}h");
+
+                builder.CloseElement();
+            }
+
+
+            // ----------------------------------------------
+            // Line
+            // ----------------------------------------------
+
+            builder.OpenElement(
+                100,
+                "path");
+
+            builder.AddAttribute(
+                101,
+                "d",
+                BuildPath());
+
+            builder.AddAttribute(
+                102,
+                "class",
+                "graph-line");
+
+            builder.CloseElement();
+
+
+            // ----------------------------------------------
+            // Points
+            // ----------------------------------------------
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                double x =
+                    left +
+                    (i * xStep);
+
+                double y =
+                    top +
+                    graphHeight -
+                    (
+                        points[i].Hours /
+                        maxHours *
+                        graphHeight
+                    );
+
+
+                builder.OpenElement(
+                    200 + i,
+                    "circle");
+
+                builder.AddAttribute(
+                    201 + i,
+                    "cx",
+                    x);
+
+                builder.AddAttribute(
+                    202 + i,
+                    "cy",
+                    y);
+
+                builder.AddAttribute(
+                    203 + i,
+                    "r",
+                    5);
+
+                builder.AddAttribute(
+                    204 + i,
+                    "class",
+                    "graph-point");
+
+
+                // ==========================================
+                // Tooltip
+                // ==========================================
+
+                builder.OpenElement(
+                    205 + i,
+                    "title");
+
+                builder.AddContent(
+                    206 + i,
+                    $"{points[i].Date:MMMM d, yyyy} — {FormatGraphTime(points[i].Hours)}");
+
+                builder.CloseElement();
+
+
+                builder.CloseElement();
+
+
+                // ------------------------------------------
+                // Date labels
+                // ------------------------------------------
+
+                bool showLabel =
+                    points.Count <= 14 ||
+                    i == 0 ||
+                    i == points.Count - 1 ||
+                    i % Math.Max(
+                        1,
+                        points.Count / 8) == 0;
+
+
+                if (showLabel)
+                {
+                    builder.OpenElement(
+                        300 + i,
+                        "text");
+
+                    builder.AddAttribute(
+                        301 + i,
+                        "x",
+                        x);
+
+                    builder.AddAttribute(
+                        302 + i,
+                        "y",
+                        height - 20);
+
+                    builder.AddAttribute(
+                        303 + i,
+                        "text-anchor",
+                        "middle");
+
+                    builder.AddAttribute(
+                        304 + i,
+                        "class",
+                        "graph-date-label");
+
+                    builder.AddContent(
+                        305 + i,
+                        FormatGraphDate(
+                            points[i].Date));
+
+                    builder.CloseElement();
+                }
+            }
+
+
+            builder.CloseElement();
+        };
+    }
+
+    private static string FormatGraphTime(double hours)
+{
+    TimeSpan time =
+        TimeSpan.FromHours(hours);
+
+    return
+        $"{(int)time.TotalHours:00}:" +
+        $"{time.Minutes:00}:" +
+        $"{time.Seconds:00}";
+}
+
+
+    private string FormatGraphDate(
+    DateOnly date)
+    {
+        return _selectedRange switch
+        {
+            GraphRange.Year =>
+                date.ToString("MMM"),
+
+            _ =>
+                date.ToString("MMM d")
+        };
+    }
+
+    private string GetGraphDateDescription()
+    {
+        DateOnly today =
+            DateOnly.FromDateTime(
+                DateTime.Now);
+
+        return _selectedRange switch
+        {
+            GraphRange.Week =>
+                $"{today.AddDays(-6):MMM d} – {today:MMM d, yyyy}",
+
+            GraphRange.Month =>
+                $"{today.AddDays(-29):MMM d} – {today:MMM d, yyyy}",
+
+            GraphRange.Year =>
+                $"{today.AddDays(-364):MMM d, yyyy} – {today:MMM d, yyyy}",
+
+            GraphRange.Custom =>
+                $"{_customStartDate:MMM d, yyyy} – {_customEndDate:MMM d, yyyy}",
+
+            _ =>
+                ""
+        };
+    }
+
+    private static bool IsUserAvailable(
+    User user)
+    {
+        return
+            user.IsAvailable ||
+            user.Status == Status.InOffice;
+    }
+
+private void CloseUserDetails()
+{
+    _selectedUser = null;
+
+    _userHistory = [];
+
+    StateHasChanged();
+}
+    private class GraphPoint
+    {
+        public DateOnly Date { get; set; }
+
+        public double Hours { get; set; }
+    }
+
+    private enum GraphRange
+    {
+        Week,
+        Month,
+        Year,
+        Custom
     }
 }

@@ -124,6 +124,19 @@ public class AvailabilityService
         };
     }
 
+    public async Task<List<OfficeHistory>> GetUserHistory(
+    int userId)
+    {
+        if (_connection.State != HubConnectionState.Connected)
+        {
+            return [];
+        }
+
+        return await _connection.InvokeAsync<List<OfficeHistory>>(
+            "GetUserHistory",
+            userId);
+    }
+
     public async Task<List<OfficeHistory>>
     GetUserHistoryAsync(
         int userId)
