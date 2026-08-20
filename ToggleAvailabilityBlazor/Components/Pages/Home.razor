@@ -136,7 +136,7 @@
 
                     <div class="details-header">
 
-                        <div>
+                        <div class="details-user-info">
 
                             <div class="details-user-name">
                                 @_selectedUser.Name
@@ -211,42 +211,116 @@
                             Custom
                         </button>
 
-                    </div>
+
+                        @if (_selectedRange == GraphRange.Custom)
+                        {
+                            <div class="custom-date-controls">
+
+                                <div class="date-control">
+
+                                    <label>
+                                        Start
+                                    </label>
+
+                                    <input type="date"
+                                           @bind="_customStartDate"
+                                           @bind:after="CustomDateChanged" />
+
+                                </div>
 
 
-                    @if (_selectedRange == GraphRange.Custom)
-                    {
-                        <div class="custom-date-controls">
+                                <div class="date-control">
 
-                            <div class="date-control">
+                                    <label>
+                                        End
+                                    </label>
 
-                                <label>
-                                    Start
-                                </label>
+                                    <input type="date"
+                                           @bind="_customEndDate"
+                                           @bind:after="CustomDateChanged" />
 
-                                <input type="date"
-                                       @bind="_customStartDate"
-                                       @bind:after="CustomDateChanged" />
+                                </div>
 
                             </div>
+                        }
 
+                    </div>
+                    
 
-                            <div class="date-control">
+                    <!-- ========================================== -->
+                    <!-- Summary Statistics -->
+                    <!-- ========================================== -->
 
-                                <label>
-                                    End
-                                </label>
+                    <div class="summary-statistics">
 
-                                <input type="date"
-                                       @bind="_customEndDate"
-                                       @bind:after="CustomDateChanged" />
+                        <div class="summary-stat-card">
 
+                            <div class="summary-stat-label">
+                                Total Time
+                            </div>
+
+                            <div class="summary-stat-value">
+                                @FormatDuration(GetSummaryStatistics().TotalTime)
+                            </div>
+
+                            <div class="summary-stat-subtitle">
+                                @GetSummaryPeriodText()
                             </div>
 
                         </div>
-                    }
 
 
+                        <div class="summary-stat-card">
+
+                            <div class="summary-stat-label">
+                                Average / Day
+                            </div>
+
+                            <div class="summary-stat-value">
+                                @FormatDuration(GetSummaryStatistics().AverageTime)
+                            </div>
+
+                            <div class="summary-stat-subtitle">
+                                Per calendar day
+                            </div>
+
+                        </div>
+
+
+                        <div class="summary-stat-card">
+
+                            <div class="summary-stat-label">
+                                Days in Office
+                            </div>
+
+                            <div class="summary-stat-value">
+                                @GetSummaryStatistics().DaysInOffice
+                            </div>
+
+                            <div class="summary-stat-subtitle">
+                                Days with office time
+                            </div>
+
+                        </div>
+
+
+                        <div class="summary-stat-card">
+
+                            <div class="summary-stat-label">
+                                Longest Day
+                            </div>
+
+                            <div class="summary-stat-value">
+                                @FormatDuration(GetSummaryStatistics().LongestDay)
+                            </div>
+
+                            <div class="summary-stat-subtitle">
+                                Best day in period
+                            </div>
+
+                        </div>
+
+                    </div>
                     <!-- ========================================== -->
                     <!-- Graph -->
                     <!-- ========================================== -->
@@ -545,12 +619,26 @@
     /* Details Header */
     /* ================================================== */
 
+    /* ================================================== */
+    /* Details Header */
+    /* ================================================== */
+
     .details-header {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        padding-bottom: 22px;
+        padding-bottom: 18px;
         border-bottom: 1px solid #303030;
+    }
+
+
+    /* User name + status */
+
+    .details-user-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
     }
 
 
@@ -558,16 +646,23 @@
         font-size: 30px;
         font-weight: 500;
         color: #ffffff;
+        white-space: nowrap;
     }
 
+
+    /* Status */
 
     .details-user-status {
         display: flex;
         align-items: center;
         gap: 9px;
-        margin-top: 7px;
-        font-size: 14px;
+        padding: 6px 11px;
+        background: #222222;
+        border: 1px solid #303030;
+        border-radius: 7px;
+        font-size: 13px;
         color: #999999;
+        white-space: nowrap;
     }
 
 
@@ -626,8 +721,11 @@
 
     .graph-controls {
         display: flex;
+        align-items: center;
         justify-content: center;
         gap: 6px;
+        min-height: 42px;
+        box-sizing: border-box;
         margin-bottom: 15px;
         padding: 5px;
         background: #111111;
@@ -637,12 +735,19 @@
 
 
     .range-button {
-        padding: 8px 18px;
+        height: 32px;
+        min-height: 32px;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 18px;
         border: none;
         border-radius: 6px;
         background: transparent;
         color: #888888;
         font-size: 13px;
+        line-height: 1;
         cursor: pointer;
         transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
     }
@@ -666,9 +771,14 @@
 
     .custom-date-controls {
         display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-bottom: 15px;
+        align-items: center;
+        height: 32px;
+        margin-left: 4px;
+        padding-left: 10px;
+        border-left: 1px solid #303030;
+        gap: 10px;
+        box-sizing: border-box;
+        animation: customDatesAppear 0.22s ease-out;
     }
 
 
@@ -785,6 +895,62 @@
         font-size: 14px;
     }
 
+    /* ================================================== */
+    /* Summary Statistics */
+    /* ================================================== */
+
+    .summary-statistics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+
+
+    .summary-stat-card {
+        min-height: 105px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 16px 18px;
+        box-sizing: border-box;
+        background: #111111;
+        border: 1px solid #2d2d2d;
+        border-radius: 9px;
+        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+
+        .summary-stat-card:hover {
+            background: #1c1c1c;
+            border-color: #3a3a3a;
+            transform: translateY(-1px);
+        }
+
+
+    .summary-stat-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #666666;
+        margin-bottom: 6px;
+    }
+
+
+    .summary-stat-value {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+        color: #f2c94c;
+    }
+
+
+    .summary-stat-subtitle {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #555555;
+    }
 
     /* ================================================== */
     /* Graph */
@@ -798,13 +964,13 @@
 
     .graph-axis-label {
         fill: #666666;
-        font-size: 11px;
+        font-size: 15px;
     }
 
 
     .graph-date-label {
         fill: #777777;
-        font-size: 10px;
+        font-size: 15px;
     }
 
 
@@ -866,7 +1032,9 @@
 
         .range-button {
             flex: 1;
-            padding: 9px 5px;
+            height: 32px;
+            min-height: 32px;
+            padding: 0 5px;
         }
 
 
@@ -874,10 +1042,34 @@
             flex-direction: column;
             align-items: center;
         }
+
+
+        .summary-statistics {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+
+        .summary-stat-card {
+            min-height: 95px;
+            padding: 14px;
+        }
+
+
+        .summary-stat-value {
+            font-size: 20px;
+        }
     }
 
     .status-text {
         white-space: nowrap;
+    }
+
+    @@media (max-width: 900px) {
+
+        .summary-statistics {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
 
@@ -1404,8 +1596,7 @@
             GetGraphPoints();
     }
 
-    private async Task SetRange(
-        GraphRange range)
+    private async Task SetRange(GraphRange range)
     {
         if (_selectedUser is null)
         {
@@ -1417,15 +1608,17 @@
             return;
         }
 
-        // Start graph animation
+        // Start animation
         _graphAnimating = true;
 
         await InvokeAsync(StateHasChanged);
 
         await Task.Delay(180);
 
+        // Change range
         _selectedRange = range;
 
+        // Reset custom dates when Custom is selected
         if (range == GraphRange.Custom)
         {
             _customStartDate =
@@ -1437,9 +1630,11 @@
                     DateTime.Now);
         }
 
-        // Rebuild graph for the new range
+        // IMPORTANT:
+        // Rebuild the graph using the newly selected range.
         UpdateGraphData();
 
+        // Finish animation
         _graphAnimating = false;
 
         await InvokeAsync(StateHasChanged);
@@ -1580,7 +1775,7 @@
             }
 
 
-            const double width = 1200;
+            const double width = 1500;
             const double height = 500;
 
             const double left = 65;
@@ -1943,14 +2138,141 @@
             user.Status == Status.InOffice;
     }
 
-private void CloseUserDetails()
-{
-    _selectedUser = null;
+    private void CloseUserDetails()
+    {
+        _selectedUser = null;
 
-    _userHistory = [];
+        _userHistory = [];
 
-    StateHasChanged();
-}
+        StateHasChanged();
+    }
+
+    private SummaryStatistics GetSummaryStatistics()
+    {
+        if (_selectedUser is null)
+        {
+            return new SummaryStatistics();
+        }
+
+        var points =
+            GetGraphPoints();
+
+        if (points.Count == 0)
+        {
+            return new SummaryStatistics();
+        }
+
+
+        // ----------------------------------------------
+        // Total time
+        // ----------------------------------------------
+
+        double totalHours =
+            points.Sum(x => x.Hours);
+
+
+        TimeSpan totalTime =
+            TimeSpan.FromHours(totalHours);
+
+
+        // ----------------------------------------------
+        // Average per calendar day
+        // ----------------------------------------------
+
+        TimeSpan averageTime =
+            points.Count > 0
+                ? TimeSpan.FromHours(
+                    totalHours / points.Count)
+                : TimeSpan.Zero;
+
+
+        // ----------------------------------------------
+        // Days with office time
+        // ----------------------------------------------
+
+        int daysInOffice =
+            points.Count(x => x.Hours > 0);
+
+
+        // ----------------------------------------------
+        // Longest day
+        // ----------------------------------------------
+
+        double longestHours =
+            points.Count > 0
+                ? points.Max(x => x.Hours)
+                : 0;
+
+
+        TimeSpan longestDay =
+            TimeSpan.FromHours(longestHours);
+
+
+        return new SummaryStatistics
+        {
+            TotalTime = totalTime,
+            AverageTime = averageTime,
+            DaysInOffice = daysInOffice,
+            LongestDay = longestDay
+        };
+    }
+
+    private static string FormatDuration(
+    TimeSpan duration)
+    {
+        if (duration < TimeSpan.Zero)
+        {
+            duration = TimeSpan.Zero;
+        }
+
+
+        int hours =
+            (int)duration.TotalHours;
+
+        int minutes =
+            duration.Minutes;
+
+
+        if (hours == 0)
+        {
+            return $"{minutes}m";
+        }
+
+
+        return $"{hours}h {minutes:00}m";
+    }
+
+    private string GetSummaryPeriodText()
+    {
+        return _selectedRange switch
+        {
+            GraphRange.Week =>
+                "Last 7 days",
+
+            GraphRange.Month =>
+                "Last 30 days",
+
+            GraphRange.Year =>
+                "Last 365 days",
+
+            GraphRange.Custom =>
+                "Selected period",
+
+            _ =>
+                ""
+        };
+    }
+
+    private class SummaryStatistics
+    {
+        public TimeSpan TotalTime { get; set; }
+
+        public TimeSpan AverageTime { get; set; }
+
+        public int DaysInOffice { get; set; }
+
+        public TimeSpan LongestDay { get; set; }
+    }
     private class GraphPoint
     {
         public DateOnly Date { get; set; }
