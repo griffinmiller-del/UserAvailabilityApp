@@ -32,7 +32,7 @@
   {
     "UserId": 1,
     "Date": "2026-08-20",
-    "TimeInOffice": "00:00:00"
+    "TimeInOffice": "05:24:01.3477217"
   },
   {
     "UserId": 2,
@@ -62,7 +62,7 @@
   {
     "UserId": 2,
     "Date": "2026-08-20",
-    "TimeInOffice": "00:28:56.0131899"
+    "TimeInOffice": "05:48:36.8280937"
   },
   {
     "UserId": 3,
@@ -92,7 +92,7 @@
   {
     "UserId": 3,
     "Date": "2026-08-20",
-    "TimeInOffice": "00:00:00"
+    "TimeInOffice": "05:19:42.7428251"
   },
   {
     "UserId": 4,
@@ -122,7 +122,7 @@
   {
     "UserId": 4,
     "Date": "2026-08-20",
-    "TimeInOffice": "00:00:00"
+    "TimeInOffice": "05:19:42.7272869"
   },
   {
     "UserId": 5,
@@ -152,7 +152,7 @@
   {
     "UserId": 5,
     "Date": "2026-08-20",
-    "TimeInOffice": "00:00:00"
+    "TimeInOffice": "05:19:42.4870849"
   },
   {
     "UserId": 6,
@@ -183,5 +183,30 @@
     "UserId": 6,
     "Date": "2026-08-20",
     "TimeInOffice": "00:00:00"
+  },
+  {
+    "UserId": 1,
+    "Date": "2026-08-24",
+    "TimeInOffice": "00:01:30.6139447"
+  },
+  {
+    "UserId": 2,
+    "Date": "2026-08-24",
+    "TimeInOffice": "00:01:33.4547977"
+  },
+  {
+    "UserId": 3,
+    "Date": "2026-08-24",
+    "TimeInOffice": "00:01:32.5854714"
+  },
+  {
+    "UserId": 4,
+    "Date": "2026-08-24",
+    "TimeInOffice": "00:01:34.2351567"
+  },
+  {
+    "UserId": 5,
+    "Date": "2026-08-24",
+    "TimeInOffice": "00:01:36.8006794"
   }
 ]

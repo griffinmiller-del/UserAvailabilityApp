@@ -2,41 +2,41 @@
   {
     "UserId": 1,
     "Name": "John",
-    "IsAvailable": true,
-    "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-20T10:38:56.5841223-05:00",
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": false,
+    "Status": 6,
+    "InOfficeStartTime": null,
+    "TotalTimeInOffice": "05:25:31.9616664"
   },
   {
     "UserId": 2,
     "Name": "Jane",
-    "IsAvailable": true,
-    "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-20T10:43:18.0115065-05:00",
-    "TotalTimeInOffice": "00:28:56.0131899"
+    "IsAvailable": false,
+    "Status": "Other",
+    "InOfficeStartTime": null,
+    "TotalTimeInOffice": "05:50:10.2828914"
   },
   {
     "UserId": 3,
     "Name": "Joe",
-    "IsAvailable": true,
-    "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-20T10:43:16.8196451-05:00",
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": false,
+    "Status": "Other",
+    "InOfficeStartTime": null,
+    "TotalTimeInOffice": "05:21:15.3282965"
   },
   {
     "UserId": 4,
     "Name": "Bob",
-    "IsAvailable": true,
-    "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-20T10:43:17.5394483-05:00",
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": false,
+    "Status": "Other",
+    "InOfficeStartTime": null,
+    "TotalTimeInOffice": "05:21:16.9624436"
   },
   {
     "UserId": 5,
     "Name": "Rob",
-    "IsAvailable": true,
-    "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-20T10:43:18.7396097-05:00",
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": false,
+    "Status": "Other",
+    "InOfficeStartTime": null,
+    "TotalTimeInOffice": "05:21:19.2877643"
   }
 ]

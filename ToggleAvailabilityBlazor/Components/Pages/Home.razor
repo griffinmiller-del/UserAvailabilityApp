@@ -3,6 +3,7 @@
 @using ToggleAvailabilityBlazor.Models
 @using ToggleAvailabilityBlazor.Services
 @using Microsoft.AspNetCore.Components.Rendering
+@using Microsoft.AspNetCore.Components.Web
 
 @implements IDisposable
 
@@ -26,8 +27,8 @@
             <div class="connection-status">
 
                 <span class="connection-indicator @(AvailabilityService.IsConnected
-                                                                                                                                ? "connected"
-                                                                                                                                : "disconnected")">
+                                                                                                            ? "connected"
+                                                                                                            : "disconnected")">
                 </span>
 
                 <span>
@@ -59,6 +60,7 @@
     <!-- ================================================== -->
     <!-- User List -->
     <!-- ================================================== -->
+
     @if (_users.Count == 0)
     {
         <div class="empty-state">
@@ -95,8 +97,8 @@
                     <div class="user-status">
 
                         <span class="status-circle @(isAvailable
-                                                                                                                                                                ? "available"
-                                                                                                                                                                : "unavailable")">
+                                                                                                                                    ? "available"
+                                                                                                                                    : "unavailable")">
                         </span>
 
                         <span class="status-text">
@@ -148,8 +150,8 @@
                             <div class="details-user-status">
 
                                 <span class="status-circle @(IsUserAvailable(_selectedUser)
-                                                                                                                                                                                            ? "available"
-                                                                                                                                                                                            : "unavailable")">
+                                                                                                                                                        ? "available"
+                                                                                                                                                        : "unavailable")">
                                 </span>
 
                                 <span>
@@ -397,9 +399,8 @@
     private User? _selectedUser;
 
     private List<OfficeHistory> _userHistory = [];
-
+    private int _hoveredGraphPoint = -1;
     private List<User> _users = [];
-
     private List<GraphPoint> _graphData = [];
 
 
@@ -805,11 +806,6 @@
 
             // ==================================================
             // Graph Colors
-            //
-            // These are deliberately defined here and applied
-            // directly to the SVG elements. This prevents the
-            // browser from falling back to the default SVG
-            // black fill/stroke when CSS isolation is involved.
             // ==================================================
 
             const string GraphYellow =
@@ -895,10 +891,13 @@
             }
 
 
+            // ==================================================
+            // Build Line Path
+            // ==================================================
+
             string BuildLinePath()
             {
                 string path = "";
-
 
                 for (
                     int i = 0;
@@ -908,11 +907,9 @@
                     double x =
                         GetX(i);
 
-
                     double y =
                         GetY(
                             _graphData[i].Hours);
-
 
                     path +=
                         i == 0
@@ -920,10 +917,13 @@
                             : $" L {x:F2} {y:F2}";
                 }
 
-
                 return path;
             }
 
+
+            // ==================================================
+            // Build Area Path
+            // ==================================================
 
             string BuildAreaPath()
             {
@@ -984,18 +984,15 @@
                 0,
                 "svg");
 
-
             builder.AddAttribute(
                 1,
                 "class",
                 "office-history-graph");
 
-
             builder.AddAttribute(
                 2,
                 "viewBox",
                 $"0 0 {width} {height}");
-
 
             builder.AddAttribute(
                 3,
@@ -1035,52 +1032,49 @@
                 // Grid Line
                 // ----------------------------------------------
 
+                int gridSequence =
+                    1000 +
+                    i * 10;
+
+
                 builder.OpenElement(
-                    10 + i,
+                    gridSequence,
                     "line");
 
-
                 builder.AddAttribute(
-                    11 + i,
+                    gridSequence + 1,
                     "x1",
                     left);
 
-
                 builder.AddAttribute(
-                    12 + i,
+                    gridSequence + 2,
                     "x2",
                     width - right);
 
-
                 builder.AddAttribute(
-                    13 + i,
+                    gridSequence + 3,
                     "y1",
                     y);
 
-
                 builder.AddAttribute(
-                    14 + i,
+                    gridSequence + 4,
                     "y2",
                     y);
 
-
                 builder.AddAttribute(
-                    15 + i,
+                    gridSequence + 5,
                     "stroke",
                     GraphGridColor);
 
-
                 builder.AddAttribute(
-                    16 + i,
+                    gridSequence + 6,
                     "stroke-width",
                     "1");
 
-
                 builder.AddAttribute(
-                    17 + i,
+                    gridSequence + 7,
                     "stroke-opacity",
                     "0.8");
-
 
                 builder.CloseElement();
 
@@ -1089,45 +1083,43 @@
                 // Y Axis Label
                 // ----------------------------------------------
 
+                int labelSequence =
+                    1100 +
+                    i * 10;
+
+
                 builder.OpenElement(
-                    30 + i,
+                    labelSequence,
                     "text");
 
-
                 builder.AddAttribute(
-                    31 + i,
+                    labelSequence + 1,
                     "x",
                     left - 10);
 
-
                 builder.AddAttribute(
-                    32 + i,
+                    labelSequence + 2,
                     "y",
                     y + 4);
 
-
                 builder.AddAttribute(
-                    33 + i,
+                    labelSequence + 3,
                     "text-anchor",
                     "end");
 
-
                 builder.AddAttribute(
-                    34 + i,
+                    labelSequence + 4,
                     "fill",
                     GraphTitleColor);
 
-
                 builder.AddAttribute(
-                    35 + i,
+                    labelSequence + 5,
                     "font-size",
                     "15");
 
-
                 builder.AddContent(
-                    36 + i,
+                    labelSequence + 6,
                     $"{hours:0}h");
-
 
                 builder.CloseElement();
             }
@@ -1138,39 +1130,33 @@
             // ==================================================
 
             builder.OpenElement(
-                100,
+                2000,
                 "path");
 
-
             builder.AddAttribute(
-                101,
+                2001,
                 "d",
                 BuildAreaPath());
 
-
             builder.AddAttribute(
-                102,
+                2002,
                 "fill",
                 GraphYellow);
 
-
             builder.AddAttribute(
-                103,
+                2003,
                 "fill-opacity",
                 GraphAreaOpacity);
 
-
             builder.AddAttribute(
-                104,
+                2004,
                 "stroke",
                 "none");
 
-
             builder.AddAttribute(
-                105,
+                2005,
                 "pointer-events",
                 "none");
-
 
             builder.CloseElement();
 
@@ -1180,51 +1166,43 @@
             // ==================================================
 
             builder.OpenElement(
-                110,
+                2100,
                 "path");
 
-
             builder.AddAttribute(
-                111,
+                2101,
                 "d",
                 BuildLinePath());
 
-
             builder.AddAttribute(
-                112,
+                2102,
                 "fill",
                 "none");
 
-
             builder.AddAttribute(
-                113,
+                2103,
                 "stroke",
                 GraphYellow);
 
-
             builder.AddAttribute(
-                114,
+                2104,
                 "stroke-width",
                 "3");
 
-
             builder.AddAttribute(
-                115,
+                2105,
                 "stroke-linecap",
                 "round");
 
-
             builder.AddAttribute(
-                116,
+                2106,
                 "stroke-linejoin",
                 "round");
 
-
             builder.AddAttribute(
-                117,
+                2107,
                 "filter",
                 "drop-shadow(0 0 5px rgba(242, 201, 76, 0.25))");
-
 
             builder.CloseElement();
 
@@ -1251,67 +1229,147 @@
                         point.Hours);
 
 
-                builder.OpenElement(
-                    200 + i,
-                    "circle");
+                int pointIndex =
+                    i;
 
+
+                int sequence =
+                    3000 +
+                    (i * 100);
+
+
+                // --------------------------------------------------
+                // Point Group
+                // --------------------------------------------------
+
+                builder.OpenElement(
+                    sequence,
+                    "g");
 
                 builder.AddAttribute(
-                    201 + i,
+                    sequence + 1,
+                    "class",
+                    "graph-point-group");
+
+
+                // --------------------------------------------------
+                // Point
+                // --------------------------------------------------
+
+                builder.OpenElement(
+                    sequence + 10,
+                    "circle");
+
+                builder.AddAttribute(
+                    sequence + 11,
+                    "class",
+                    "graph-point");
+
+                builder.AddAttribute(
+                    sequence + 12,
                     "cx",
                     x);
 
-
                 builder.AddAttribute(
-                    202 + i,
+                    sequence + 13,
                     "cy",
                     y);
 
-
                 builder.AddAttribute(
-                    203 + i,
+                    sequence + 14,
                     "r",
-                    "5");
+                    _hoveredGraphPoint == pointIndex
+                        ? 9
+                        : 5);
 
-
-                // Explicitly define both fill and stroke.
                 builder.AddAttribute(
-                    204 + i,
+                    sequence + 15,
                     "fill",
                     GraphYellow);
 
-
                 builder.AddAttribute(
-                    205 + i,
+                    sequence + 16,
                     "stroke",
                     GraphYellow);
 
-
                 builder.AddAttribute(
-                    206 + i,
+                    sequence + 17,
                     "stroke-width",
                     "2");
 
-
                 builder.AddAttribute(
-                    207 + i,
+                    sequence + 18,
                     "filter",
                     "drop-shadow(0 0 5px rgba(242, 201, 76, 0.35))");
 
+                builder.AddAttribute(
+                    sequence + 19,
+                    "style",
+                    "transition: r 0.15s ease; cursor: pointer;");
+
+
+                // --------------------------------------------------
+                // Mouse Enter
+                // --------------------------------------------------
+
+                builder.AddAttribute(
+                    sequence + 20,
+                    "onmouseenter",
+                    EventCallback.Factory.Create<MouseEventArgs>(
+                        this,
+                        () =>
+                        {
+                            _hoveredGraphPoint =
+                                pointIndex;
+
+                            StateHasChanged();
+                        }));
+
+
+                // --------------------------------------------------
+                // Mouse Leave
+                // --------------------------------------------------
+
+                builder.AddAttribute(
+                    sequence + 21,
+                    "onmouseleave",
+                    EventCallback.Factory.Create<MouseEventArgs>(
+                        this,
+                        () =>
+                        {
+                            _hoveredGraphPoint =
+                                -1;
+
+                            StateHasChanged();
+                        }));
+
+
+                // --------------------------------------------------
+                // Tooltip
+                // --------------------------------------------------
 
                 builder.OpenElement(
-                    300 + i,
+                    sequence + 30,
                     "title");
 
-
                 builder.AddContent(
-                    301 + i,
+                    sequence + 31,
                     $"{point.Date:MMMM d, yyyy} — " +
                     $"{FormatGraphTime(point.Hours)}");
 
+                builder.CloseElement();
+
+
+                // --------------------------------------------------
+                // Close Point
+                // --------------------------------------------------
 
                 builder.CloseElement();
 
+
+                // --------------------------------------------------
+                // Close Point Group
+                // --------------------------------------------------
 
                 builder.CloseElement();
             }
@@ -1338,50 +1396,52 @@
                     GetX(i);
 
 
+                int sequence =
+                    5000 +
+                    (i * 10);
+
+
                 builder.OpenElement(
-                    500 + i,
+                    sequence,
                     "text");
 
-
                 builder.AddAttribute(
-                    501 + i,
+                    sequence + 1,
                     "x",
                     x);
 
-
                 builder.AddAttribute(
-                    502 + i,
+                    sequence + 2,
                     "y",
                     height - 20);
 
-
                 builder.AddAttribute(
-                    503 + i,
+                    sequence + 3,
                     "text-anchor",
                     "middle");
 
-
                 builder.AddAttribute(
-                    504 + i,
+                    sequence + 4,
                     "fill",
                     GraphTitleColor);
 
-
                 builder.AddAttribute(
-                    505 + i,
+                    sequence + 5,
                     "font-size",
                     "15");
 
-
                 builder.AddContent(
-                    506 + i,
+                    sequence + 6,
                     FormatGraphDate(
                         _graphData[i].Date));
-
 
                 builder.CloseElement();
             }
 
+
+            // ==================================================
+            // Close SVG
+            // ==================================================
 
             builder.CloseElement();
         };
@@ -1633,8 +1693,23 @@
         }
 
 
+        // Only Monday-Friday count toward the average.
+        var weekdays =
+            points
+                .Where(x =>
+                    x.Date.DayOfWeek != DayOfWeek.Saturday &&
+                    x.Date.DayOfWeek != DayOfWeek.Sunday)
+                .ToList();
+
+
+        if (weekdays.Count == 0)
+        {
+            return new SummaryStatistics();
+        }
+
+
         double totalHours =
-            points.Sum(
+            weekdays.Sum(
                 x => x.Hours);
 
 
@@ -1646,16 +1721,16 @@
         TimeSpan averageTime =
             TimeSpan.FromHours(
                 totalHours /
-                points.Count);
+                weekdays.Count);
 
 
         int daysInOffice =
-            points.Count(
+            weekdays.Count(
                 x => x.Hours > 0);
 
 
         double longestHours =
-            points.Max(
+            weekdays.Max(
                 x => x.Hours);
 
 

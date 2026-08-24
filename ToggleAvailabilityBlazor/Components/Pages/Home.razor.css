@@ -681,23 +681,42 @@
 
 
 /* ================================================== */
-/* Graph Points */
+/* Graph Point Group */
 /* ================================================== */
 
-.graph-point {
-    fill: #f2c94c;
-    stroke: #f2c94c;
-    stroke-width: 2;
-    filter: drop-shadow( 0 0 5px rgba(242, 201, 76, 0.35) );
-    transition: fill 0.15s ease, filter 0.15s ease;
+.graph-point-group {
+    cursor: pointer;
 }
 
 
-    .graph-point:hover {
-        fill: #ffffff;
-        stroke: #f2c94c;
-        filter: drop-shadow( 0 0 8px rgba(242, 201, 76, 0.55) );
-    }
+/* ================================================== */
+/* Normal Graph Point */
+/* ================================================== */
+
+.graph-point {
+    opacity: 1;
+}
+
+
+/* ================================================== */
+/* Hover Graph Point */
+/* ================================================== */
+
+.graph-point-hover {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+
+/* ================================================== */
+/* Point Hover */
+/* ================================================== */
+
+.graph-point-group:hover .graph-point-hover {
+    opacity: 1;
+}
+
 
 
 /* ================================================== */
