@@ -1,0 +1,127 @@
+/* ================================================== */
+/* User Card */
+/* ================================================== */
+
+.user-card {
+    min-height: 125px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+    background: #1c1c1c;
+    border: 1px solid #303030;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+    .user-card:hover {
+        background: #222222;
+        border-color: #454545;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.30);
+        transform: translateY(-1px);
+    }
+
+
+/* ================================================== */
+/* User Name */
+/* ================================================== */
+
+.user-name {
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: 500;
+    color: #ffffff;
+    text-align: center;
+}
+
+
+/* ================================================== */
+/* User Status */
+/* ================================================== */
+
+.user-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    color: #a8a8a8;
+    font-size: 14px;
+}
+
+.status-text {
+    white-space: nowrap;
+}
+
+
+/* ================================================== */
+/* Status Circle */
+/* ================================================== */
+
+.status-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+    .status-circle.available {
+        background-color: #2ecc71;
+        box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.12), 0 0 10px rgba(46, 204, 113, 0.25);
+    }
+
+    .status-circle.unavailable {
+        background: #e74c3c;
+        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.08);
+    }
+
+
+/* ================================================== */
+/* Office Timer */
+/* ================================================== */
+
+.office-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #2d2d2d;
+    min-width: 130px;
+}
+
+.office-timer-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #666666;
+    margin-bottom: 2px;
+}
+
+.office-timer-value {
+    font-size: 16px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: #f2c94c;
+    letter-spacing: 0.5px;
+}
+
+
+/* ================================================== */
+/* Mobile */
+/* ================================================== */
+
+@media (max-width: 700px) {
+
+    .user-card {
+        min-height: 120px;
+        padding: 14px;
+    }
+
+    .user-name {
+        font-size: 18px;
+    }
+}

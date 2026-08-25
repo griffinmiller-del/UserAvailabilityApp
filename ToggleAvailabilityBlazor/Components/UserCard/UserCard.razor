@@ -1,0 +1,37 @@
+﻿@using ToggleAvailabilityBlazor.Models
+
+<div class="user-card"
+     @onclick="HandleClick">
+
+    <div class="user-name">
+        @User.Name
+    </div>
+
+
+    <div class="user-status">
+
+        <span class="status-circle @(UserDisplayService.IsUserAvailable(User)
+                                                    ? "available"
+                                                    : "unavailable")">
+        </span>
+
+        <span class="status-text">
+            @UserDisplayService.GetStatusText(User)
+        </span>
+
+    </div>
+
+
+    <div class="office-timer">
+
+        <span class="office-timer-label">
+            Time in Office
+        </span>
+
+        <span class="office-timer-value">
+            @UserDisplayService.GetTimeInOffice(User)
+        </span>
+
+    </div>
+
+</div>

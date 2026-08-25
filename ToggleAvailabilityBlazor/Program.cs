@@ -6,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
-
-builder.Services.AddScoped<AvailabilityService>();
+builder.Services.AddScoped<UserDisplayService>();
+builder.Services.AddSingleton<AvailabilityService>();
 builder.WebHost.UseUrls(
     "http://10.10.100.199:5036");
 var app = builder.Build();

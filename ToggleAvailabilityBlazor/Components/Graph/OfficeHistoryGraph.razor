@@ -1,0 +1,117 @@
+﻿@using ToggleAvailabilityBlazor.Models
+
+<div class="graph-container">
+
+    <!-- ================================================== -->
+    <!-- Time Range -->
+    <!-- ================================================== -->
+
+    <div class="graph-controls">
+
+        <button class="range-button @(SelectedRange == GraphRange.Week ? "selected" : "")"
+                @onclick="() => SetRange(GraphRange.Week)">
+
+            Week
+
+        </button>
+
+
+        <button class="range-button @(SelectedRange == GraphRange.Month ? "selected" : "")"
+                @onclick="() => SetRange(GraphRange.Month)">
+
+            Month
+
+        </button>
+
+
+        <button class="range-button @(SelectedRange == GraphRange.Year ? "selected" : "")"
+                @onclick="() => SetRange(GraphRange.Year)">
+
+            Year
+
+        </button>
+
+
+        <button class="range-button @(SelectedRange == GraphRange.Custom ? "selected" : "")"
+                @onclick="() => SetRange(GraphRange.Custom)">
+
+            Custom
+
+        </button>
+
+
+        @if (SelectedRange == GraphRange.Custom)
+        {
+            <div class="custom-date-controls">
+
+                <div class="date-control">
+
+                    <label>
+                        Start
+                    </label>
+
+                    <input type="date"
+                           @bind="CustomStartDate"
+                           @bind:after="CustomDateChanged" />
+
+                </div>
+
+
+                <div class="date-control">
+
+                    <label>
+                        End
+                    </label>
+
+                    <input type="date"
+                           @bind="CustomEndDate"
+                           @bind:after="CustomDateChanged" />
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- Graph -->
+    <!-- ================================================== -->
+
+    <div class="graph-section">
+
+        <div class="graph-header">
+
+            <div class="graph-title">
+                Time in Office
+            </div>
+
+            <div class="graph-subtitle">
+                @GetGraphDateDescription()
+            </div>
+
+        </div>
+
+
+        @if (_graphData.Count == 0)
+        {
+            <div class="graph-empty">
+
+                No office history available
+                for this period.
+
+            </div>
+        }
+        else
+        {
+            <div class="graph-wrapper">
+
+                @BuildGraph()
+
+            </div>
+        }
+
+    </div>
+
+</div>

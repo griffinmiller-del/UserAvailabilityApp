@@ -1,0 +1,131 @@
+/* ================================================== */
+/* Summary Statistics */
+/* ================================================== */
+
+.summary-statistics {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(7px, 0.9vw, 14px);
+    margin-bottom: clamp(12px, 1.8vh, 24px);
+    flex-shrink: 0;
+}
+
+
+/* ================================================== */
+/* Summary Card */
+/* ================================================== */
+
+.summary-stat-card {
+    min-width: 0;
+    padding: clamp(10px, 1.2vw, 20px);
+    box-sizing: border-box;
+    background: #222222;
+    border: 1px solid #303030;
+    border-radius: clamp(7px, 0.7vw, 12px);
+}
+
+
+/* ================================================== */
+/* Label */
+/* ================================================== */
+
+.summary-stat-label {
+    font-size: clamp(9px, 0.75vw, 13px);
+    color: #777777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ================================================== */
+/* Value */
+/* ================================================== */
+
+.summary-stat-value {
+    margin-top: clamp(3px, 0.4vh, 6px);
+    font-size: clamp(17px, 1.8vw, 30px);
+    font-weight: 600;
+    line-height: 1.15;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+
+/* ================================================== */
+/* Subtitle */
+/* ================================================== */
+
+.summary-stat-subtitle {
+    margin-top: clamp(3px, 0.4vh, 6px);
+    font-size: clamp(8px, 0.65vw, 12px);
+    color: #666666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ================================================== */
+/* Tablet */
+/* ================================================== */
+
+@media (max-width: 900px) {
+
+    .summary-statistics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* ================================================== */
+/* Mobile */
+/* ================================================== */
+
+@media (max-width: 700px) {
+
+    .summary-statistics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+
+    .summary-stat-card {
+        min-height: 95px;
+        padding: 14px;
+    }
+
+
+    .summary-stat-value {
+        font-size: 20px;
+    }
+}
+
+
+/* ================================================== */
+/* Small Mobile */
+/* ================================================== */
+
+@media (max-width: 450px) {
+
+    .summary-statistics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+
+    .summary-stat-card {
+        padding: 10px;
+    }
+
+
+    .summary-stat-value {
+        font-size: 18px;
+    }
+
+
+    .summary-stat-subtitle {
+        display: none;
+    }
+}

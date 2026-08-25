@@ -1,0 +1,79 @@
+﻿@using ToggleAvailabilityBlazor.Models
+@using ToggleAvailabilityBlazor.Components.UserCard
+@using ToggleAvailabilityBlazor.Components.UserDetails
+
+<div class="availability-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <div class="connection-status">
+
+                <span class="connection-indicator @(AvailabilityService.IsConnected
+                                        ? "connected"
+                                        : "disconnected")">
+                </span>
+
+                <span>
+                    @(AvailabilityService.IsConnected
+                        ? "Connected"
+                        : "Disconnected")
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="user-count">
+
+            <span class="user-count-number">
+                @_users.Count
+            </span>
+
+            <span class="user-count-label">
+                Users
+            </span>
+
+        </div>
+
+    </div>
+
+
+    @if (_users.Count == 0)
+    {
+        <div class="empty-state">
+
+            <div class="empty-state-title">
+                Waiting for Users...
+            </div>
+
+            <div class="empty-state-subtitle">
+                Connecting to the availability server
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="users-container">
+
+            @foreach (var user in _users)
+            {
+                <UserCard User="user"
+                          OnClick="OpenUserDetails" />
+            }
+
+        </div>
+
+
+        @if (_selectedUser is not null)
+        {
+            <UserDetails User="_selectedUser"
+                         History="_userHistory"
+                         OnClose="CloseUserDetails" />
+        }
+    }
+
+</div>

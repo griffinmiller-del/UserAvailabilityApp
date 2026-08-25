@@ -1,0 +1,80 @@
+﻿@using ToggleAvailabilityBlazor.Models
+@using ToggleAvailabilityBlazor.Components.Graph
+
+<div class="user-details-overlay"
+     @onclick="HandleOverlayClick">
+
+    <div class="user-details-card"
+         @onclick:stopPropagation="true">
+
+        <!-- ================================================== -->
+        <!-- Header -->
+        <!-- ================================================== -->
+
+        <div class="details-header">
+
+            <div class="details-user-info">
+
+                <div class="details-user-name">
+                    @User.Name
+                </div>
+
+
+                <div class="details-user-status">
+
+                    <span class="status-circle @(UserDisplayService.IsUserAvailable(User)
+                                                                                                                            ? "available"
+                                                                                                                            : "unavailable")">
+                    </span>
+
+                    <span>
+                        @UserDisplayService.GetStatusText(User)
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <button class="details-close"
+                    @onclick="Close">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <!-- ================================================== -->
+        <!-- Current Time -->
+        <!-- ================================================== -->
+
+        <div class="details-current-time">
+
+            <span class="details-current-label">
+                Today's Time in Office
+            </span>
+
+            <span class="details-current-value">
+                @UserDisplayService.GetTimeInOffice(User)
+            </span>
+
+        </div>
+
+
+        <!-- ================================================== -->
+        <!-- Office History -->
+        <!-- ================================================== -->
+
+        <OfficeHistoryGraph History="History"
+                            SelectedRange="_selectedRange"
+                            SelectedRangeChanged="OnSelectedRangeChanged"
+                            CustomStartDate="_customStartDate"
+                            CustomStartDateChanged="OnCustomStartDateChanged"
+                            CustomEndDate="_customEndDate"
+                            CustomEndDateChanged="OnCustomEndDateChanged" />
+
+    </div>
+
+</div>

@@ -13,15 +13,15 @@
     "IsAvailable": false,
     "Status": "Other",
     "InOfficeStartTime": null,
-    "TotalTimeInOffice": "05:50:10.2828914"
+    "TotalTimeInOffice": "05:57:03.8391475"
   },
   {
     "UserId": 3,
     "Name": "Joe",
     "IsAvailable": false,
-    "Status": "Other",
+    "Status": 6,
     "InOfficeStartTime": null,
-    "TotalTimeInOffice": "05:21:15.3282965"
+    "TotalTimeInOffice": "05:21:36.2494357"
   },
   {
     "UserId": 4,
