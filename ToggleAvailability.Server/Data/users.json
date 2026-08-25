@@ -4,7 +4,7 @@
     "Name": "John",
     "IsAvailable": false,
     "Status": "Other",
-    "InOfficeStartTime": null,
+    "InOfficeStartTime": "2026-08-25T15:22:35.6520838-05:00",
     "TotalTimeInOffice": "00:01:11.1237928"
   },
   {

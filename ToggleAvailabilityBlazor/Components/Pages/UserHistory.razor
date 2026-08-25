@@ -118,6 +118,27 @@
         {
             <div class="history-list">
 
+                <!-- ================================================== -->
+                <!-- History Header -->
+                <!-- ================================================== -->
+
+                <div class="history-row history-row-header">
+
+                    <span class="history-date">
+                        Date
+                    </span>
+
+                    <span class="history-clock-in">
+                        Clock In
+                    </span>
+
+                    <span class="history-time">
+                        Time in Office
+                    </span>
+
+                </div>
+
+
                 @foreach (var record in _filteredHistory)
                 {
                     <div class="history-row">
@@ -126,9 +147,17 @@
                             @record.Date.ToString("MM/dd/yyyy")
                         </span>
 
-                        <span class="history-time">
 
-                            Time in Office:
+                        <span class="history-clock-in">
+
+                            @(record.StartTime.HasValue
+                                ? record.StartTime.Value.ToString("h:mm tt")
+                                : "—")
+
+                        </span>
+
+
+                        <span class="history-time">
 
                             @FormatDuration(
                                 record.TimeInOffice)
@@ -321,9 +350,9 @@
     /* -------------------------------------------------- */
 
     .history-row {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
         align-items: center;
-        justify-content: space-between;
         min-height: 58px;
         padding: 0 18px;
         box-sizing: border-box;
@@ -333,9 +362,31 @@
     }
 
 
+    /* -------------------------------------------------- */
+    /* History Header Row */
+    /* -------------------------------------------------- */
+
+    .history-row-header {
+        min-height: 40px;
+        background: transparent;
+        border: none;
+        color: #666666;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+
     .history-date {
         font-size: 15px;
         color: #ffffff;
+    }
+
+
+    .history-clock-in {
+        font-size: 15px;
+        color: #a8a8a8;
+        font-variant-numeric: tabular-nums;
     }
 
 
@@ -343,6 +394,7 @@
         font-size: 15px;
         color: #a8a8a8;
         font-variant-numeric: tabular-nums;
+        text-align: right;
     }
 
 
@@ -398,12 +450,34 @@
 
 
         .history-row {
-            flex-direction: column;
+            grid-template-columns: 1fr;
             align-items: flex-start;
-            justify-content: center;
             gap: 5px;
             padding: 12px 18px;
         }
+
+
+        .history-row-header {
+            display: none;
+        }
+
+
+        .history-clock-in,
+        .history-time {
+            text-align: left;
+        }
+
+
+            .history-clock-in::before {
+                content: "Clock In: ";
+                color: #666666;
+            }
+
+
+            .history-time::before {
+                content: "Time in Office: ";
+                color: #666666;
+            }
     }
 
 </style>
@@ -450,6 +524,8 @@
 
             _filteredHistory =
                 _history
+                    .OrderByDescending(
+                        x => x.Date)
                     .ToList();
         }
 
