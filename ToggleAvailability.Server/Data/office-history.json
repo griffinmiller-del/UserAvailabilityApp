@@ -2,221 +2,283 @@
   {
     "UserId": 1,
     "Date": "2026-07-17",
-    "TimeInOffice": "06:38:27"
+    "TimeInOffice": "06:38:27",
+    "StartTime": null
   },
   {
     "UserId": 1,
     "Date": "2026-08-15",
-    "TimeInOffice": "07:42:18"
+    "TimeInOffice": "07:42:18",
+    "StartTime": null
   },
   {
     "UserId": 1,
     "Date": "2026-08-16",
-    "TimeInOffice": "08:15:42"
+    "TimeInOffice": "08:15:42",
+    "StartTime": null
   },
   {
     "UserId": 1,
     "Date": "2026-08-17",
-    "TimeInOffice": "06:38:27"
+    "TimeInOffice": "06:38:27",
+    "StartTime": null
   },
   {
     "UserId": 1,
     "Date": "2026-08-18",
-    "TimeInOffice": "08:03:51"
+    "TimeInOffice": "08:03:51",
+    "StartTime": null
   },
   {
     "UserId": 1,
     "Date": "2026-08-19",
-    "TimeInOffice": "07:21:36"
+    "TimeInOffice": "07:21:36",
+    "StartTime": null
   },
   {
     "UserId": 1,
     "Date": "2026-08-20",
-    "TimeInOffice": "05:24:01.3477217"
+    "TimeInOffice": "05:24:01.3477217",
+    "StartTime": null
   },
   {
     "UserId": 2,
     "Date": "2026-08-15",
-    "TimeInOffice": "08:04:33"
+    "TimeInOffice": "08:04:33",
+    "StartTime": null
   },
   {
     "UserId": 2,
     "Date": "2026-08-16",
-    "TimeInOffice": "07:36:19"
+    "TimeInOffice": "07:36:19",
+    "StartTime": null
   },
   {
     "UserId": 2,
     "Date": "2026-08-17",
-    "TimeInOffice": "08:27:45"
+    "TimeInOffice": "08:27:45",
+    "StartTime": null
   },
   {
     "UserId": 2,
     "Date": "2026-08-18",
-    "TimeInOffice": "06:54:12"
+    "TimeInOffice": "06:54:12",
+    "StartTime": null
   },
   {
     "UserId": 2,
     "Date": "2026-08-19",
-    "TimeInOffice": "07:48:09"
+    "TimeInOffice": "07:48:09",
+    "StartTime": null
   },
   {
     "UserId": 2,
     "Date": "2026-08-20",
-    "TimeInOffice": "05:48:36.8280937"
+    "TimeInOffice": "05:48:36.8280937",
+    "StartTime": null
   },
   {
     "UserId": 3,
     "Date": "2026-08-15",
-    "TimeInOffice": "06:51:24"
+    "TimeInOffice": "06:51:24",
+    "StartTime": null
   },
   {
     "UserId": 3,
     "Date": "2026-08-16",
-    "TimeInOffice": "07:18:53"
+    "TimeInOffice": "07:18:53",
+    "StartTime": null
   },
   {
     "UserId": 3,
     "Date": "2026-08-17",
-    "TimeInOffice": "08:42:11"
+    "TimeInOffice": "08:42:11",
+    "StartTime": null
   },
   {
     "UserId": 3,
     "Date": "2026-08-18",
-    "TimeInOffice": "07:05:37"
+    "TimeInOffice": "07:05:37",
+    "StartTime": null
   },
   {
     "UserId": 3,
     "Date": "2026-08-19",
-    "TimeInOffice": "06:44:28"
+    "TimeInOffice": "06:44:28",
+    "StartTime": null
   },
   {
     "UserId": 3,
     "Date": "2026-08-20",
-    "TimeInOffice": "05:19:42.7428251"
+    "TimeInOffice": "05:19:42.7428251",
+    "StartTime": null
   },
   {
     "UserId": 4,
     "Date": "2026-08-15",
-    "TimeInOffice": "08:32:17"
+    "TimeInOffice": "08:32:17",
+    "StartTime": null
   },
   {
     "UserId": 4,
     "Date": "2026-08-16",
-    "TimeInOffice": "07:55:41"
+    "TimeInOffice": "07:55:41",
+    "StartTime": null
   },
   {
     "UserId": 4,
     "Date": "2026-08-17",
-    "TimeInOffice": "07:26:35"
+    "TimeInOffice": "07:26:35",
+    "StartTime": null
   },
   {
     "UserId": 4,
     "Date": "2026-08-18",
-    "TimeInOffice": "08:11:08"
+    "TimeInOffice": "08:11:08",
+    "StartTime": null
   },
   {
     "UserId": 4,
     "Date": "2026-08-19",
-    "TimeInOffice": "07:39:52"
+    "TimeInOffice": "07:39:52",
+    "StartTime": null
   },
   {
     "UserId": 4,
     "Date": "2026-08-20",
-    "TimeInOffice": "05:19:42.7272869"
+    "TimeInOffice": "05:19:42.7272869",
+    "StartTime": null
   },
   {
     "UserId": 5,
     "Date": "2026-08-15",
-    "TimeInOffice": "07:23:46"
+    "TimeInOffice": "07:23:46",
+    "StartTime": null
   },
   {
     "UserId": 5,
     "Date": "2026-08-16",
-    "TimeInOffice": "06:47:32"
+    "TimeInOffice": "06:47:32",
+    "StartTime": null
   },
   {
     "UserId": 5,
     "Date": "2026-08-17",
-    "TimeInOffice": "08:06:18"
+    "TimeInOffice": "08:06:18",
+    "StartTime": null
   },
   {
     "UserId": 5,
     "Date": "2026-08-18",
-    "TimeInOffice": "07:52:04"
+    "TimeInOffice": "07:52:04",
+    "StartTime": null
   },
   {
     "UserId": 5,
     "Date": "2026-08-19",
-    "TimeInOffice": "06:59:41"
+    "TimeInOffice": "06:59:41",
+    "StartTime": null
   },
   {
     "UserId": 5,
     "Date": "2026-08-20",
-    "TimeInOffice": "05:19:42.4870849"
+    "TimeInOffice": "05:19:42.4870849",
+    "StartTime": null
   },
   {
     "UserId": 6,
     "Date": "2026-08-15",
-    "TimeInOffice": "08:18:29"
+    "TimeInOffice": "08:18:29",
+    "StartTime": null
   },
   {
     "UserId": 6,
     "Date": "2026-08-16",
-    "TimeInOffice": "07:41:55"
+    "TimeInOffice": "07:41:55",
+    "StartTime": null
   },
   {
     "UserId": 6,
     "Date": "2026-08-17",
-    "TimeInOffice": "06:35:48"
+    "TimeInOffice": "06:35:48",
+    "StartTime": null
   },
   {
     "UserId": 6,
     "Date": "2026-08-18",
-    "TimeInOffice": "08:24:16"
+    "TimeInOffice": "08:24:16",
+    "StartTime": null
   },
   {
     "UserId": 6,
     "Date": "2026-08-19",
-    "TimeInOffice": "07:12:33"
+    "TimeInOffice": "07:12:33",
+    "StartTime": null
   },
   {
     "UserId": 6,
     "Date": "2026-08-20",
-    "TimeInOffice": "00:00:00"
+    "TimeInOffice": "00:00:00",
+    "StartTime": null
   },
   {
     "UserId": 1,
     "Date": "2026-08-24",
-    "TimeInOffice": "00:01:30.6139447"
+    "TimeInOffice": "00:01:30.6139447",
+    "StartTime": null
   },
   {
     "UserId": 2,
     "Date": "2026-08-24",
-    "TimeInOffice": "00:01:33.4547977"
+    "TimeInOffice": "00:01:33.4547977",
+    "StartTime": null
   },
   {
     "UserId": 3,
     "Date": "2026-08-24",
-    "TimeInOffice": "00:01:32.5854714"
+    "TimeInOffice": "00:01:32.5854714",
+    "StartTime": null
   },
   {
     "UserId": 4,
     "Date": "2026-08-24",
-    "TimeInOffice": "00:01:34.2351567"
+    "TimeInOffice": "00:01:34.2351567",
+    "StartTime": null
   },
   {
     "UserId": 5,
     "Date": "2026-08-24",
-    "TimeInOffice": "00:01:36.8006794"
+    "TimeInOffice": "00:01:36.8006794",
+    "StartTime": null
   },
   {
     "UserId": 3,
     "Date": "2026-08-25",
-    "TimeInOffice": "00:00:20.9211392"
+    "TimeInOffice": "00:00:20.9211392",
+    "StartTime": null
   },
   {
     "UserId": 2,
     "Date": "2026-08-25",
-    "TimeInOffice": "00:06:53.5562561"
+    "TimeInOffice": "00:06:53.5562561",
+    "StartTime": null
+  },
+  {
+    "UserId": 1,
+    "Date": "2026-08-25",
+    "TimeInOffice": "00:01:11.1237928",
+    "StartTime": "2026-08-25T15:22:35.6520838-05:00"
+  },
+  {
+    "UserId": 4,
+    "Date": "2026-08-25",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null
+  },
+  {
+    "UserId": 5,
+    "Date": "2026-08-25",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null
   }
 ]

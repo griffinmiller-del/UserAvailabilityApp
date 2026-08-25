@@ -95,7 +95,10 @@ public static class OfficeHistoryStore
                             date,
 
                         TimeInOffice =
-                            duration
+                            duration,
+
+                        StartTime =
+                            null
                     });
             }
             else
@@ -133,14 +136,10 @@ public static class OfficeHistoryStore
             _history.Add(
                 new OfficeHistory
                 {
-                    UserId =
-                        userId,
-
-                    Date =
-                        date,
-
-                    TimeInOffice =
-                        TimeSpan.Zero
+                    UserId = userId,
+                    Date = date,
+                    TimeInOffice = TimeSpan.Zero,
+                    StartTime = null
                 });
 
             Save();
@@ -263,7 +262,79 @@ public static class OfficeHistoryStore
                 record.Date,
 
             TimeInOffice =
-                record.TimeInOffice
+                record.TimeInOffice,
+
+            StartTime =
+                record.StartTime
         };
     }
+
+    public static OfficeHistory? GetUserHistoryForDate(
+        int userId,
+        DateOnly date)
+    {
+        lock (_lock)
+        {
+            var record =
+                _history.FirstOrDefault(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date);
+
+            return record is null
+                ? null
+                : Clone(record);
+        }
+    }
+
+    public static void SetStartTime(
+        int userId,
+        DateOnly date,
+        DateTime startTime)
+    {
+        lock (_lock)
+        {
+            var existing =
+                _history.FirstOrDefault(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date);
+
+            if (existing is null)
+            {
+                _history.Add(
+                    new OfficeHistory
+                    {
+                        UserId =
+                            userId,
+
+                        Date =
+                            date,
+
+                        TimeInOffice =
+                            TimeSpan.Zero,
+
+                        StartTime =
+                            startTime
+                    });
+
+                Save();
+
+                return;
+            }
+
+
+            // Only record the first clock-in
+            // of the day.
+            if (existing.StartTime is null)
+            {
+                existing.StartTime =
+                    startTime;
+
+                Save();
+            }
+        }
+    }
+
+
 }

@@ -37,7 +37,7 @@ public partial class UserDetails : ComponentBase
     private GraphRange _selectedRange =
         GraphRange.Week;
 
-
+    private bool _closing;
     private DateOnly _customStartDate =
         DateOnly.FromDateTime(
             DateTime.Now.AddDays(-6));
@@ -119,6 +119,21 @@ public partial class UserDetails : ComponentBase
 
     private async Task Close()
     {
+        if (_closing)
+        {
+            return;
+        }
+
+
+        _closing = true;
+
+        StateHasChanged();
+
+
+        // Match the CSS animation duration.
+        await Task.Delay(200);
+
+
         await OnClose.InvokeAsync();
     }
 }

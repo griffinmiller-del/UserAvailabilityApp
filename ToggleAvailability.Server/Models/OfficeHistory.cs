@@ -1,11 +1,12 @@
-﻿namespace ToggleAvailability.Server.Models
+﻿namespace ToggleAvailability.Server.Models;
+
+public class OfficeHistory
 {
-    public class OfficeHistory
-    {
-        public int UserId { get; set; }
+    public int UserId { get; set; }
 
-        public DateOnly Date { get; set; }
+    public DateOnly Date { get; set; }
 
-        public TimeSpan TimeInOffice { get; set; }
-    }
+    public TimeSpan TimeInOffice { get; set; }
+
+    public DateTime? StartTime { get; set; }
 }

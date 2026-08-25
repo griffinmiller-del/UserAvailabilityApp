@@ -22,6 +22,8 @@ public partial class UserAvailability : ComponentBase, IDisposable
 
     private List<User> _users = [];
 
+    private bool _closingDetails;
+
     private List<OfficeHistory> _userHistory = [];
 
     private bool _disposed;
@@ -315,18 +317,29 @@ public partial class UserAvailability : ComponentBase, IDisposable
     // Close User Details
     // ==================================================
 
-    private void CloseUserDetails()
+    private async Task CloseUserDetails()
     {
+        if (_disposed ||
+            _selectedUser is null ||
+            _closingDetails)
+        {
+            return;
+        }
+
+        _closingDetails = true;
+
+        StateHasChanged();
+
+        await Task.Delay(200);
+
         if (_disposed)
         {
             return;
         }
 
-
         _selectedUser = null;
-
         _userHistory = [];
-
+        _closingDetails = false;
 
         StateHasChanged();
     }

@@ -7,5 +7,7 @@
         public DateOnly Date { get; set; }
 
         public TimeSpan TimeInOffice { get; set; }
+
+        public DateTime? StartTime { get; set; }
     }
 }

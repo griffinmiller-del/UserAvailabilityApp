@@ -390,8 +390,18 @@ public class AvailabilityHub : Hub
         if (status == Status.InOffice &&
             user.Status != Status.InOffice)
         {
-            user.InOfficeStartTime =
+            DateTime now =
                 DateTime.Now;
+
+            // Start the new office session.
+            user.InOfficeStartTime =
+                now;
+
+            // Save the first clock-in time for today.
+            OfficeHistoryStore.SetStartTime(
+                user.UserId,
+                DateOnly.FromDateTime(now),
+                now);
         }
 
 

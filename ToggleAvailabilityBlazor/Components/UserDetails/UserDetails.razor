@@ -1,11 +1,12 @@
 ﻿@using ToggleAvailabilityBlazor.Models
 @using ToggleAvailabilityBlazor.Components.Graph
 
-<div class="user-details-overlay"
+<div class="user-details-overlay @(_closing ? "closing" : "")"
      @onclick="HandleOverlayClick">
 
-    <div class="user-details-card"
+    <div class="user-details-card @(_closing ? "contracting" : "")"
          @onclick:stopPropagation="true">
+
 
         <!-- ================================================== -->
         <!-- Header -->

@@ -3,9 +3,9 @@
     "UserId": 1,
     "Name": "John",
     "IsAvailable": false,
-    "Status": 6,
+    "Status": "Other",
     "InOfficeStartTime": null,
-    "TotalTimeInOffice": "05:25:31.9616664"
+    "TotalTimeInOffice": "00:01:11.1237928"
   },
   {
     "UserId": 2,
@@ -13,7 +13,7 @@
     "IsAvailable": false,
     "Status": "Other",
     "InOfficeStartTime": null,
-    "TotalTimeInOffice": "05:57:03.8391475"
+    "TotalTimeInOffice": "00:06:53.5562561"
   },
   {
     "UserId": 3,
@@ -21,7 +21,7 @@
     "IsAvailable": false,
     "Status": 6,
     "InOfficeStartTime": null,
-    "TotalTimeInOffice": "05:21:36.2494357"
+    "TotalTimeInOffice": "00:00:20.9211392"
   },
   {
     "UserId": 4,
@@ -29,7 +29,7 @@
     "IsAvailable": false,
     "Status": "Other",
     "InOfficeStartTime": null,
-    "TotalTimeInOffice": "05:21:16.9624436"
+    "TotalTimeInOffice": "00:00:00"
   },
   {
     "UserId": 5,
@@ -37,6 +37,6 @@
     "IsAvailable": false,
     "Status": "Other",
     "InOfficeStartTime": null,
-    "TotalTimeInOffice": "05:21:19.2877643"
+    "TotalTimeInOffice": "00:00:00"
   }
 ]
