@@ -61,10 +61,11 @@ public partial class UserDetails : ComponentBase
     }
 
 
-    // ==================================================
-    // Graph Range Changed
-    // ==================================================
-
+    /// <summary>
+    /// Handles when the range for the graph has been changed
+    /// </summary>
+    /// <param name="range">The new range chosen</param>
+    /// <returns></returns>
     private async Task OnSelectedRangeChanged(
         GraphRange range)
     {
@@ -75,10 +76,11 @@ public partial class UserDetails : ComponentBase
     }
 
 
-    // ==================================================
-    // Custom Start Date Changed
-    // ==================================================
-
+    /// <summary>
+    /// Handles when the start date is changed for the custom date range
+    /// </summary>
+    /// <param name="date">The start date chosen</param>
+    /// <returns></returns>
     private async Task OnCustomStartDateChanged(
         DateOnly date)
     {
@@ -89,10 +91,11 @@ public partial class UserDetails : ComponentBase
     }
 
 
-    // ==================================================
-    // Custom End Date Changed
-    // ==================================================
-
+    /// <summary>
+    /// Handles when the end date is changed for the custom date range
+    /// </summary>
+    /// <param name="date">The end date chosen</param>
+    /// <returns></returns>
     private async Task OnCustomEndDateChanged(
         DateOnly date)
     {
@@ -113,10 +116,10 @@ public partial class UserDetails : ComponentBase
     }
 
 
-    // ==================================================
-    // Close
-    // ==================================================
-
+    /// <summary>
+    /// Handles closing user details
+    /// </summary>
+    /// <returns></returns>
     private async Task Close()
     {
         if (_closing)

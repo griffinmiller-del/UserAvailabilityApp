@@ -262,10 +262,11 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // ==================================================
-    // Get User History
-    // ==================================================
-
+    /// <summary>
+    /// Handles getting the history of a user
+    /// </summary>
+    /// <param name="userId">The id of the user to get the history of</param>
+    /// <returns></returns>
     public async Task<List<OfficeHistory>>
         GetUserHistory(
             int userId)
@@ -285,10 +286,10 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // ==================================================
-    // Update User
-    // ==================================================
-
+    /// <summary>
+    /// Updates the user list with an updated user
+    /// </summary>
+    /// <param name="user">The user to update</param>
     private void UpdateUser(User user)
     {
         if (_disposed)
@@ -336,10 +337,11 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // ==================================================
-    // Clone User
-    // ==================================================
-
+    /// <summary>
+    /// Creates a clone of a user
+    /// </summary>
+    /// <param name="user">The user object to clone</param>
+    /// <returns>The cloned user object</returns>
     private static User CloneUser(
         User user)
     {
@@ -366,10 +368,10 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // ==================================================
-    // Connect
-    // ==================================================
-
+    /// <summary>
+    /// Handles connecting to the server hub
+    /// </summary>
+    /// <returns></returns>
     public async Task ConnectAsync()
     {
         if (_disposed)
@@ -417,9 +419,13 @@ public class AvailabilityService : IAsyncDisposable
             _connectionLock.Release();
         }
     }
-    public async Task<List<OfficeHistory>>
-    GetUserHistoryAsync(
-    int userId)
+
+    /// <summary>
+    /// Handles getting the user history
+    /// </summary>
+    /// <param name="userId">The user id of the user to get the history of</param>
+    /// <returns></returns>
+    public async Task<List<OfficeHistory>> GetUserHistoryAsync(int userId)
     {
         return await _connection.InvokeAsync<
             List<OfficeHistory>>(
@@ -427,11 +433,10 @@ public class AvailabilityService : IAsyncDisposable
             userId);
     }
 
-    // ==================================================
-    // Dispose
-    // ==================================================
-
-
+    /// <summary>
+    /// Handles disposing the connection
+    /// </summary>
+    /// <returns></returns>
     public async ValueTask DisposeAsync()
     {
         if (_disposed)

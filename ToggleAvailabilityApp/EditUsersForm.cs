@@ -271,10 +271,9 @@ public partial class EditUsersForm : Form
         RefreshUserList();
     }
 
-    // --------------------------------------------------
-    // Refresh list
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles refreshing the user list
+    /// </summary>
     private void RefreshUserList()
     {
         lst_Users.BeginUpdate();
@@ -314,10 +313,11 @@ public partial class EditUsersForm : Form
             hasUser;
     }
 
-    // --------------------------------------------------
-    // User selected
-    // --------------------------------------------------
-
+    /// <summary>
+    /// handles when the selected user index is changed
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void Users_SelectedIndexChanged(
         object? sender,
         EventArgs e)
@@ -340,14 +340,11 @@ public partial class EditUsersForm : Form
         UpdateButtonState();
     }
 
-    // --------------------------------------------------
-    // Save edited name
-    // --------------------------------------------------
-
-    // --------------------------------------------------
-    // Save user list
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles when the Save button is clicked
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void Save_Click(
         object? sender,
         EventArgs e)
@@ -405,10 +402,11 @@ public partial class EditUsersForm : Form
             DialogResult.OK;
     }
 
-    // --------------------------------------------------
-    // Add user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// handles when the Add button is clicked
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void Add_Click(
         object? sender,
         EventArgs e)
@@ -480,10 +478,11 @@ public partial class EditUsersForm : Form
         txt_Name.SelectAll();
     }
 
-    // --------------------------------------------------
-    // Delete user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// handles when the delete button is clicked
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void Delete_Click(
         object? sender,
         EventArgs e)
@@ -531,10 +530,11 @@ public partial class EditUsersForm : Form
             DialogResult.Cancel;
     }
 
-    // --------------------------------------------------
-    // Clone
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Creates a clone of a user
+    /// </summary>
+    /// <param name="user">The user to create a clone of</param>
+    /// <returns>The clone of the user</returns>
     private static User CloneUser(
         User user)
     {

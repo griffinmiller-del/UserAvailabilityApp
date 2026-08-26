@@ -359,11 +359,9 @@ public class AvailabilityHub : Hub
     /// Ensures that the name of the user is unique
     /// </summary>
     /// <param name="name">The name of the user that is being checked for uniqueness</param>
-    /// <param name="excludedUserId"></param>
+    /// <param name="excludedUserId">The user id of the user to be checkedf or uniqueness</param>
     /// <exception cref="HubException"></exception>
-    private static void EnsureUniqueUserName(
-    string name,
-    int? excludedUserId = null)
+    private static void EnsureUniqueUserName(string name, int? excludedUserId = null)
     {
         bool exists =
             UserStore.GetUsers()

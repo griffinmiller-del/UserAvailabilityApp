@@ -83,10 +83,9 @@ public partial class UserAvailability : ComponentBase, IDisposable
     }
 
 
-    // ==================================================
-    // Start Refresh Timer
-    // ==================================================
-
+    /// <summary>
+    /// Starts the refresh timer
+    /// </summary>
     private void StartRefreshTimer()
     {
         if (_disposed)
@@ -109,10 +108,11 @@ public partial class UserAvailability : ComponentBase, IDisposable
     }
 
 
-    // ==================================================
-    // Refresh Timer Loop
-    // ==================================================
-
+    /// <summary>
+    /// Loop for refresh timer
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     private async Task RefreshTimerLoop(
         CancellationToken cancellationToken)
     {
@@ -159,10 +159,10 @@ public partial class UserAvailability : ComponentBase, IDisposable
     }
 
 
-    // ==================================================
-    // Users Changed
-    // ==================================================
-
+    /// <summary>
+    /// Handles when users change
+    /// </summary>
+    /// <returns></returns>
     private async Task OnUsersChanged()
     {
         if (_disposed)
@@ -201,10 +201,9 @@ public partial class UserAvailability : ComponentBase, IDisposable
     }
 
 
-    // ==================================================
-    // Update Selected User
-    // ==================================================
-
+    /// <summary>
+    /// Updates which user is currently selected
+    /// </summary>
     private void UpdateSelectedUser()
     {
         if (_selectedUser is null)
@@ -226,10 +225,11 @@ public partial class UserAvailability : ComponentBase, IDisposable
     }
 
 
-    // ==================================================
-    // Open User Details
-    // ==================================================
-
+    /// <summary>
+    /// Handles opening user details element
+    /// </summary>
+    /// <param name="user">The user object to use to populate the user details element</param>
+    /// <returns></returns>
     private async Task OpenUserDetails(
         User user)
     {
@@ -266,10 +266,10 @@ public partial class UserAvailability : ComponentBase, IDisposable
     }
 
 
-    // ==================================================
-    // Close User Details
-    // ==================================================
-
+    /// <summary>
+    /// Handles closing user detail element and disposes
+    /// </summary>
+    /// <returns></returns>
     private async Task CloseUserDetails()
     {
         if (_disposed ||
@@ -297,11 +297,12 @@ public partial class UserAvailability : ComponentBase, IDisposable
         StateHasChanged();
     }
 
-
-    // ==================================================
-    // Clone User
-    // ==================================================
-
+    
+    /// <summary>
+    /// Creates a clone of a user object
+    /// </summary>
+    /// <param name="user">The user object to clone</param>
+    /// <returns>The cloned user object</returns>
     private static User CloneUser(
         User user)
     {

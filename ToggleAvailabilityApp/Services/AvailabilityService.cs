@@ -194,10 +194,10 @@ public class AvailabilityService : IAsyncDisposable
         HubConnectionState.Connected;
 
 
-    // --------------------------------------------------
-    // Connect
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles connecting to the server
+    /// </summary>
+    /// <returns></returns>
     public async Task ConnectAsync()
     {
         if (_connection.State ==
@@ -275,10 +275,11 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // --------------------------------------------------
-    // Set availability
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles telling the server that the availability of a user has been changed
+    /// </summary>
+    /// <param name="user">The user object that has been changed</param>
+    /// <returns></returns>
     public async Task SetAvailabilityAsync(
         User user)
     {
@@ -293,10 +294,11 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // --------------------------------------------------
-    // Add user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles telling the server that a new user has been added
+    /// </summary>
+    /// <param name="name">The name of the new user</param>
+    /// <returns></returns>
     public async Task AddUserAsync(
         string name)
     {
@@ -309,10 +311,12 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // --------------------------------------------------
-    // Update user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles telling the server that a user has been updated
+    /// </summary>
+    /// <param name="userId">The id of the user that has been updated</param>
+    /// <param name="name">The name of the updated user</param>
+    /// <returns></returns>
     public async Task UpdateUserAsync(
         int userId,
         string name)
@@ -327,10 +331,11 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // --------------------------------------------------
-    // Delete user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles telling the server that a user has been deleted
+    /// </summary>
+    /// <param name="userId">the id of the user that has been deleted</param>
+    /// <returns></returns>
     public async Task DeleteUserAsync(
         int userId)
     {
@@ -343,10 +348,11 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    // --------------------------------------------------
-    // Replace complete user list
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Replaces the user list
+    /// </summary>
+    /// <param name="users">The list of users to replace the existing list with</param>
+    /// <returns></returns>
     public async Task UpdateUserListAsync(
         List<User> users)
     {
@@ -358,11 +364,10 @@ public class AvailabilityService : IAsyncDisposable
             users);
     }
 
-
-    // --------------------------------------------------
-    // Ensure connected
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles ensuring that the application is connected to the server
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
     private void EnsureConnected()
     {
         if (!IsConnected)

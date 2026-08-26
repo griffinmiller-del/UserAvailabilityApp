@@ -26,10 +26,10 @@ public partial class UserCard : ComponentBase
     public EventCallback<User> OnClick { get; set; }
 
 
-    // ==================================================
-    // Click
-    // ==================================================
-
+    /// <summary>
+    /// Handles when the user card is clicked
+    /// </summary>
+    /// <returns></returns>
     private async Task HandleClick()
     {
         await OnClick.InvokeAsync(User);

@@ -301,12 +301,11 @@ public class MainForm : Form
     }
 
 
-    // ------------------------------------------------------
-    // Replace local user list
-    // ------------------------------------------------------
-
-    private void ReplaceUsers(
-        IEnumerable<User> users)
+    /// <summary>
+    /// Replaces the local list of users
+    /// </summary>
+    /// <param name="users">The list of users to replace the local list with</param>
+    private void ReplaceUsers(IEnumerable<User> users)
     {
         _users.Clear();
 
@@ -317,10 +316,11 @@ public class MainForm : Form
     }
 
 
-    // ------------------------------------------------------
-    // Clone user
-    // ------------------------------------------------------
-
+    /// <summary>
+    /// Creates a clone of a user object
+    /// </summary>
+    /// <param name="user">The user to clone</param>
+    /// <returns>The clone of the user</returns>
     private static User CloneUser(
         User user)
     {
@@ -449,12 +449,11 @@ public class MainForm : Form
     }
 
 
-    // ------------------------------------------------------
-    // Individual user updated by server
-    // ------------------------------------------------------
-
-    private void AvailabilityService_UserUpdated(
-        User updatedUser)
+    /// <summary>
+    /// Handles when the server notifies the app instance that a user has been updated
+    /// </summary>
+    /// <param name="updatedUser">The user object that has been updated</param>
+    private void AvailabilityService_UserUpdated(User updatedUser)
     {
         if (InvokeRequired)
         {
