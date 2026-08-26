@@ -6,6 +6,14 @@ namespace ToggleAvailability.Server.Data;
 
 public static class UserStore
 {
+
+    private static readonly string _userIdFilePath =
+    Path.Combine(
+        Directory.GetParent(
+            AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName,
+        "Data",
+        "user-id.json");
+
     private static readonly string _filePath =
         Path.Combine(
             Directory.GetParent(
@@ -62,9 +70,7 @@ public static class UserStore
     {
         lock (_lock)
         {
-            var user =
-                _users.FirstOrDefault(
-                    x => x.UserId == userId);
+            var user = FindUser(userId);
 
             return user is null
                 ? null
@@ -80,13 +86,90 @@ public static class UserStore
     {
         lock (_lock)
         {
-            if (_users.Count == 0)
-            {
-                return 1;
-            }
+            int nextUserId = LoadNextUserId();
 
-            return _users.Max(
-                       x => x.UserId) + 1;
+            SaveNextUserId(
+                nextUserId + 1);
+
+            return nextUserId;
+        }
+    }
+
+    // --------------------------------------------------
+    // Load next user ID
+    // --------------------------------------------------
+
+    private static int LoadNextUserId()
+    {
+        try
+        {
+            if (File.Exists(_userIdFilePath))
+            {
+                string json =
+                    File.ReadAllText(
+                        _userIdFilePath);
+
+                if (int.TryParse(
+                    json,
+                    out int nextUserId))
+                {
+                    return Math.Max(
+                        nextUserId,
+                        GetInitialNextUserId());
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"Failed to load next user ID: " +
+                $"{ex.Message}");
+        }
+
+        int initialNextUserId =
+            GetInitialNextUserId();
+
+        SaveNextUserId(
+            initialNextUserId + 1);
+
+        return initialNextUserId;
+    }
+
+    // --------------------------------------------------
+    // Get initial next user ID
+    // --------------------------------------------------
+
+    private static int GetInitialNextUserId()
+    {
+        if (_users.Count == 0)
+        {
+            return 1;
+        }
+
+        return _users.Max(
+                   x => x.UserId) + 1;
+    }
+
+    // --------------------------------------------------
+    // Save next user ID
+    // --------------------------------------------------
+
+    private static void SaveNextUserId(
+        int nextUserId)
+    {
+        try
+        {
+            File.WriteAllText(
+                _userIdFilePath,
+                nextUserId.ToString());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"Failed to save next user ID: " +
+                $"{ex.Message}");
+
+            throw;
         }
     }
 
@@ -97,11 +180,7 @@ public static class UserStore
     public static void AddUser(
         User user)
     {
-        if (user is null)
-        {
-            throw new ArgumentNullException(
-                nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         lock (_lock)
         {
@@ -119,19 +198,11 @@ public static class UserStore
     public static void UpdateUser(
         User user)
     {
-        if (user is null)
-        {
-            throw new ArgumentNullException(
-                nameof(user));
-        }
+        ArgumentNullException.ThrowIfNull(user);
 
         lock (_lock)
         {
-            var existing =
-                _users.FirstOrDefault(
-                    x =>
-                        x.UserId ==
-                        user.UserId);
+            var existing = FindUser(user.UserId);
 
             if (existing is null)
             {
@@ -170,12 +241,7 @@ public static class UserStore
     {
         lock (_lock)
         {
-            var user =
-                _users.FirstOrDefault(
-                    x =>
-                        x.UserId ==
-                        userId);
-
+            var user = FindUser(userId);
             if (user is null)
             {
                 return;
@@ -195,11 +261,7 @@ public static class UserStore
     public static void ReplaceUsers(
         List<User> users)
     {
-        if (users is null)
-        {
-            throw new ArgumentNullException(
-                nameof(users));
-        }
+        ArgumentNullException.ThrowIfNull(users);
 
         lock (_lock)
         {
@@ -343,5 +405,13 @@ public static class UserStore
             TotalTimeInOffice =
                 user.TotalTimeInOffice
         };
+    }
+
+    private static User? FindUser(
+    int userId)
+    {
+        return _users.FirstOrDefault(
+            x =>
+                x.UserId == userId);
     }
 }

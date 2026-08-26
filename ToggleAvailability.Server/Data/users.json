@@ -2,18 +2,18 @@
   {
     "UserId": 1,
     "Name": "John",
-    "IsAvailable": false,
-    "Status": "Other",
-    "InOfficeStartTime": "2026-08-25T15:22:35.6520838-05:00",
-    "TotalTimeInOffice": "00:01:11.1237928"
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-26T10:31:29.4059004-05:00",
+    "TotalTimeInOffice": "00:00:00"
   },
   {
     "UserId": 2,
     "Name": "Jane",
-    "IsAvailable": false,
-    "Status": "Other",
-    "InOfficeStartTime": null,
-    "TotalTimeInOffice": "00:06:53.5562561"
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-26T10:31:13.6144259-05:00",
+    "TotalTimeInOffice": "00:00:00"
   },
   {
     "UserId": 3,
@@ -21,7 +21,7 @@
     "IsAvailable": false,
     "Status": 6,
     "InOfficeStartTime": null,
-    "TotalTimeInOffice": "00:00:20.9211392"
+    "TotalTimeInOffice": "00:00:00"
   },
   {
     "UserId": 4,
@@ -37,6 +37,14 @@
     "IsAvailable": false,
     "Status": "Other",
     "InOfficeStartTime": null,
+    "TotalTimeInOffice": "00:00:00"
+  },
+  {
+    "UserId": 6,
+    "Name": "Mike",
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-26T10:31:17.5754034-05:00",
     "TotalTimeInOffice": "00:00:00"
   }
 ]

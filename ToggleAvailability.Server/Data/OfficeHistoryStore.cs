@@ -85,21 +85,7 @@ public static class OfficeHistoryStore
 
             if (existing is null)
             {
-                _history.Add(
-                    new OfficeHistory
-                    {
-                        UserId =
-                            userId,
-
-                        Date =
-                            date,
-
-                        TimeInOffice =
-                            duration,
-
-                        StartTime =
-                            null
-                    });
+                _history.Add(CreateRecord(userId,  date, duration));
             }
             else
             {
@@ -122,25 +108,12 @@ public static class OfficeHistoryStore
     {
         lock (_lock)
         {
-            bool exists =
-                _history.Any(
-                    x =>
-                        x.UserId == userId &&
-                        x.Date == date);
-
-            if (exists)
+            if (FindRecord(userId, date) is not null)
             {
                 return;
             }
 
-            _history.Add(
-                new OfficeHistory
-                {
-                    UserId = userId,
-                    Date = date,
-                    TimeInOffice = TimeSpan.Zero,
-                    StartTime = null
-                });
+            _history.Add(CreateRecord(userId, date));
 
             Save();
         }
@@ -275,11 +248,7 @@ public static class OfficeHistoryStore
     {
         lock (_lock)
         {
-            var record =
-                _history.FirstOrDefault(
-                    x =>
-                        x.UserId == userId &&
-                        x.Date == date);
+            var record = FindRecord(userId, date);
 
             return record is null
                 ? null
@@ -294,47 +263,57 @@ public static class OfficeHistoryStore
     {
         lock (_lock)
         {
-            var existing =
-                _history.FirstOrDefault(
-                    x =>
-                        x.UserId == userId &&
-                        x.Date == date);
+            var existing = FindRecord(userId, date);
 
             if (existing is null)
             {
-                _history.Add(
-                    new OfficeHistory
-                    {
-                        UserId =
-                            userId,
-
-                        Date =
-                            date,
-
-                        TimeInOffice =
-                            TimeSpan.Zero,
-
-                        StartTime =
-                            startTime
-                    });
+                _history.Add(CreateRecord(userId, date, TimeSpan.Zero, startTime));
 
                 Save();
 
                 return;
             }
 
-
             // Only record the first clock-in
             // of the day.
             if (existing.StartTime is null)
             {
-                existing.StartTime =
-                    startTime;
+                existing.StartTime = startTime;
 
                 Save();
             }
         }
     }
+    private static OfficeHistory? FindRecord(
+    int userId,
+    DateOnly date)
+    {
+        return _history.FirstOrDefault(
+            x =>
+                x.UserId == userId &&
+                x.Date == date);
+    }
 
+    private static OfficeHistory CreateRecord(
+    int userId,
+    DateOnly date,
+    TimeSpan timeInOffice = default,
+    DateTime? startTime = null)
+    {
+        return new OfficeHistory
+        {
+            UserId =
+                userId,
+
+            Date =
+                date,
+
+            TimeInOffice =
+                timeInOffice,
+
+            StartTime =
+                startTime
+        };
+    }
 
 }

@@ -53,10 +53,6 @@ public partial class UserAvailability : ComponentBase, IDisposable
 
         _initialized = true;
 
-
-        AvailabilityService.UserUpdated +=
-            OnUserUpdated;
-
         AvailabilityService.UsersChanged +=
             OnUsersChanged;
 
@@ -168,49 +164,6 @@ public partial class UserAvailability : ComponentBase, IDisposable
     // ==================================================
 
     private async Task OnUsersChanged()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-
-        List<User> users =
-            AvailabilityService.Users
-                .Select(CloneUser)
-                .ToList();
-
-
-        try
-        {
-            await InvokeAsync(() =>
-            {
-                if (_disposed)
-                {
-                    return;
-                }
-
-
-                _users = users;
-
-                UpdateSelectedUser();
-
-                StateHasChanged();
-            });
-        }
-        catch (ObjectDisposedException)
-        {
-            // Renderer/circuit was disposed.
-        }
-    }
-
-
-    // ==================================================
-    // User Updated
-    // ==================================================
-
-    private async Task OnUserUpdated(
-        User user)
     {
         if (_disposed)
         {
@@ -390,12 +343,8 @@ public partial class UserAvailability : ComponentBase, IDisposable
         _disposed = true;
 
 
-        AvailabilityService.UserUpdated -=
-            OnUserUpdated;
-
         AvailabilityService.UsersChanged -=
             OnUsersChanged;
-
 
         _refreshCancellation?.Cancel();
 

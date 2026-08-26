@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using ToggleAvailabilityBlazor.Models;
+using ToggleAvailabilityBlazor.Services;
 
 namespace ToggleAvailabilityBlazor.Components.Graph;
 
@@ -45,29 +46,20 @@ public partial class OfficeHistoryGraph : ComponentBase
 
 
     // ==================================================
+    // Injected Services
+    // ==================================================
+
+    [Inject]
+    private OfficeHistoryGraphService GraphService { get; set; } = null!;
+
+
+    // ==================================================
     // Fields
     // ==================================================
 
     private List<GraphPoint> _graphData = [];
 
     private int _hoveredGraphPoint = -1;
-
-
-    // ==================================================
-    // Constants
-    // ==================================================
-
-    private const double GraphWidth = 1500;
-
-    private const double GraphHeight = 350;
-
-    private const double GraphLeft = 65;
-
-    private const double GraphRight = 25;
-
-    private const double GraphTop = 25;
-
-    private const double GraphBottom = 55;
 
 
     // ==================================================
@@ -87,7 +79,11 @@ public partial class OfficeHistoryGraph : ComponentBase
     private void UpdateGraphData()
     {
         _graphData =
-            GetGraphPoints();
+            GraphService.GetGraphPoints(
+                History,
+                SelectedRange,
+                CustomStartDate,
+                CustomEndDate);
     }
 
 
@@ -107,8 +103,7 @@ public partial class OfficeHistoryGraph : ComponentBase
         if (newRange == GraphRange.Custom)
         {
             DateOnly today =
-                DateOnly.FromDateTime(
-                    DateTime.Now);
+                GraphService.GetToday();
 
 
             DateOnly start =
@@ -121,6 +116,7 @@ public partial class OfficeHistoryGraph : ComponentBase
 
             await CustomStartDateChanged.InvokeAsync(
                 start);
+
 
             await CustomEndDateChanged.InvokeAsync(
                 end);
@@ -149,114 +145,6 @@ public partial class OfficeHistoryGraph : ComponentBase
 
         await InvokeAsync(
             StateHasChanged);
-    }
-
-
-    // ==================================================
-    // Range Start
-    // ==================================================
-
-    private DateOnly GetRangeStartDate(
-        GraphRange range)
-    {
-        DateOnly today =
-            DateOnly.FromDateTime(
-                DateTime.Now);
-
-
-        return range switch
-        {
-            GraphRange.Week =>
-                today.AddDays(-6),
-
-            GraphRange.Month =>
-                today.AddDays(-29),
-
-            GraphRange.Year =>
-                today.AddDays(-364),
-
-            GraphRange.Custom =>
-                CustomStartDate,
-
-            _ =>
-                today.AddDays(-6)
-        };
-    }
-
-
-    // ==================================================
-    // Range End
-    // ==================================================
-
-    private DateOnly GetRangeEndDate(
-        GraphRange range)
-    {
-        if (range == GraphRange.Custom)
-        {
-            return CustomEndDate;
-        }
-
-
-        return DateOnly.FromDateTime(
-            DateTime.Now);
-    }
-
-
-    // ==================================================
-    // Get Graph Points
-    // ==================================================
-
-    private List<GraphPoint> GetGraphPoints()
-    {
-        DateOnly startDate =
-            GetRangeStartDate(
-                SelectedRange);
-
-
-        DateOnly endDate =
-            GetRangeEndDate(
-                SelectedRange);
-
-
-        if (endDate < startDate)
-        {
-            return [];
-        }
-
-
-        var history =
-            History
-                .GroupBy(x => x.Date)
-                .ToDictionary(
-                    x => x.Key,
-                    x => x.Sum(
-                        y => y.TimeInOffice.TotalHours));
-
-
-        var points =
-            new List<GraphPoint>();
-
-
-        for (
-            DateOnly date = startDate;
-            date <= endDate;
-            date = date.AddDays(1))
-        {
-            history.TryGetValue(
-                date,
-                out double hours);
-
-
-            points.Add(
-                new GraphPoint
-                {
-                    Date = date,
-                    Hours = hours
-                });
-        }
-
-
-        return points;
     }
 
 
@@ -296,23 +184,23 @@ public partial class OfficeHistoryGraph : ComponentBase
             // Dimensions
             // ==================================================
 
-            const double width =
-                GraphWidth;
+            double width =
+                OfficeHistoryGraphService.GraphWidth;
 
-            const double height =
-                GraphHeight;
+            double height =
+                OfficeHistoryGraphService.GraphHeight;
 
-            const double left =
-                GraphLeft;
+            double left =
+                OfficeHistoryGraphService.GraphLeft;
 
-            const double right =
-                GraphRight;
+            double right =
+                OfficeHistoryGraphService.GraphRight;
 
-            const double top =
-                GraphTop;
+            double top =
+                OfficeHistoryGraphService.GraphTop;
 
-            const double bottom =
-                GraphBottom;
+            double bottom =
+                OfficeHistoryGraphService.GraphBottom;
 
 
             double graphWidth =
@@ -328,131 +216,14 @@ public partial class OfficeHistoryGraph : ComponentBase
 
 
             double maxHours =
-                Math.Max(
-                    8,
-                    Math.Ceiling(
-                        _graphData.Max(
-                            x => x.Hours)));
+                GraphService.GetMaxHours(
+                    _graphData);
 
 
             double step =
-                _graphData.Count <= 1
-                    ? 0
-                    : graphWidth /
-                      (_graphData.Count - 1);
-
-
-            double GetX(
-                int index)
-            {
-                return
-                    left +
-                    index *
-                    step;
-            }
-
-
-            double GetY(
-                double hours)
-            {
-                return
-                    top +
-                    graphHeight -
-                    (
-                        hours /
-                        maxHours *
-                        graphHeight
-                    );
-            }
-
-
-            // ==================================================
-            // Line Path
-            // ==================================================
-
-            string BuildLinePath()
-            {
-                string path = "";
-
-
-                for (
-                    int i = 0;
-                    i < _graphData.Count;
-                    i++)
-                {
-                    double x =
-                        GetX(i);
-
-
-                    double y =
-                        GetY(
-                            _graphData[i].Hours);
-
-
-                    path +=
-                        i == 0
-                            ? $"M {x:F2} {y:F2}"
-                            : $" L {x:F2} {y:F2}";
-                }
-
-
-                return path;
-            }
-
-
-            // ==================================================
-            // Area Path
-            // ==================================================
-
-            string BuildAreaPath()
-            {
-                if (_graphData.Count == 0)
-                {
-                    return "";
-                }
-
-
-                double baseline =
-                    top +
-                    graphHeight;
-
-
-                string path =
-                    $"M {left:F2} " +
-                    $"{baseline:F2}";
-
-
-                path +=
-                    $" L {GetX(0):F2} " +
-                    $"{GetY(_graphData[0].Hours):F2}";
-
-
-                for (
-                    int i = 1;
-                    i < _graphData.Count;
-                    i++)
-                {
-                    path +=
-                        $" L {GetX(i):F2} " +
-                        $"{GetY(_graphData[i].Hours):F2}";
-                }
-
-
-                double lastX =
-                    GetX(
-                        _graphData.Count - 1);
-
-
-                path +=
-                    $" L {lastX:F2} " +
-                    $"{baseline:F2}";
-
-
-                path += " Z";
-
-
-                return path;
-            }
+                GraphService.GetGraphStep(
+                    _graphData.Count,
+                    graphWidth);
 
 
             // ==================================================
@@ -495,69 +266,67 @@ public partial class OfficeHistoryGraph : ComponentBase
                 i++)
             {
                 double hours =
-                    maxHours *
-                    i /
-                    gridLines;
+                    GraphService.GetGridHours(
+                        maxHours,
+                        i,
+                        gridLines);
 
 
                 double y =
-                    top +
-                    graphHeight -
-                    (
-                        i *
-                        graphHeight /
-                        gridLines
-                    );
+                    GraphService.GetGraphY(
+                        hours,
+                        maxHours,
+                        top,
+                        graphHeight);
 
 
-                int gridSequence =
-                    1000 +
-                    i * 10;
-
+                // --------------------------------------------------
+                // Grid Line
+                // --------------------------------------------------
 
                 builder.OpenElement(
-                    gridSequence,
+                    0,
                     "line");
 
 
                 builder.AddAttribute(
-                    gridSequence + 1,
+                    1,
                     "x1",
                     left);
 
 
                 builder.AddAttribute(
-                    gridSequence + 2,
+                    2,
                     "x2",
                     width - right);
 
 
                 builder.AddAttribute(
-                    gridSequence + 3,
+                    3,
                     "y1",
                     y);
 
 
                 builder.AddAttribute(
-                    gridSequence + 4,
+                    4,
                     "y2",
                     y);
 
 
                 builder.AddAttribute(
-                    gridSequence + 5,
+                    5,
                     "stroke",
                     GraphGridColor);
 
 
                 builder.AddAttribute(
-                    gridSequence + 6,
+                    6,
                     "stroke-width",
                     "1");
 
 
                 builder.AddAttribute(
-                    gridSequence + 7,
+                    7,
                     "stroke-opacity",
                     "0.8");
 
@@ -565,48 +334,47 @@ public partial class OfficeHistoryGraph : ComponentBase
                 builder.CloseElement();
 
 
-                int labelSequence =
-                    1100 +
-                    i * 10;
-
+                // --------------------------------------------------
+                // Grid Label
+                // --------------------------------------------------
 
                 builder.OpenElement(
-                    labelSequence,
+                    0,
                     "text");
 
 
                 builder.AddAttribute(
-                    labelSequence + 1,
+                    1,
                     "x",
                     left - 10);
 
 
                 builder.AddAttribute(
-                    labelSequence + 2,
+                    2,
                     "y",
                     y + 4);
 
 
                 builder.AddAttribute(
-                    labelSequence + 3,
+                    3,
                     "text-anchor",
                     "end");
 
 
                 builder.AddAttribute(
-                    labelSequence + 4,
+                    4,
                     "fill",
                     GraphTitleColor);
 
 
                 builder.AddAttribute(
-                    labelSequence + 5,
+                    5,
                     "font-size",
                     "15");
 
 
                 builder.AddContent(
-                    labelSequence + 6,
+                    6,
                     $"{hours:0}h");
 
 
@@ -618,37 +386,47 @@ public partial class OfficeHistoryGraph : ComponentBase
             // Area
             // ==================================================
 
+            string areaPath =
+                GraphService.BuildAreaPath(
+                    _graphData,
+                    left,
+                    top,
+                    graphHeight,
+                    step,
+                    maxHours);
+
+
             builder.OpenElement(
-                2000,
+                0,
                 "path");
 
 
             builder.AddAttribute(
-                2001,
+                1,
                 "d",
-                BuildAreaPath());
+                areaPath);
 
 
             builder.AddAttribute(
-                2002,
+                2,
                 "fill",
                 GraphYellow);
 
 
             builder.AddAttribute(
-                2003,
+                3,
                 "fill-opacity",
                 GraphAreaOpacity);
 
 
             builder.AddAttribute(
-                2004,
+                4,
                 "stroke",
                 "none");
 
 
             builder.AddAttribute(
-                2005,
+                5,
                 "pointer-events",
                 "none");
 
@@ -660,49 +438,59 @@ public partial class OfficeHistoryGraph : ComponentBase
             // Line
             // ==================================================
 
+            string linePath =
+                GraphService.BuildLinePath(
+                    _graphData,
+                    left,
+                    top,
+                    graphHeight,
+                    step,
+                    maxHours);
+
+
             builder.OpenElement(
-                2100,
+                0,
                 "path");
 
 
             builder.AddAttribute(
-                2101,
+                1,
                 "d",
-                BuildLinePath());
+                linePath);
 
 
             builder.AddAttribute(
-                2102,
+                2,
                 "fill",
                 "none");
 
 
             builder.AddAttribute(
-                2103,
+                3,
                 "stroke",
                 GraphYellow);
 
 
             builder.AddAttribute(
-                2104,
+                4,
                 "stroke-width",
                 "3");
 
 
             builder.AddAttribute(
-                2105,
+                5,
                 "stroke-linecap",
                 "round");
 
 
             builder.AddAttribute(
-                2106,
+                6,
                 "stroke-linejoin",
                 "round");
 
 
             builder.AddAttribute(
-                2107,
+                7,
                 "filter",
                 "drop-shadow(0 0 5px rgba(242, 201, 76, 0.25))");
 
@@ -724,59 +512,68 @@ public partial class OfficeHistoryGraph : ComponentBase
 
 
                 double x =
-                    GetX(i);
+                    GraphService.GetGraphX(
+                        i,
+                        left,
+                        step);
 
 
                 double y =
-                    GetY(
-                        point.Hours);
+                    GraphService.GetGraphY(
+                        point.Hours,
+                        maxHours,
+                        top,
+                        graphHeight);
 
 
                 int pointIndex =
                     i;
 
 
-                int sequence =
-                    3000 +
-                    (i * 100);
-
+                // --------------------------------------------------
+                // Point Group
+                // --------------------------------------------------
 
                 builder.OpenElement(
-                    sequence,
+                    0,
                     "g");
 
 
                 builder.AddAttribute(
-                    sequence + 1,
+                    1,
                     "class",
                     "graph-point-group");
 
 
+                // --------------------------------------------------
+                // Point
+                // --------------------------------------------------
+
                 builder.OpenElement(
-                    sequence + 10,
+                    0,
                     "circle");
 
 
                 builder.AddAttribute(
-                    sequence + 11,
+                    1,
                     "class",
                     "graph-point");
 
 
                 builder.AddAttribute(
-                    sequence + 12,
+                    2,
                     "cx",
                     x);
 
 
                 builder.AddAttribute(
-                    sequence + 13,
+                    3,
                     "cy",
                     y);
 
 
                 builder.AddAttribute(
-                    sequence + 14,
+                    4,
                     "r",
                     _hoveredGraphPoint == pointIndex
                         ? 9
@@ -784,31 +581,31 @@ public partial class OfficeHistoryGraph : ComponentBase
 
 
                 builder.AddAttribute(
-                    sequence + 15,
+                    5,
                     "fill",
                     GraphYellow);
 
 
                 builder.AddAttribute(
-                    sequence + 16,
+                    6,
                     "stroke",
                     GraphYellow);
 
 
                 builder.AddAttribute(
-                    sequence + 17,
+                    7,
                     "stroke-width",
                     "2");
 
 
                 builder.AddAttribute(
-                    sequence + 18,
+                    8,
                     "filter",
                     "drop-shadow(0 0 5px rgba(242, 201, 76, 0.35))");
 
 
                 builder.AddAttribute(
-                    sequence + 19,
+                    9,
                     "style",
                     "transition: r 0.15s ease; cursor: pointer;");
 
@@ -818,7 +615,7 @@ public partial class OfficeHistoryGraph : ComponentBase
                 // ==================================================
 
                 builder.AddAttribute(
-                    sequence + 20,
+                    10,
                     "onmouseenter",
                     EventCallback.Factory.Create<MouseEventArgs>(
                         this,
@@ -836,7 +633,7 @@ public partial class OfficeHistoryGraph : ComponentBase
                 // ==================================================
 
                 builder.AddAttribute(
-                    sequence + 21,
+                    11,
                     "onmouseleave",
                     EventCallback.Factory.Create<MouseEventArgs>(
                         this,
@@ -854,14 +651,14 @@ public partial class OfficeHistoryGraph : ComponentBase
                 // ==================================================
 
                 builder.OpenElement(
-                    sequence + 30,
+                    0,
                     "title");
 
 
                 builder.AddContent(
-                    sequence + 31,
+                    1,
                     $"{point.Date:MMMM d, yyyy} — " +
-                    $"{FormatGraphTime(point.Hours)}");
+                    $"{GraphService.FormatGraphTime(point.Hours)}");
 
 
                 builder.CloseElement();
@@ -883,7 +680,7 @@ public partial class OfficeHistoryGraph : ComponentBase
                 i < _graphData.Count;
                 i++)
             {
-                if (!ShouldShowDateLabel(
+                if (!GraphService.ShouldShowDateLabel(
                     i,
                     _graphData.Count))
                 {
@@ -892,53 +689,52 @@ public partial class OfficeHistoryGraph : ComponentBase
 
 
                 double x =
-                    GetX(i);
-
-
-                int sequence =
-                    5000 +
-                    (i * 10);
+                    GraphService.GetGraphX(
+                        i,
+                        left,
+                        step);
 
 
                 builder.OpenElement(
-                    sequence,
+                    0,
                     "text");
 
 
                 builder.AddAttribute(
-                    sequence + 1,
+                    1,
                     "x",
                     x);
 
 
                 builder.AddAttribute(
-                    sequence + 2,
+                    2,
                     "y",
                     height - 20);
 
 
                 builder.AddAttribute(
-                    sequence + 3,
+                    3,
                     "text-anchor",
                     "middle");
 
 
                 builder.AddAttribute(
-                    sequence + 4,
+                    4,
                     "fill",
                     GraphTitleColor);
 
 
                 builder.AddAttribute(
-                    sequence + 5,
+                    5,
                     "font-size",
                     "15");
 
 
                 builder.AddContent(
-                    sequence + 6,
-                    FormatGraphDate(
-                        _graphData[i].Date));
+                    6,
+                    GraphService.FormatGraphDate(
+                        _graphData[i].Date,
+                        SelectedRange));
 
 
                 builder.CloseElement();
@@ -951,109 +747,14 @@ public partial class OfficeHistoryGraph : ComponentBase
 
 
     // ==================================================
-    // Date Labels
-    // ==================================================
-
-    private static bool ShouldShowDateLabel(
-        int index,
-        int pointCount)
-    {
-        if (pointCount <= 14)
-        {
-            return true;
-        }
-
-
-        if (pointCount <= 45)
-        {
-            return
-                index == 0 ||
-                index == pointCount - 1 ||
-                index % 4 == 0;
-        }
-
-
-        int interval =
-            Math.Max(
-                1,
-                pointCount / 12);
-
-
-        return
-            index == 0 ||
-            index == pointCount - 1 ||
-            index % interval == 0;
-    }
-
-
-    // ==================================================
-    // Format Graph Time
-    // ==================================================
-
-    private static string FormatGraphTime(
-        double hours)
-    {
-        TimeSpan time =
-            TimeSpan.FromHours(
-                hours);
-
-
-        return
-            $"{(int)time.TotalHours:00}:" +
-            $"{time.Minutes:00}:" +
-            $"{time.Seconds:00}";
-    }
-
-
-    // ==================================================
-    // Format Graph Date
-    // ==================================================
-
-    private string FormatGraphDate(
-        DateOnly date)
-    {
-        return SelectedRange switch
-        {
-            GraphRange.Year =>
-                date.ToString("MMM"),
-
-            _ =>
-                date.ToString("MMM d")
-        };
-    }
-
-
-    // ==================================================
     // Graph Description
     // ==================================================
 
     private string GetGraphDateDescription()
     {
-        DateOnly today =
-            DateOnly.FromDateTime(
-                DateTime.Now);
-
-
-        return SelectedRange switch
-        {
-            GraphRange.Week =>
-                $"{today.AddDays(-6):MMM d} – " +
-                $"{today:MMM d, yyyy}",
-
-            GraphRange.Month =>
-                $"{today.AddDays(-29):MMM d} – " +
-                $"{today:MMM d, yyyy}",
-
-            GraphRange.Year =>
-                $"{today.AddDays(-364):MMM d, yyyy} – " +
-                $"{today:MMM d, yyyy}",
-
-            GraphRange.Custom =>
-                $"{CustomStartDate:MMM d, yyyy} – " +
-                $"{CustomEndDate:MMM d, yyyy}",
-
-            _ =>
-                ""
-        };
+        return GraphService.GetGraphDateDescription(
+            SelectedRange,
+            CustomStartDate,
+            CustomEndDate);
     }
 }

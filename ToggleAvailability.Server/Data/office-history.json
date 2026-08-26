@@ -280,5 +280,41 @@
     "Date": "2026-08-25",
     "TimeInOffice": "00:00:00",
     "StartTime": null
+  },
+  {
+    "UserId": 1,
+    "Date": "2026-08-26",
+    "TimeInOffice": "00:00:00",
+    "StartTime": "2026-08-26T10:31:29.4059004-05:00"
+  },
+  {
+    "UserId": 2,
+    "Date": "2026-08-26",
+    "TimeInOffice": "00:00:00",
+    "StartTime": "2026-08-26T10:30:35.7340642-05:00"
+  },
+  {
+    "UserId": 3,
+    "Date": "2026-08-26",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null
+  },
+  {
+    "UserId": 4,
+    "Date": "2026-08-26",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null
+  },
+  {
+    "UserId": 5,
+    "Date": "2026-08-26",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null
+  },
+  {
+    "UserId": 6,
+    "Date": "2026-08-26",
+    "TimeInOffice": "00:00:00",
+    "StartTime": "2026-08-26T10:31:17.5754034-05:00"
   }
 ]

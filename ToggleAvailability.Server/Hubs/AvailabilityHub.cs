@@ -114,53 +114,16 @@ public class AvailabilityHub : Hub
     }
 
     // --------------------------------------------------
-    // Send user list to current client
-    // --------------------------------------------------
-
-    private async Task SendUserListToCaller()
-    {
-        var users =
-            UserStore.GetUsers();
-
-        Console.WriteLine(
-            $"Sending {users.Count} users to " +
-            $"{Context.ConnectionId}");
-
-        await Clients.Caller.SendAsync(
-            "UserList",
-            users);
-    }
-
-    // --------------------------------------------------
     // Add user
     // --------------------------------------------------
 
     public async Task AddUser(
         string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new HubException(
-                "User name cannot be empty.");
-        }
-
-        name = name.Trim();
+        name = ValidateUserName(name);
 
         // Prevent duplicate names.
-        var existingUser =
-            UserStore.GetUsers()
-                .FirstOrDefault(
-                    x =>
-                        string.Equals(
-                            x.Name.Trim(),
-                            name,
-                            StringComparison.OrdinalIgnoreCase));
-
-        if (existingUser is not null)
-        {
-            throw new HubException(
-                $"A user named '{name}' already exists.");
-        }
+        EnsureUniqueUserName(name);
 
         int userId =
             UserStore.GetNextUserId();
@@ -196,40 +159,12 @@ public class AvailabilityHub : Hub
         int userId,
         string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new HubException(
-                "User name cannot be empty.");
-        }
+        name = ValidateUserName(name);
 
-        name = name.Trim();
-
-        var user =
-            UserStore.GetUser(
-                userId);
-
-        if (user is null)
-        {
-            throw new HubException(
-                $"User {userId} was not found.");
-        }
+        var user = GetRequiredUser(userId);
 
         // Prevent duplicate names.
-        var duplicate =
-            UserStore.GetUsers()
-                .FirstOrDefault(
-                    x =>
-                        x.UserId != userId &&
-                        string.Equals(
-                            x.Name.Trim(),
-                            name,
-                            StringComparison.OrdinalIgnoreCase));
-
-        if (duplicate is not null)
-        {
-            throw new HubException(
-                $"A user named '{name}' already exists.");
-        }
+        EnsureUniqueUserName(name, userId);
 
         user.Name =
             name;
@@ -251,15 +186,7 @@ public class AvailabilityHub : Hub
     public async Task DeleteUser(
         int userId)
     {
-        var user =
-            UserStore.GetUser(
-                userId);
-
-        if (user is null)
-        {
-            throw new HubException(
-                $"User {userId} was not found.");
-        }
+        var user = GetRequiredUser(userId);
 
         UserStore.DeleteUser(
             userId);
@@ -286,14 +213,7 @@ public class AvailabilityHub : Hub
 
         foreach (var user in users)
         {
-            if (string.IsNullOrWhiteSpace(user.Name))
-            {
-                throw new HubException(
-                    "Every user must have a name.");
-            }
-
-            user.Name =
-                user.Name.Trim();
+            user.Name = ValidateUserName(user.Name);
         }
 
         // Duplicate IDs.
@@ -336,92 +256,35 @@ public class AvailabilityHub : Hub
     // Set availability
     // --------------------------------------------------
 
-    public async Task SetAvailability(
-    int userId,
-    bool isAvailable,
-    Status status)
+    public async Task SetAvailability(int userId, bool isAvailable, Status status)
     {
-        User? user =
-            UserStore.GetUser(userId);
+        User user = GetRequiredUser(userId);
 
-        if (user is null)
+        DateTime now = DateTime.Now;
+
+        bool leavingOffice =
+            user.Status == Status.InOffice &&
+            status != Status.InOffice;
+
+        bool returningToOffice =
+            status == Status.InOffice &&
+            user.Status != Status.InOffice;
+
+        if (leavingOffice)
         {
-            return;
+            EndOfficeSession(user, now);
         }
 
-
-        // ==================================================
-        // Leaving the office
-        // ==================================================
-
-        if (user.Status == Status.InOffice &&
-            status != Status.InOffice &&
-            user.InOfficeStartTime is not null)
+        if (returningToOffice)
         {
-            DateTime now =
-                DateTime.Now;
-
-            TimeSpan currentSession =
-                now -
-                user.InOfficeStartTime.Value;
-
-            if (currentSession > TimeSpan.Zero)
-            {
-                // Existing lifetime total.
-                user.TotalTimeInOffice +=
-                    currentSession;
-
-                // Record the current session.
-                RecordOfficeSession(
-                    user,
-                    now);
-            }
-
-            // End active session.
-            user.InOfficeStartTime =
-                null;
+            StartOfficeSession(user, now);
         }
 
+        user.IsAvailable = isAvailable;
 
-        // ==================================================
-        // Returning to the office
-        // ==================================================
-
-        if (status == Status.InOffice &&
-            user.Status != Status.InOffice)
-        {
-            DateTime now =
-                DateTime.Now;
-
-            // Start the new office session.
-            user.InOfficeStartTime =
-                now;
-
-            // Save the first clock-in time for today.
-            OfficeHistoryStore.SetStartTime(
-                user.UserId,
-                DateOnly.FromDateTime(now),
-                now);
-        }
-
-
-        // ==================================================
-        // Update normal status information
-        // ==================================================
-
-        user.IsAvailable =
-            isAvailable;
-
-        user.Status =
-            status;
-
-
-        // ==================================================
-        // Save updated user
-        // ==================================================
+        user.Status = status;
 
         UserStore.UpdateUser(user);
-
 
         Console.WriteLine(
             $"[Server] User updated: " +
@@ -431,24 +294,116 @@ public class AvailabilityHub : Hub
             $"Start={user.InOfficeStartTime} | " +
             $"Total={user.TotalTimeInOffice}");
 
-
-        // ==================================================
-        // Notify Blazor clients
-        // ==================================================
-
-        await Clients.All.SendAsync(
-            "UserUpdated",
-            user);
+        await Clients.All.SendAsync("UserUpdated", user);
     }
 
     // --------------------------------------------------
-    // Broadcast complete user list
+    // Private helper methods
     // --------------------------------------------------
+    private static User GetRequiredUser(int userId)
+    {
+        var user = UserStore.GetUser(userId);
 
-    private async Task BroadcastUserList()
+        if (user is null)
+        {
+            throw new HubException(
+                $"User {userId} was not found.");
+        }
+
+        return user;
+    }
+
+    private static string ValidateUserName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new HubException(
+                "User name cannot be empty.");
+        }
+
+        return name.Trim();
+    }
+
+    private static void EnsureUniqueUserName(
+    string name,
+    int? excludedUserId = null)
+    {
+        bool exists =
+            UserStore.GetUsers()
+                .Any(x =>
+                    x.UserId != excludedUserId &&
+                    string.Equals(
+                        x.Name.Trim(),
+                        name,
+                        StringComparison.OrdinalIgnoreCase));
+
+        if (exists)
+        {
+            throw new HubException(
+                $"A user named '{name}' already exists.");
+        }
+    }
+
+    private static void EndOfficeSession(
+    User user,
+    DateTime endTime)
+    {
+        if (user.InOfficeStartTime is null)
+        {
+            return;
+        }
+
+        DateTime startTime =
+            user.InOfficeStartTime.Value;
+
+        TimeSpan duration =
+            endTime - startTime;
+
+        if (duration <= TimeSpan.Zero)
+        {
+            user.InOfficeStartTime = null;
+            return;
+        }
+
+        user.TotalTimeInOffice += duration;
+
+        RecordOfficeSession(
+            user,
+            endTime);
+
+        user.InOfficeStartTime = null;
+    }
+
+    private static void StartOfficeSession(
+    User user,
+    DateTime startTime)
+    {
+        user.InOfficeStartTime =
+            startTime;
+
+        OfficeHistoryStore.SetStartTime(
+            user.UserId,
+            DateOnly.FromDateTime(startTime),
+            startTime);
+    }
+
+    private async Task SendUserListToCaller()
     {
         var users =
             UserStore.GetUsers();
+
+        Console.WriteLine(
+            $"Sending {users.Count} users to " +
+            $"{Context.ConnectionId}");
+
+        await Clients.Caller.SendAsync(
+            "UserList",
+            users);
+    }
+
+    private async Task BroadcastUserList()
+    {
+        var users = UserStore.GetUsers();
 
         Console.WriteLine(
             $"Broadcasting updated user list: " +
