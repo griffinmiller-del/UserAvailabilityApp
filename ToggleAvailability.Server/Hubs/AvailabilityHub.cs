@@ -6,10 +6,10 @@ namespace ToggleAvailability.Server.Hubs;
 
 public class AvailabilityHub : Hub
 {
-    // --------------------------------------------------
-    // Client connected
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles client connections
+    /// </summary>
+    /// <returns></returns>
     public override async Task OnConnectedAsync()
     {
         Console.WriteLine(
@@ -21,10 +21,11 @@ public class AvailabilityHub : Hub
         await base.OnConnectedAsync();
     }
 
-    // --------------------------------------------------
-    // Client disconnected
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Handles client disconnections
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <returns></returns>
     public override async Task OnDisconnectedAsync(
         Exception? exception)
     {
@@ -43,19 +44,21 @@ public class AvailabilityHub : Hub
             exception);
     }
 
-    // --------------------------------------------------
-    // Get users
-    // --------------------------------------------------
-
+    
+    /// <summary>
+    /// Gets list of users
+    /// </summary>
+    /// <returns></returns>
     public async Task GetUsers()
     {
         await SendUserListToCaller();
     }
 
-    // --------------------------------------------------
-    // Get office history for user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Gets the complete history of a user
+    /// </summary>
+    /// <param name="userId">The user id of the user to get the history of</param>
+    /// <returns></returns>
     public Task<List<OfficeHistory>> GetUserHistory(
         int userId)
     {
@@ -64,6 +67,11 @@ public class AvailabilityHub : Hub
                 userId));
     }
 
+    /// <summary>
+    /// Records a completed office session
+    /// </summary>
+    /// <param name="user">The user to create the office session for</param>
+    /// <param name="endTime">The time the office session ended</param>
     private static void RecordOfficeSession(
     User user,
     DateTime endTime)
@@ -113,10 +121,11 @@ public class AvailabilityHub : Hub
         }
     }
 
-    // --------------------------------------------------
-    // Add user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Adds a user to the list of users
+    /// </summary>
+    /// <param name="name">The name of the new user to be added to the list</param>
+    /// <returns></returns>
     public async Task AddUser(
         string name)
     {
@@ -151,10 +160,12 @@ public class AvailabilityHub : Hub
         await BroadcastUserList();
     }
 
-    // --------------------------------------------------
-    // Update user name
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Update the name of a user
+    /// </summary>
+    /// <param name="userId">The user id of the user to update the name of</param>
+    /// <param name="name">the new name to assign to the user</param>
+    /// <returns></returns>
     public async Task UpdateUser(
         int userId,
         string name)
@@ -179,10 +190,11 @@ public class AvailabilityHub : Hub
         await BroadcastUserList();
     }
 
-    // --------------------------------------------------
-    // Delete user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Deletes a user from the user list
+    /// </summary>
+    /// <param name="userId">The user id of the user to delete</param>
+    /// <returns></returns>
     public async Task DeleteUser(
         int userId)
     {
@@ -198,10 +210,12 @@ public class AvailabilityHub : Hub
         await BroadcastUserList();
     }
 
-    // --------------------------------------------------
-    // Replace entire user list
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Replaces the entire user list
+    /// </summary>
+    /// <param name="users">The list of users to replace the user list with</param>
+    /// <returns></returns>
+    /// <exception cref="HubException"></exception>
     public async Task UpdateUserList(
         List<User> users)
     {
@@ -252,9 +266,13 @@ public class AvailabilityHub : Hub
         await BroadcastUserList();
     }
 
-    // --------------------------------------------------
-    // Set availability
-    // --------------------------------------------------
+    /// <summary>
+    /// Sets the availability status of a user
+    /// </summary>
+    /// <param name="userId">The user to modify the availability of</param>
+    /// <param name="isAvailable">whether or not the user is available</param>
+    /// <param name="status">The status to assign to the user</param>
+    /// <returns></returns>
 
     public async Task SetAvailability(int userId, bool isAvailable, Status status)
     {
@@ -300,6 +318,13 @@ public class AvailabilityHub : Hub
     // --------------------------------------------------
     // Private helper methods
     // --------------------------------------------------
+
+    /// <summary>
+    /// Gets a required user
+    /// </summary>
+    /// <param name="userId">The user id of the user being searched for</param>
+    /// <returns>The user being searched for with a matching user id</returns>
+    /// <exception cref="HubException"></exception>
     private static User GetRequiredUser(int userId)
     {
         var user = UserStore.GetUser(userId);
@@ -313,6 +338,12 @@ public class AvailabilityHub : Hub
         return user;
     }
 
+    /// <summary>
+    /// Validates the user name
+    /// </summary>
+    /// <param name="name">The name of the user that is being validated</param>
+    /// <returns>A normalized user name</returns>
+    /// <exception cref="HubException"></exception>
     private static string ValidateUserName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -324,6 +355,12 @@ public class AvailabilityHub : Hub
         return name.Trim();
     }
 
+    /// <summary>
+    /// Ensures that the name of the user is unique
+    /// </summary>
+    /// <param name="name">The name of the user that is being checked for uniqueness</param>
+    /// <param name="excludedUserId"></param>
+    /// <exception cref="HubException"></exception>
     private static void EnsureUniqueUserName(
     string name,
     int? excludedUserId = null)
@@ -344,6 +381,11 @@ public class AvailabilityHub : Hub
         }
     }
 
+    /// <summary>
+    /// Ends an office session of a specific user
+    /// </summary>
+    /// <param name="user">The user to end the session of</param>
+    /// <param name="endTime">The time that the session ended</param>
     private static void EndOfficeSession(
     User user,
     DateTime endTime)
@@ -374,6 +416,11 @@ public class AvailabilityHub : Hub
         user.InOfficeStartTime = null;
     }
 
+    /// <summary>
+    /// Starts an in-office session for a specific user
+    /// </summary>
+    /// <param name="user">The user to start the session of</param>
+    /// <param name="startTime">The time that the session started</param>
     private static void StartOfficeSession(
     User user,
     DateTime startTime)
@@ -387,6 +434,10 @@ public class AvailabilityHub : Hub
             startTime);
     }
 
+    /// <summary>
+    /// Sends the user listen to the client that is requesting it
+    /// </summary>
+    /// <returns></returns>
     private async Task SendUserListToCaller()
     {
         var users =
@@ -401,6 +452,10 @@ public class AvailabilityHub : Hub
             users);
     }
 
+    /// <summary>
+    /// Broadcasts the user list to all connected clients
+    /// </summary>
+    /// <returns></returns>
     private async Task BroadcastUserList()
     {
         var users = UserStore.GetUsers();

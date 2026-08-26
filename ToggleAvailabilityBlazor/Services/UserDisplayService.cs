@@ -4,6 +4,11 @@ namespace ToggleAvailabilityBlazor.Services;
 
 public class UserDisplayService
 {
+    /// <summary>
+    /// Gets the total time in office for a specific user
+    /// </summary>
+    /// <param name="user">The user to get the time in office for</param>
+    /// <returns>The time the user has been in office, as a string</returns>
     public string GetTimeInOffice(User user)
     {
         TimeSpan total =
@@ -33,7 +38,11 @@ public class UserDisplayService
             $"{total.Seconds:00}";
     }
 
-
+    /// <summary>
+    /// Gets the text correlating to each status
+    /// </summary>
+    /// <param name="user">the user to get the status text of</param>
+    /// <returns>The status as a string</returns>
     public string GetStatusText(User user)
     {
         return user.Status switch

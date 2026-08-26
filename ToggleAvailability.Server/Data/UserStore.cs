@@ -47,10 +47,10 @@ public static class UserStore
         LoadUsers();
     }
 
-    // --------------------------------------------------
-    // Get all users
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Get the full list of users
+    /// </summary>
+    /// <returns>The full list of users</returns>
     public static List<User> GetUsers()
     {
         lock (_lock)
@@ -61,10 +61,11 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Get individual user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Gets a specific user from the user list
+    /// </summary>
+    /// <param name="userId">the id of the user to be gotten</param>
+    /// <returns>the User object of the user searched for, if found</returns>
     public static User? GetUser(
         int userId)
     {
@@ -78,10 +79,10 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Get next user ID
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Gets and saves the next user id
+    /// </summary>
+    /// <returns>The next user id</returns>
     public static int GetNextUserId()
     {
         lock (_lock)
@@ -95,10 +96,11 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Load next user ID
-    // --------------------------------------------------
-
+    
+    /// <summary>
+    /// Loads the next user id from the user-id file
+    /// </summary>
+    /// <returns>The next user id</returns>
     private static int LoadNextUserId()
     {
         try
@@ -135,10 +137,11 @@ public static class UserStore
         return initialNextUserId;
     }
 
-    // --------------------------------------------------
-    // Get initial next user ID
-    // --------------------------------------------------
-
+    
+    /// <summary>
+    /// Gets the userid to be used next
+    /// </summary>
+    /// <returns>The next user id to be used</returns>
     private static int GetInitialNextUserId()
     {
         if (_users.Count == 0)
@@ -149,11 +152,11 @@ public static class UserStore
         return _users.Max(
                    x => x.UserId) + 1;
     }
-
-    // --------------------------------------------------
-    // Save next user ID
-    // --------------------------------------------------
-
+    
+    /// <summary>
+    /// Saves the next userId
+    /// </summary>
+    /// <param name="nextUserId">the next user id to save</param>
     private static void SaveNextUserId(
         int nextUserId)
     {
@@ -173,9 +176,10 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Add user
-    // --------------------------------------------------
+    /// <summary>
+    /// Adds a user to the user list
+    /// </summary>
+    /// <param name="user">The user to add to the list</param>
 
     public static void AddUser(
         User user)
@@ -191,10 +195,10 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Update user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Updates a given user in the user list, then saves the file
+    /// </summary>
+    /// <param name="user">The user to update</param>
     public static void UpdateUser(
         User user)
     {
@@ -232,10 +236,10 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Delete user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Deletes a user from the userlist with a certain userid
+    /// </summary>
+    /// <param name="userId">The id of the user to be deleted</param>
     public static void DeleteUser(
         int userId)
     {
@@ -254,10 +258,10 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Replace entire user list
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Replaces the list of users with the given user list
+    /// </summary>
+    /// <param name="users">The list of users to replace the user list with</param>
     public static void ReplaceUsers(
         List<User> users)
     {
@@ -274,10 +278,9 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Load users.json
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Loads a list of users from the users.json file
+    /// </summary>
     private static void LoadUsers()
     {
         lock (_lock)
@@ -347,10 +350,9 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Save users.json
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Saves the list of users to the users.json file
+    /// </summary>
     private static void SaveUsers()
     {
         try
@@ -378,10 +380,11 @@ public static class UserStore
         }
     }
 
-    // --------------------------------------------------
-    // Clone user
-    // --------------------------------------------------
-
+    /// <summary>
+    /// Clones a user object
+    /// </summary>
+    /// <param name="user">The user to be cloned</param>
+    /// <returns>A clone of the given user</returns>
     private static User CloneUser(
         User user)
     {
@@ -407,6 +410,11 @@ public static class UserStore
         };
     }
 
+    /// <summary>
+    /// Finds a user object based on a given userId from the list of users
+    /// </summary>
+    /// <param name="userId">The id of the user being searched for</param>
+    /// <returns>The user object of the user being searched for, if found</returns>
     private static User? FindUser(
     int userId)
     {

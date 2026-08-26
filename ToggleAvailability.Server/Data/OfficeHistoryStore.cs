@@ -41,10 +41,11 @@ public static class OfficeHistoryStore
     }
 
 
-    // ==================================================
-    // Get history for user
-    // ==================================================
-
+    /// <summary>
+    /// Gets the total office history of a specific user
+    /// </summary>
+    /// <param name="userId">The id of the user that the records are being gathered for</param>
+    /// <returns>A list of office records for the given user</returns>
     public static List<OfficeHistory> GetUserHistory(
         int userId)
     {
@@ -61,9 +62,12 @@ public static class OfficeHistoryStore
     }
 
 
-    // ==================================================
-    // Add office time
-    // ==================================================
+    /// <summary>
+    /// Sets the TimeInOffice of a history record
+    /// </summary>
+    /// <param name="userId">The userid of the user the record belongs to</param>
+    /// <param name="date">The date of the record</param>
+    /// <param name="duration">The length of time the user was in the office</param>
 
     public static void AddOfficeTime(
         int userId,
@@ -97,10 +101,11 @@ public static class OfficeHistoryStore
         }
     }
 
-
-    // ==================================================
-    // Create a new daily record
-    // ==================================================
+    /// <summary>
+    /// Creates a new daily record for a user
+    /// </summary>
+    /// <param name="userId">The user the record is being created for</param>
+    /// <param name="date">The date of the record being created</param>
 
     public static void CreateDailyRecord(
         int userId,
@@ -121,10 +126,9 @@ public static class OfficeHistoryStore
 
 
 
-    // ==================================================
-    // Load
-    // ==================================================
-
+    /// <summary>
+    /// Loads the office history objects from the json into a list
+    /// </summary>
     private static void Load()
     {
         lock (_lock)
@@ -187,10 +191,9 @@ public static class OfficeHistoryStore
     }
 
 
-    // ==================================================
-    // Save
-    // ==================================================
-
+    /// <summary>
+    /// Saves the office history objects to the json
+    /// </summary>
     private static void Save()
     {
         try
@@ -219,10 +222,11 @@ public static class OfficeHistoryStore
     }
 
 
-    // ==================================================
-    // Clone
-    // ==================================================
-
+    /// <summary>
+    /// Clones office history record so the original record is protected
+    /// </summary>
+    /// <param name="record">The record to clone</param>
+    /// <returns>The cloned record</returns>
     private static OfficeHistory Clone(
         OfficeHistory record)
     {
@@ -242,6 +246,12 @@ public static class OfficeHistoryStore
         };
     }
 
+    /// <summary>
+    /// Gets a copy of an office history record for a user on a specific date
+    /// </summary>
+    /// <param name="userId">The userid of the record being searched for</param>
+    /// <param name="date">The date of the record being searched for</param>
+    /// <returns>A copy of the office history record, if found</returns>
     public static OfficeHistory? GetUserHistoryForDate(
         int userId,
         DateOnly date)
@@ -256,6 +266,12 @@ public static class OfficeHistoryStore
         }
     }
 
+    /// <summary>
+    /// Sets the time of the first punch-in for a user for a day
+    /// </summary>
+    /// <param name="userId">The id of the user getting their start time set</param>
+    /// <param name="date">The date that the start time is to be set on</param>
+    /// <param name="startTime">The time to be set as the start time for the day</param>
     public static void SetStartTime(
         int userId,
         DateOnly date,
@@ -284,6 +300,13 @@ public static class OfficeHistoryStore
             }
         }
     }
+
+    /// <summary>
+    /// Searches the office history file for a specific user on a specific date
+    /// </summary>
+    /// <param name="userId">The userId of the user being searched for</param>
+    /// <param name="date">The date of the record being searched for</param>
+    /// <returns>The OfficeHistory object of the record, if found</returns>
     private static OfficeHistory? FindRecord(
     int userId,
     DateOnly date)
@@ -294,6 +317,15 @@ public static class OfficeHistoryStore
                 x.Date == date);
     }
 
+
+    /// <summary>
+    /// Creates a new history record
+    /// </summary>
+    /// <param name="userId">The userid of the user that the record is being created for</param>
+    /// <param name="date">The date of the record</param>
+    /// <param name="timeInOffice">The total time the user was in the office for the day</param>
+    /// <param name="startTime">The time of the user's first punch-in</param>
+    /// <returns>The OfficeHistory object for this record</returns>
     private static OfficeHistory CreateRecord(
     int userId,
     DateOnly date,
