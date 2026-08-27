@@ -109,7 +109,8 @@ public static class OfficeHistoryStore
 
     public static void CreateDailyRecord(
         int userId,
-        DateOnly date)
+        DateOnly date,
+        DateTime? startTime = null)
     {
         lock (_lock)
         {
@@ -118,7 +119,12 @@ public static class OfficeHistoryStore
                 return;
             }
 
-            _history.Add(CreateRecord(userId, date));
+            _history.Add(
+                CreateRecord(
+                    userId,
+                    date,
+                    TimeSpan.Zero,
+                    startTime));
 
             Save();
         }
