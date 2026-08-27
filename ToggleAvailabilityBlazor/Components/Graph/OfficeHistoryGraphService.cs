@@ -95,6 +95,7 @@ public class OfficeHistoryGraphService
 
     public List<GraphPoint> GetGraphPoints(
         List<OfficeHistory> history,
+        User? user,
         GraphRange range,
         DateOnly customStartDate,
         DateOnly customEndDate)
@@ -167,6 +168,71 @@ public class OfficeHistoryGraphService
                 x => x.Sum(
                     y =>
                         y.TimeInOffice.TotalHours));
+    }
+
+
+    // ==================================================
+    // Get Live Time In Office
+    // ==================================================
+
+    public TimeSpan GetLiveTimeInOffice(
+        OfficeHistory record,
+        User? user)
+    {
+        DateOnly today =
+            GetToday();
+
+
+        // --------------------------------------------------
+        // Historical days
+        // --------------------------------------------------
+
+        if (record.Date != today)
+        {
+            return record.TimeInOffice;
+        }
+
+
+        // --------------------------------------------------
+        // No user information
+        // --------------------------------------------------
+
+        if (user is null)
+        {
+            return record.TimeInOffice;
+        }
+
+
+        // --------------------------------------------------
+        // User is not currently in the office
+        // --------------------------------------------------
+
+        if (!user.IsAvailable ||
+            !user.InOfficeStartTime.HasValue)
+        {
+            return record.TimeInOffice;
+        }
+
+
+        // --------------------------------------------------
+        // Current active office session
+        // --------------------------------------------------
+
+        TimeSpan currentSession =
+            DateTime.Now -
+            user.InOfficeStartTime.Value;
+
+
+        if (currentSession < TimeSpan.Zero)
+        {
+            currentSession =
+                TimeSpan.Zero;
+        }
+
+
+        return
+            record.TimeInOffice +
+            currentSession;
     }
 
 

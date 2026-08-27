@@ -14,5 +14,7 @@ namespace ToggleAvailabilityBlazor.Models
         public DateTime? InOfficeStartTime { get; set; }
 
         public TimeSpan TotalTimeInOffice { get; set; }
+
+        public DateTime? OutOfOfficeStartTime { get; set; }
     }
 }

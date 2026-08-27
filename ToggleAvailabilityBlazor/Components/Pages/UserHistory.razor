@@ -136,33 +136,140 @@
                         Time in Office
                     </span>
 
+                    <span class="history-out">
+                        Out of Office
+                    </span>
+
                 </div>
 
 
                 @foreach (var record in _filteredHistory)
                 {
-                    <div class="history-row">
+                    var isExpanded =
+                        _expandedDates.Contains(record.Date);
 
-                        <span class="history-date">
-                            @record.Date.ToString("MM/dd/yyyy")
-                        </span>
-
-
-                        <span class="history-clock-in">
-
-                            @(record.StartTime.HasValue
-                                ? record.StartTime.Value.ToString("h:mm tt")
-                                : "—")
-
-                        </span>
+                    var totalOutOfOffice =
+                        GetTotalOutOfOffice(record);
 
 
-                        <span class="history-time">
+                    <!-- ================================================== -->
+                    <!-- History Entry -->
+                    <!-- ================================================== -->
 
-                            @FormatDuration(
-                                record.TimeInOffice)
+                    <div class="history-entry">
 
-                        </span>
+                        <button class="history-row @(isExpanded ? "expanded" : "")"
+                                @onclick="() => ToggleExpanded(record.Date)">
+
+                            <!-- ========================================== -->
+                            <!-- Date -->
+                            <!-- ========================================== -->
+
+                            <span class="history-date">
+
+                                @record.Date.ToString(
+                                    "MM/dd/yyyy")
+
+                            </span>
+
+
+                            <!-- ========================================== -->
+                            <!-- Clock In -->
+                            <!-- ========================================== -->
+
+                            <span class="history-clock-in">
+
+                                @(record.StartTime.HasValue
+                                    ? record.StartTime.Value.ToString("h:mm tt")
+                                    : "—")
+
+                            </span>
+
+
+                            <!-- ========================================== -->
+                            <!-- Time In Office -->
+                            <!-- ========================================== -->
+
+                            <span class="history-time">
+
+                                @FormatDuration(
+                                    record.TimeInOffice)
+
+                            </span>
+
+
+                            <!-- ========================================== -->
+                            <!-- Total Out of Office -->
+                            <!-- ========================================== -->
+
+                            <span class="history-out">
+
+                                @if (totalOutOfOffice > TimeSpan.Zero)
+                                {
+                                    <span class="out-of-office-total">
+
+                                        @FormatDuration(
+                                            totalOutOfOffice)
+
+                                    </span>
+
+                                    <span class="expand-indicator @(isExpanded ? "rotated" : "")">
+                                        ›
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="no-out-time">
+                                        —
+                                    </span>
+                                }
+
+                            </span>
+
+                        </button>
+
+
+                        <!-- ================================================== -->
+                        <!-- Expanded Out of Office Details -->
+                        <!-- ================================================== -->
+                        @if (isExpanded &&
+                                                     record.TimeOutOfOffice is not null &&
+                                                     record.TimeOutOfOffice.Count > 0)
+                        {
+                            <div class="history-details">
+
+                                <div class="history-details-header">
+                                    Out of Office Breakdown
+                                </div>
+
+
+                                <div class="reason-list">
+
+                                    @foreach (var entry in record.TimeOutOfOffice
+                                        .Where(x =>
+                                            x.Key != Status.GoneForTheDay &&
+                                            x.Value > TimeSpan.Zero)
+                                        .OrderBy(x => x.Key.ToString()))
+                                    {
+                                        <div class="reason-row">
+
+                                            <span class="reason-name">
+                                                @FormatStatus(
+                                                    entry.Key)
+                                            </span>
+
+                                            <span class="reason-duration">
+                                                @FormatDuration(
+                                                    entry.Value)
+                                            </span>
+
+                                        </div>
+                                    }
+
+                                </div>
+
+                            </div>
+                        }
 
                     </div>
                 }
@@ -196,7 +303,7 @@
 
     .history-header {
         width: 100%;
-        max-width: 900px;
+        max-width: 1100px;
         margin: 0 auto 28px auto;
     }
 
@@ -235,7 +342,7 @@
 
     .date-search {
         width: 100%;
-        max-width: 900px;
+        max-width: 1100px;
         margin: 0 auto 20px auto;
         display: flex;
         align-items: flex-end;
@@ -337,7 +444,7 @@
 
     .history-list {
         width: 100%;
-        max-width: 900px;
+        max-width: 1100px;
         margin: 0 auto;
         display: flex;
         flex-direction: column;
@@ -346,12 +453,23 @@
 
 
     /* -------------------------------------------------- */
+    /* History Entry */
+    /* -------------------------------------------------- */
+
+    .history-entry {
+        width: 100%;
+    }
+
+
+    /* -------------------------------------------------- */
     /* History Row */
     /* -------------------------------------------------- */
 
     .history-row {
+        width: 100%;
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: minmax(130px, 1fr) minmax(130px, 1fr) minmax(150px, 1fr) minmax(180px, 1.25fr);
+        column-gap: 32px;
         align-items: center;
         min-height: 58px;
         padding: 0 18px;
@@ -359,7 +477,25 @@
         background: #1c1c1c;
         border: 1px solid #303030;
         border-radius: 8px;
+        color: #ffffff;
+        font-family: "Segoe UI", Arial, sans-serif;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
     }
+
+
+        .history-row:hover {
+            background: #222222;
+            border-color: #3a3a3a;
+        }
+
+
+        .history-row.expanded {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-color: #3a3a3a;
+        }
 
 
     /* -------------------------------------------------- */
@@ -374,27 +510,158 @@
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.8px;
+        cursor: default;
+        pointer-events: none;
     }
 
+
+        .history-row-header:hover {
+            background: transparent;
+            border-color: transparent;
+        }
+
+
+    /* -------------------------------------------------- */
+    /* Date */
+    /* -------------------------------------------------- */
 
     .history-date {
         font-size: 15px;
         color: #ffffff;
+        white-space: nowrap;
     }
 
+
+    /* -------------------------------------------------- */
+    /* Clock In */
+    /* -------------------------------------------------- */
 
     .history-clock-in {
         font-size: 15px;
         color: #a8a8a8;
         font-variant-numeric: tabular-nums;
+        white-space: nowrap;
     }
 
+
+    /* -------------------------------------------------- */
+    /* Time In Office */
+    /* -------------------------------------------------- */
 
     .history-time {
         font-size: 15px;
         color: #a8a8a8;
         font-variant-numeric: tabular-nums;
-        text-align: right;
+        white-space: nowrap;
+    }
+
+
+    /* -------------------------------------------------- */
+    /* Out of Office */
+    /* -------------------------------------------------- */
+
+    .history-out {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        min-width: 0;
+        font-size: 15px;
+        color: #ffffff;
+        font-variant-numeric: tabular-nums;
+    }
+
+
+    .out-of-office-total {
+        white-space: nowrap;
+    }
+
+
+    .expand-indicator {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        color: #777777;
+        font-size: 22px;
+        line-height: 1;
+        transform: rotate(0deg);
+        transition: transform 0.2s ease, color 0.15s ease;
+    }
+
+
+    .history-row:hover .expand-indicator {
+        color: #f2c94c;
+    }
+
+
+    .expand-indicator.rotated {
+        transform: rotate(90deg);
+        color: #f2c94c;
+    }
+
+
+    .no-out-time {
+        color: #555555;
+    }
+
+
+    /* -------------------------------------------------- */
+    /* Expanded Details */
+    /* -------------------------------------------------- */
+
+    .history-details {
+        padding: 16px 24px 18px 24px;
+        background: #181818;
+        border: 1px solid #3a3a3a;
+        border-top: none;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+
+    .history-details-header {
+        margin-bottom: 12px;
+        color: #666666;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.9px;
+    }
+
+
+    .reason-list {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 500px;
+        gap: 6px;
+    }
+
+
+    .reason-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 34px;
+        padding: 0 12px;
+        box-sizing: border-box;
+        background: #202020;
+        border: 1px solid #2d2d2d;
+        border-radius: 5px;
+    }
+
+
+    .reason-name {
+        color: #a8a8a8;
+        font-size: 13px;
+    }
+
+
+    .reason-duration {
+        color: #ffffff;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
     }
 
 
@@ -404,7 +671,7 @@
 
     .loading,
     .empty-history {
-        max-width: 900px;
+        max-width: 1100px;
         margin: 40px auto;
         text-align: center;
         color: #777777;
@@ -415,7 +682,7 @@
     /* Mobile */
     /* -------------------------------------------------- */
 
-    @@media (max-width: 650px) {
+    @@media (max-width: 750px) {
 
         .history-page {
             padding: 20px;
@@ -451,8 +718,9 @@
 
         .history-row {
             grid-template-columns: 1fr;
+            column-gap: 0;
             align-items: flex-start;
-            gap: 5px;
+            gap: 6px;
             padding: 12px 18px;
         }
 
@@ -463,8 +731,10 @@
 
 
         .history-clock-in,
-        .history-time {
+        .history-time,
+        .history-out {
             text-align: left;
+            justify-content: flex-start;
         }
 
 
@@ -478,6 +748,27 @@
                 content: "Time in Office: ";
                 color: #666666;
             }
+
+
+            .history-out::before {
+                content: "Out of Office: ";
+                color: #666666;
+            }
+
+
+        .history-details {
+            padding: 14px 18px 16px 18px;
+        }
+
+
+        .reason-list {
+            max-width: none;
+        }
+
+
+        .reason-row {
+            padding: 0 10px;
+        }
     }
 
 </style>
@@ -504,6 +795,13 @@
 
 
     // ==================================================
+    // Expanded Entries
+    // ==================================================
+
+    private HashSet<DateOnly> _expandedDates = [];
+
+
+    // ==================================================
     // Initialization
     // ==================================================
 
@@ -522,6 +820,7 @@
                     .GetUserHistoryAsync(
                         UserId);
 
+
             _filteredHistory =
                 _history
                     .OrderByDescending(
@@ -531,6 +830,49 @@
 
 
         _loading = false;
+    }
+
+
+    // ==================================================
+    // Toggle Expanded Entry
+    // ==================================================
+
+    private void ToggleExpanded(
+        DateOnly date)
+    {
+        if (_expandedDates.Contains(date))
+        {
+            _expandedDates.Remove(date);
+        }
+        else
+        {
+            _expandedDates.Add(date);
+        }
+    }
+
+
+    // ==================================================
+    // Get Total Out of Office
+    // ==================================================
+
+    private static TimeSpan GetTotalOutOfOffice(
+        OfficeHistory record)
+    {
+        if (record.TimeOutOfOffice is null ||
+            record.TimeOutOfOffice.Count == 0)
+        {
+            return TimeSpan.Zero;
+        }
+
+
+        return record.TimeOutOfOffice
+            .Where(x =>
+                x.Key != Status.GoneForTheDay)
+            .Select(x => x.Value)
+            .Aggregate(
+                TimeSpan.Zero,
+                (total, duration) =>
+                    total + duration);
     }
 
 
@@ -582,6 +924,8 @@
         {
             _filteredHistory = [];
 
+            _expandedDates.Clear();
+
             return;
         }
 
@@ -591,6 +935,9 @@
                 .OrderByDescending(
                     x => x.Date)
                 .ToList();
+
+
+        _expandedDates.Clear();
     }
 
 
@@ -603,6 +950,9 @@
         _fromDate = null;
 
         _toDate = null;
+
+        _expandedDates.Clear();
+
 
         _filteredHistory =
             _history
@@ -622,13 +972,40 @@
         int totalMinutes =
             (int)duration.TotalMinutes;
 
+
         int hours =
             totalMinutes / 60;
+
 
         int minutes =
             totalMinutes % 60;
 
+
         return
             $"{hours:00}:{minutes:00}";
+    }
+
+
+    // ==================================================
+    // Format Status
+    // ==================================================
+
+    private static string FormatStatus(
+        Status status)
+    {
+        return status switch
+        {
+            Status.GoneForTheDay =>
+                "Gone for the Day",
+
+            Status.ClientMeeting =>
+                "Client Meeting",
+
+            Status.InOffice =>
+                "In Office",
+
+            _ =>
+                status.ToString()
+        };
     }
 }

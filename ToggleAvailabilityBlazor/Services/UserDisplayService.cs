@@ -1,36 +1,62 @@
-﻿using ToggleAvailabilityBlazor.Models;
+﻿namespace ToggleAvailabilityBlazor.Services;
 
-namespace ToggleAvailabilityBlazor.Services;
+using ToggleAvailabilityBlazor.Models;
 
 public class UserDisplayService
 {
     /// <summary>
-    /// Gets the total time in office for a specific user
+    /// Gets the total time the user has spent in the office.
+    ///
+    /// TotalTimeInOffice contains all completed office
+    /// sessions.
+    ///
+    /// If the user is currently in the office, the active
+    /// session is calculated from InOfficeStartTime and
+    /// temporarily added to the completed total for display.
+    ///
+    /// The active session is NOT written back to
+    /// TotalTimeInOffice here.
     /// </summary>
-    /// <param name="user">The user to get the time in office for</param>
-    /// <returns>The time the user has been in office, as a string</returns>
     public string GetTimeInOffice(User user)
     {
         TimeSpan total =
             user.TotalTimeInOffice;
 
+
+        // --------------------------------------------------
+        // Add the currently active session for display only.
+        // --------------------------------------------------
+
         if (user.Status == Status.InOffice &&
-            user.InOfficeStartTime is not null)
+            user.InOfficeStartTime.HasValue)
         {
             TimeSpan currentSession =
                 DateTime.Now -
                 user.InOfficeStartTime.Value;
 
+
             if (currentSession > TimeSpan.Zero)
             {
-                total += currentSession;
+                total +=
+                    currentSession;
             }
         }
 
+
+        // --------------------------------------------------
+        // Prevent negative values.
+        // --------------------------------------------------
+
         if (total < TimeSpan.Zero)
         {
-            total = TimeSpan.Zero;
+            total =
+                TimeSpan.Zero;
         }
+
+
+        // --------------------------------------------------
+        // Format HH:MM:SS.
+        // --------------------------------------------------
 
         return
             $"{(int)total.TotalHours:00}:" +
@@ -38,11 +64,10 @@ public class UserDisplayService
             $"{total.Seconds:00}";
     }
 
+
     /// <summary>
-    /// Gets the text correlating to each status
+    /// Gets the display text for a user's current status.
     /// </summary>
-    /// <param name="user">the user to get the status text of</param>
-    /// <returns>The status as a string</returns>
     public string GetStatusText(User user)
     {
         return user.Status switch
@@ -95,6 +120,10 @@ public class UserDisplayService
     }
 
 
+    /// <summary>
+    /// Determines whether the user should be considered
+    /// available.
+    /// </summary>
     public bool IsUserAvailable(User user)
     {
         return

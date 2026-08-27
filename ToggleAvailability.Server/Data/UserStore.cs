@@ -6,13 +6,13 @@ namespace ToggleAvailability.Server.Data;
 
 public static class UserStore
 {
-
     private static readonly string _userIdFilePath =
-    Path.Combine(
-        Directory.GetParent(
-            AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName,
-        "Data",
-        "user-id.json");
+        Path.Combine(
+            Directory.GetParent(
+                AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName,
+            "Data",
+            "user-id.json");
+
 
     private static readonly string _filePath =
         Path.Combine(
@@ -20,6 +20,7 @@ public static class UserStore
                 AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName,
             "Data",
             "users.json");
+
 
     private static readonly JsonSerializerOptions _jsonOptions =
         new()
@@ -34,23 +35,34 @@ public static class UserStore
             }
         };
 
+
     private static List<User> _users = [];
+
 
     private static readonly object _lock = new();
 
-    // --------------------------------------------------
+
+    // ==================================================
     // Initialize
-    // --------------------------------------------------
+    // ==================================================
 
     static UserStore()
     {
         LoadUsers();
     }
 
+
+    // ==================================================
+    // Get Users
+    // ==================================================
+
     /// <summary>
-    /// Get the full list of users
+    /// Gets a clone of every user.
+    ///
+    /// TotalTimeInOffice is intentionally not treated as
+    /// persistent history. Completed office time belongs
+    /// to OfficeHistoryStore.
     /// </summary>
-    /// <returns>The full list of users</returns>
     public static List<User> GetUsers()
     {
         lock (_lock)
@@ -61,17 +73,22 @@ public static class UserStore
         }
     }
 
+
+    // ==================================================
+    // Get User
+    // ==================================================
+
     /// <summary>
-    /// Gets a specific user from the user list
+    /// Gets a specific user.
     /// </summary>
-    /// <param name="userId">the id of the user to be gotten</param>
-    /// <returns>the User object of the user searched for, if found</returns>
     public static User? GetUser(
         int userId)
     {
         lock (_lock)
         {
-            var user = FindUser(userId);
+            var user =
+                FindUser(userId);
+
 
             return user is null
                 ? null
@@ -79,28 +96,32 @@ public static class UserStore
         }
     }
 
-    /// <summary>
-    /// Gets and saves the next user id
-    /// </summary>
-    /// <returns>The next user id</returns>
+
+    // ==================================================
+    // Get Next User ID
+    // ==================================================
+
     public static int GetNextUserId()
     {
         lock (_lock)
         {
-            int nextUserId = LoadNextUserId();
+            int nextUserId =
+                LoadNextUserId();
+
 
             SaveNextUserId(
                 nextUserId + 1);
+
 
             return nextUserId;
         }
     }
 
-    
-    /// <summary>
-    /// Loads the next user id from the user-id file
-    /// </summary>
-    /// <returns>The next user id</returns>
+
+    // ==================================================
+    // Load Next User ID
+    // ==================================================
+
     private static int LoadNextUserId()
     {
         try
@@ -110,6 +131,7 @@ public static class UserStore
                 string json =
                     File.ReadAllText(
                         _userIdFilePath);
+
 
                 if (int.TryParse(
                     json,
@@ -128,20 +150,23 @@ public static class UserStore
                 $"{ex.Message}");
         }
 
+
         int initialNextUserId =
             GetInitialNextUserId();
+
 
         SaveNextUserId(
             initialNextUserId + 1);
 
+
         return initialNextUserId;
     }
 
-    
-    /// <summary>
-    /// Gets the userid to be used next
-    /// </summary>
-    /// <returns>The next user id to be used</returns>
+
+    // ==================================================
+    // Get Initial Next User ID
+    // ==================================================
+
     private static int GetInitialNextUserId()
     {
         if (_users.Count == 0)
@@ -149,14 +174,16 @@ public static class UserStore
             return 1;
         }
 
+
         return _users.Max(
                    x => x.UserId) + 1;
     }
-    
-    /// <summary>
-    /// Saves the next userId
-    /// </summary>
-    /// <param name="nextUserId">the next user id to save</param>
+
+
+    // ==================================================
+    // Save Next User ID
+    // ==================================================
+
     private static void SaveNextUserId(
         int nextUserId)
     {
@@ -172,46 +199,136 @@ public static class UserStore
                 $"Failed to save next user ID: " +
                 $"{ex.Message}");
 
+
             throw;
         }
     }
 
-    /// <summary>
-    /// Adds a user to the user list
-    /// </summary>
-    /// <param name="user">The user to add to the list</param>
+
+    // ==================================================
+    // Add User
+    // ==================================================
 
     public static void AddUser(
         User user)
     {
         ArgumentNullException.ThrowIfNull(user);
 
+
         lock (_lock)
         {
             _users.Add(
                 CloneUser(user));
 
+
             SaveUsers();
         }
     }
 
+
+    // ==================================================
+    // Update User
+    // ==================================================
+
     /// <summary>
-    /// Updates a given user in the user list, then saves the file
+    /// Updates a given user in the user list.
+    ///
+    /// The server is authoritative for office-time tracking.
+    /// TotalTimeInOffice contains only completed office sessions.
+    /// InOfficeStartTime contains only the currently active
+    /// office session.
+    ///
+    /// A client-provided TotalTimeInOffice is intentionally
+    /// ignored so that the same session cannot be added twice.
     /// </summary>
-    /// <param name="user">The user to update</param>
+    /// <param name="user">
+    /// The user containing the requested state change.
+    /// </param>
     public static void UpdateUser(
         User user)
     {
         ArgumentNullException.ThrowIfNull(user);
 
+
         lock (_lock)
         {
-            var existing = FindUser(user.UserId);
+            var existing =
+                FindUser(user.UserId);
+
 
             if (existing is null)
             {
                 return;
             }
+
+
+            // --------------------------------------------------
+            // Capture the old state before changing anything.
+            // --------------------------------------------------
+
+            Status previousStatus =
+                existing.Status;
+
+
+            bool wasInOffice =
+                previousStatus == Status.InOffice &&
+                existing.InOfficeStartTime.HasValue;
+
+
+            bool isInOffice =
+                user.Status == Status.InOffice;
+
+
+            // --------------------------------------------------
+            // User is LEAVING the office.
+            //
+            // Add the current session to the accumulated total
+            // exactly once.
+            // --------------------------------------------------
+
+            if (wasInOffice &&
+                !isInOffice)
+            {
+                TimeSpan currentSession =
+                    DateTime.Now -
+                    existing.InOfficeStartTime!.Value;
+
+
+                if (currentSession > TimeSpan.Zero)
+                {
+                    existing.TotalTimeInOffice +=
+                        currentSession;
+                }
+
+
+                // ----------------------------------------------
+                // The session has now been committed to the
+                // accumulated total, so clear the start time.
+                // ----------------------------------------------
+
+                existing.InOfficeStartTime =
+                    null;
+            }
+
+
+            // --------------------------------------------------
+            // User is RETURNING to the office.
+            //
+            // Start a completely new session, but DO NOT modify
+            // TotalTimeInOffice.
+            // --------------------------------------------------
+
+            if (!wasInOffice &&
+                isInOffice)
+            {
+                existing.InOfficeStartTime =
+                    DateTime.Now;
+            }
+
+
+            // --------------------------------------------------
+            // Update normal user state.
+            // --------------------------------------------------
 
             existing.Name =
                 user.Name;
@@ -222,50 +339,62 @@ public static class UserStore
             existing.Status =
                 user.Status;
 
-            // ----------------------------------------------
-            // Office time tracking
-            // ----------------------------------------------
 
-            existing.InOfficeStartTime =
-                user.InOfficeStartTime;
+            // --------------------------------------------------
+            // DO NOT copy:
+            //
+            // existing.TotalTimeInOffice =
+            //     user.TotalTimeInOffice;
+            //
+            // The server owns this value.
+            // --------------------------------------------------
 
-            existing.TotalTimeInOffice =
-                user.TotalTimeInOffice;
+            existing.OutOfOfficeStartTime =
+                user.OutOfOfficeStartTime;
+
 
             SaveUsers();
         }
     }
 
-    /// <summary>
-    /// Deletes a user from the userlist with a certain userid
-    /// </summary>
-    /// <param name="userId">The id of the user to be deleted</param>
+
+    // ==================================================
+    // Delete User
+    // ==================================================
+
     public static void DeleteUser(
         int userId)
     {
         lock (_lock)
         {
-            var user = FindUser(userId);
+            var user =
+                FindUser(userId);
+
+
             if (user is null)
             {
                 return;
             }
 
+
             _users.Remove(
                 user);
+
 
             SaveUsers();
         }
     }
 
-    /// <summary>
-    /// Replaces the list of users with the given user list
-    /// </summary>
-    /// <param name="users">The list of users to replace the user list with</param>
+
+    // ==================================================
+    // Replace Users
+    // ==================================================
+
     public static void ReplaceUsers(
         List<User> users)
     {
         ArgumentNullException.ThrowIfNull(users);
+
 
         lock (_lock)
         {
@@ -274,13 +403,16 @@ public static class UserStore
                     .Select(CloneUser)
                     .ToList();
 
+
             SaveUsers();
         }
     }
 
-    /// <summary>
-    /// Loads a list of users from the users.json file
-    /// </summary>
+
+    // ==================================================
+    // Load Users
+    // ==================================================
+
     private static void LoadUsers()
     {
         lock (_lock)
@@ -291,10 +423,13 @@ public static class UserStore
                     $"Users file not found: " +
                     $"{_filePath}");
 
+
                 _users = [];
+
 
                 return;
             }
+
 
             try
             {
@@ -302,15 +437,19 @@ public static class UserStore
                     File.ReadAllText(
                         _filePath);
 
+
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     _users = [];
 
+
                     Console.WriteLine(
                         "users.json is empty.");
 
+
                     return;
                 }
+
 
                 _users =
                     JsonSerializer.Deserialize<List<User>>(
@@ -318,9 +457,26 @@ public static class UserStore
                         _jsonOptions)
                     ?? [];
 
+
+                // ------------------------------------------
+                // TotalTimeInOffice is not persistent
+                // history.
+                //
+                // Reset it so an old value from users.json
+                // cannot be added to the live session.
+                // ------------------------------------------
+
+                foreach (var user in _users)
+                {
+                    user.TotalTimeInOffice =
+                        TimeSpan.Zero;
+                }
+
+
                 Console.WriteLine(
                     $"Loaded {_users.Count} users " +
                     $"from users.json.");
+
 
                 foreach (var user in _users)
                 {
@@ -337,6 +493,7 @@ public static class UserStore
                     $"Failed to deserialize users.json: " +
                     $"{ex.Message}");
 
+
                 _users = [];
             }
             catch (Exception ex)
@@ -345,14 +502,17 @@ public static class UserStore
                     $"Failed to load users.json: " +
                     $"{ex.Message}");
 
+
                 _users = [];
             }
         }
     }
 
-    /// <summary>
-    /// Saves the list of users to the users.json file
-    /// </summary>
+
+    // ==================================================
+    // Save Users
+    // ==================================================
+
     private static void SaveUsers()
     {
         try
@@ -362,9 +522,11 @@ public static class UserStore
                     _users,
                     _jsonOptions);
 
+
             File.WriteAllText(
                 _filePath,
                 json);
+
 
             Console.WriteLine(
                 $"Saved {_users.Count} users " +
@@ -376,15 +538,16 @@ public static class UserStore
                 $"Failed to save users.json: " +
                 $"{ex.Message}");
 
+
             throw;
         }
     }
 
-    /// <summary>
-    /// Clones a user object
-    /// </summary>
-    /// <param name="user">The user to be cloned</param>
-    /// <returns>A clone of the given user</returns>
+
+    // ==================================================
+    // Clone User
+    // ==================================================
+
     private static User CloneUser(
         User user)
     {
@@ -405,18 +568,27 @@ public static class UserStore
             InOfficeStartTime =
                 user.InOfficeStartTime,
 
+            // ------------------------------------------
+            // This is runtime state only.
+            //
+            // Do not use this as persisted history.
+            // ------------------------------------------
+
             TotalTimeInOffice =
-                user.TotalTimeInOffice
+                user.TotalTimeInOffice,
+
+            OutOfOfficeStartTime =
+                user.OutOfOfficeStartTime
         };
     }
 
-    /// <summary>
-    /// Finds a user object based on a given userId from the list of users
-    /// </summary>
-    /// <param name="userId">The id of the user being searched for</param>
-    /// <returns>The user object of the user being searched for, if found</returns>
+
+    // ==================================================
+    // Find User
+    // ==================================================
+
     private static User? FindUser(
-    int userId)
+        int userId)
     {
         return _users.FirstOrDefault(
             x =>

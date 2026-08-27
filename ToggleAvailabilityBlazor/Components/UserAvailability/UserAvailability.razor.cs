@@ -324,7 +324,10 @@ public partial class UserAvailability : ComponentBase, IDisposable
                 user.InOfficeStartTime,
 
             TotalTimeInOffice =
-                user.TotalTimeInOffice
+                user.TotalTimeInOffice,
+
+            OutOfOfficeStartTime =
+                user.OutOfOfficeStartTime,
         };
     }
 

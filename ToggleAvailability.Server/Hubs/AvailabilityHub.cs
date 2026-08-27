@@ -274,45 +274,233 @@ public class AvailabilityHub : Hub
     /// <param name="status">The status to assign to the user</param>
     /// <returns></returns>
 
-    public async Task SetAvailability(int userId, bool isAvailable, Status status)
+    public async Task SetAvailability(
+    int userId,
+    bool isAvailable,
+    Status status)
     {
-        User user = GetRequiredUser(userId);
+        User user =
+            GetRequiredUser(userId);
 
-        DateTime now = DateTime.Now;
+        DateTime now =
+            DateTime.Now;
 
-        bool leavingOffice =
-            user.Status == Status.InOffice &&
-            status != Status.InOffice;
+        Status previousStatus =
+            user.Status;
 
-        bool returningToOffice =
-            status == Status.InOffice &&
-            user.Status != Status.InOffice;
+        bool wasInOffice =
+            previousStatus == Status.InOffice;
 
-        if (leavingOffice)
+        bool isInOffice =
+            status == Status.InOffice;
+
+        bool wasOutOfOffice =
+            !wasInOffice;
+
+        bool isOutOfOffice =
+            !isInOffice;
+
+        // ==================================================
+        // Leaving the office
+        // ==================================================
+
+        if (wasInOffice && isOutOfOffice)
         {
-            EndOfficeSession(user, now);
+            EndOfficeSession(
+                user,
+                now);
+
+            StartOutOfOfficeSession(
+                user,
+                status,
+                now);
         }
 
-        if (returningToOffice)
+        // ==================================================
+        // Changing from one out-of-office reason to another
+        // ==================================================
+
+        else if (
+            wasOutOfOffice &&
+            isOutOfOffice &&
+            previousStatus != status)
         {
-            StartOfficeSession(user, now);
+            EndOutOfOfficeSession(
+                user,
+                now);
+
+            StartOutOfOfficeSession(
+                user,
+                status,
+                now);
         }
 
-        user.IsAvailable = isAvailable;
+        // ==================================================
+        // Returning to the office
+        // ==================================================
 
-        user.Status = status;
+        else if (
+            wasOutOfOffice &&
+            isInOffice)
+        {
+            EndOutOfOfficeSession(
+                user,
+                now);
 
-        UserStore.UpdateUser(user);
+            StartOfficeSession(
+                user,
+                now);
+        }
+
+        user.IsAvailable =
+            isAvailable;
+
+        user.Status =
+            status;
+
+        UserStore.UpdateUser(
+            user);
 
         Console.WriteLine(
             $"[Server] User updated: " +
             $"{user.Name} | " +
             $"Status={user.Status} | " +
             $"Available={user.IsAvailable} | " +
-            $"Start={user.InOfficeStartTime} | " +
+            $"InOfficeStart={user.InOfficeStartTime} | " +
+            $"OutOfOfficeStart={user.OutOfOfficeStartTime} | " +
             $"Total={user.TotalTimeInOffice}");
 
-        await Clients.All.SendAsync("UserUpdated", user);
+        await Clients.All.SendAsync(
+            "UserUpdated",
+            user);
+    }
+
+    /// <summary>
+    /// Ends the current out-of-office period and records
+    /// the elapsed time under its reason.
+    /// </summary>
+    /// <param name="user">
+    /// The user whose out-of-office period is ending
+    /// </param>
+    /// <param name="endTime">
+    /// The time the out-of-office period ended
+    /// </param>
+    private static void EndOutOfOfficeSession(
+        User user,
+        DateTime endTime)
+    {
+        if (user.OutOfOfficeStartTime is null)
+        {
+            return;
+        }
+
+        DateTime startTime =
+            user.OutOfOfficeStartTime.Value;
+
+        Status reason =
+            user.Status;
+
+        // OutForTheDay is intentionally not recorded.
+        if (reason == Status.GoneForTheDay)
+        {
+            user.OutOfOfficeStartTime =
+                null;
+
+            return;
+        }
+
+        if (endTime <= startTime)
+        {
+            user.OutOfOfficeStartTime =
+                null;
+
+            return;
+        }
+
+        RecordOutOfOfficeSession(
+            user,
+            reason,
+            startTime,
+            endTime);
+
+        user.OutOfOfficeStartTime =
+            null;
+    }
+
+    /// <summary>
+    /// Records an out-of-office session across one or more dates.
+    /// </summary>
+    private static void RecordOutOfOfficeSession(
+        User user,
+        Status reason,
+        DateTime startTime,
+        DateTime endTime)
+    {
+        if (reason == Status.GoneForTheDay)
+        {
+            return;
+        }
+
+        DateTime current =
+            startTime;
+
+        while (current.Date < endTime.Date)
+        {
+            DateTime midnight =
+                current.Date.AddDays(1);
+
+            TimeSpan duration =
+                midnight - current;
+
+            if (duration > TimeSpan.Zero)
+            {
+                OfficeHistoryStore.AddOutOfOfficeTime(
+                    user.UserId,
+                    DateOnly.FromDateTime(current),
+                    reason,
+                    duration);
+            }
+
+            current =
+                midnight;
+        }
+
+        if (current < endTime)
+        {
+            TimeSpan duration =
+                endTime - current;
+
+            if (duration > TimeSpan.Zero)
+            {
+                OfficeHistoryStore.AddOutOfOfficeTime(
+                    user.UserId,
+                    DateOnly.FromDateTime(current),
+                    reason,
+                    duration);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Starts tracking an out-of-office period.
+    /// </summary>
+    /// <param name="user">
+    /// The user starting the out-of-office period
+    /// </param>
+    /// <param name="status">
+    /// The reason the user is out
+    /// </param>
+    /// <param name="startTime">
+    /// The time the out-of-office period started
+    /// </param>
+    private static void StartOutOfOfficeSession(
+        User user,
+        Status status,
+        DateTime startTime)
+    {
+        user.OutOfOfficeStartTime =
+            startTime;
     }
 
     // --------------------------------------------------

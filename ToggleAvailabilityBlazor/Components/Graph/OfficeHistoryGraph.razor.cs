@@ -6,7 +6,9 @@ using ToggleAvailabilityBlazor.Services;
 
 namespace ToggleAvailabilityBlazor.Components.Graph;
 
-public partial class OfficeHistoryGraph : ComponentBase
+public partial class OfficeHistoryGraph :
+    ComponentBase,
+    IDisposable
 {
     // ==================================================
     // Parameters
@@ -45,6 +47,10 @@ public partial class OfficeHistoryGraph : ComponentBase
     public EventCallback<DateOnly> CustomEndDateChanged { get; set; }
 
 
+    [Parameter]
+    public User? User { get; set; }
+
+
     // ==================================================
     // Injected Services
     // ==================================================
@@ -60,6 +66,90 @@ public partial class OfficeHistoryGraph : ComponentBase
     private List<GraphPoint> _graphData = [];
 
     private int _hoveredGraphPoint = -1;
+
+
+    // ==================================================
+    // Live Graph Timer
+    // ==================================================
+
+    private PeriodicTimer? _graphTimer;
+
+    private CancellationTokenSource? _graphTimerCancellation;
+
+    private Task? _graphTimerTask;
+
+
+    // ==================================================
+    // Initialization
+    // ==================================================
+
+    protected override void OnInitialized()
+    {
+        StartGraphTimer();
+    }
+
+
+    // ==================================================
+    // Start Live Graph Timer
+    // ==================================================
+
+    private void StartGraphTimer()
+    {
+        _graphTimerCancellation =
+            new CancellationTokenSource();
+
+
+        _graphTimer =
+            new PeriodicTimer(
+                TimeSpan.FromSeconds(1));
+
+
+        _graphTimerTask =
+            RunGraphTimerAsync(
+                _graphTimerCancellation.Token);
+    }
+
+
+    // ==================================================
+    // Run Live Graph Timer
+    // ==================================================
+
+    private async Task RunGraphTimerAsync(
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (
+                _graphTimer is not null &&
+                await _graphTimer.WaitForNextTickAsync(
+                    cancellationToken))
+            {
+                // --------------------------------------------------
+                // Recalculate the graph every second.
+                //
+                // GetGraphPoints() calls GetLiveTimeInOffice(),
+                // which adds the time since the current clock-in
+                // to the saved TimeInOffice value.
+                // --------------------------------------------------
+
+                UpdateGraphData();
+
+
+                // --------------------------------------------------
+                // Tell Blazor to rerender the component so the
+                // graph point, line, area, and tooltip all reflect
+                // the current timer value.
+                // --------------------------------------------------
+
+                await InvokeAsync(
+                    StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when the component is disposed.
+        }
+    }
 
 
     // ==================================================
@@ -81,6 +171,7 @@ public partial class OfficeHistoryGraph : ComponentBase
         _graphData =
             GraphService.GetGraphPoints(
                 History,
+                User,
                 SelectedRange,
                 CustomStartDate,
                 CustomEndDate);
@@ -99,6 +190,10 @@ public partial class OfficeHistoryGraph : ComponentBase
             return;
         }
 
+
+        // --------------------------------------------------
+        // Reset custom dates when entering Custom mode.
+        // --------------------------------------------------
 
         if (newRange == GraphRange.Custom)
         {
@@ -187,17 +282,22 @@ public partial class OfficeHistoryGraph : ComponentBase
             double width =
                 OfficeHistoryGraphService.GraphWidth;
 
+
             double height =
                 OfficeHistoryGraphService.GraphHeight;
+
 
             double left =
                 OfficeHistoryGraphService.GraphLeft;
 
+
             double right =
                 OfficeHistoryGraphService.GraphRight;
 
+
             double top =
                 OfficeHistoryGraphService.GraphTop;
+
 
             double bottom =
                 OfficeHistoryGraphService.GraphBottom;
@@ -756,5 +856,19 @@ public partial class OfficeHistoryGraph : ComponentBase
             SelectedRange,
             CustomStartDate,
             CustomEndDate);
+    }
+
+
+    // ==================================================
+    // Dispose
+    // ==================================================
+
+    public void Dispose()
+    {
+        _graphTimerCancellation?.Cancel();
+
+        _graphTimer?.Dispose();
+
+        _graphTimerCancellation?.Dispose();
     }
 }

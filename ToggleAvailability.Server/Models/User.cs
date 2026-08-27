@@ -13,4 +13,6 @@ public class User
     public DateTime? InOfficeStartTime { get; set; }
 
     public TimeSpan TotalTimeInOffice { get; set; }
+
+    public DateTime? OutOfOfficeStartTime { get; set; }
 }

@@ -2,49 +2,55 @@
   {
     "UserId": 1,
     "Name": "John",
-    "IsAvailable": false,
-    "Status": "Other",
-    "InOfficeStartTime": null,
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-27T12:54:06.5691424-05:00",
+    "TotalTimeInOffice": "00:02:16.1443198",
+    "OutOfOfficeStartTime": null
   },
   {
     "UserId": 2,
     "Name": "Jane",
-    "IsAvailable": false,
-    "Status": "OtherSide",
-    "InOfficeStartTime": null,
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-27T12:51:50.3612556-05:00",
+    "TotalTimeInOffice": "00:00:00",
+    "OutOfOfficeStartTime": null
   },
   {
     "UserId": 3,
     "Name": "Joe",
-    "IsAvailable": false,
-    "Status": 6,
-    "InOfficeStartTime": null,
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-27T12:54:17.1348344-05:00",
+    "TotalTimeInOffice": "00:02:23.2231648",
+    "OutOfOfficeStartTime": null
   },
   {
     "UserId": 4,
     "Name": "Bob",
-    "IsAvailable": false,
-    "Status": "Other",
-    "InOfficeStartTime": null,
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-27T12:51:55.5928305-05:00",
+    "TotalTimeInOffice": "00:00:00",
+    "OutOfOfficeStartTime": null
   },
   {
     "UserId": 5,
     "Name": "Rob",
-    "IsAvailable": false,
-    "Status": "Other",
-    "InOfficeStartTime": null,
-    "TotalTimeInOffice": "00:00:00"
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-27T12:52:06.417056-05:00",
+    "TotalTimeInOffice": "00:00:00",
+    "OutOfOfficeStartTime": null
   },
   {
     "UserId": 6,
     "Name": "Mike",
-    "IsAvailable": false,
-    "Status": "Other",
-    "InOfficeStartTime": null,
-    "TotalTimeInOffice": "00:00:03.0489759"
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-27T12:53:55.4344996-05:00",
+    "TotalTimeInOffice": "00:01:22.7027046",
+    "OutOfOfficeStartTime": null
   }
 ]
