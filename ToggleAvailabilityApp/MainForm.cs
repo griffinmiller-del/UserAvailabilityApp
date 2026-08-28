@@ -8,6 +8,7 @@ public class MainForm : Form
 
     private readonly AvailabilityService _availabilityService;
 
+    // This contains ALL users, including inactive users.
     private readonly List<User> _users = [];
 
     private readonly Button btn_Edit;
@@ -212,8 +213,6 @@ public class MainForm : Form
 
         // --------------------------------------------------
         // Add controls
-        //
-        // No title/header.
         // --------------------------------------------------
 
         Controls.Add(
@@ -296,61 +295,194 @@ public class MainForm : Form
             $"Received user list: " +
             $"{users.Count} users.");
 
-        ReplaceUsers(
+        UpdateUsers(
             users);
     }
 
 
-    /// <summary>
-    /// Replaces the local list of users
-    /// </summary>
-    /// <param name="users">The list of users to replace the local list with</param>
-    private void ReplaceUsers(IEnumerable<User> users)
+    // ------------------------------------------------------
+    // Update the local user list
+    //
+    // IMPORTANT:
+    // _users contains BOTH active and inactive users.
+    //
+    // Only active users are displayed.
+    // ------------------------------------------------------
+
+    private void UpdateUsers(
+    IEnumerable<User> users)
     {
-        _users.Clear();
+        var incomingUsers =
+            users
+                .ToList();
 
-        _users.AddRange(
-            users.Select(CloneUser));
+        // --------------------------------------------------
+        // The server's list is authoritative.
+        //
+        // Only users returned by the server belong in
+        // the application's active user collection.
+        // --------------------------------------------------
 
-        LoadUsers();
+        var incomingIds =
+            incomingUsers
+                .Select(x => x.UserId)
+                .ToHashSet();
+
+
+        // --------------------------------------------------
+        // Remove anything the server did not return.
+        // --------------------------------------------------
+
+        _users.RemoveAll(
+            x =>
+                !incomingIds.Contains(
+                    x.UserId));
+
+
+        // --------------------------------------------------
+        // Add new users and update existing users.
+        // --------------------------------------------------
+
+        foreach (var incomingUser in incomingUsers)
+        {
+            var existingUser =
+                _users.FirstOrDefault(
+                    x =>
+                        x.UserId ==
+                        incomingUser.UserId);
+
+            if (existingUser is null)
+            {
+                _users.Add(
+                    CloneUser(
+                        incomingUser));
+
+                continue;
+            }
+
+
+            existingUser.Name =
+                incomingUser.Name;
+
+            existingUser.IsAvailable =
+                incomingUser.IsAvailable;
+
+            existingUser.Status =
+                incomingUser.Status;
+
+            existingUser.InOfficeStartTime =
+                incomingUser.InOfficeStartTime;
+
+            existingUser.TotalTimeInOffice =
+                incomingUser.TotalTimeInOffice;
+
+            existingUser.OutOfOfficeStartTime =
+                incomingUser.OutOfOfficeStartTime;
+
+            existingUser.IsActiveUser =
+                incomingUser.IsActiveUser;
+        }
+
+
+        RefreshUserGrid();
     }
 
 
-    /// <summary>
-    /// Creates a clone of a user object
-    /// </summary>
-    /// <param name="user">The user to clone</param>
-    /// <returns>The clone of the user</returns>
+    // ------------------------------------------------------
+    // Creates a complete copy of a User.
+    // ------------------------------------------------------
+
     private static User CloneUser(
         User user)
     {
-        return new User(
-            user.UserId,
-            user.Name,
-            user.Status,
-            user.IsAvailable);
+        var clone =
+            new User(
+                user.UserId,
+                user.Name,
+                user.Status,
+                user.IsAvailable);
+
+        clone.InOfficeStartTime =
+            user.InOfficeStartTime;
+
+        clone.TotalTimeInOffice =
+            user.TotalTimeInOffice;
+
+        clone.OutOfOfficeStartTime =
+            user.OutOfOfficeStartTime;
+
+        clone.IsActiveUser =
+            user.IsActiveUser;
+
+        return clone;
     }
 
 
     // ------------------------------------------------------
-    // Build user grid
+    // Refresh user grid
+    //
+    // Only IsActiveUser users receive UserButtons.
+    //
+    // Existing buttons are preserved whenever possible.
     // ------------------------------------------------------
 
-    private void LoadUsers()
+    private void RefreshUserGrid()
     {
         tlp_Users.SuspendLayout();
 
         try
         {
-            tlp_Users.Controls.Clear();
+            var existingButtons =
+                tlp_Users.Controls
+                    .OfType<UserButton>()
+                    .Where(x => x.User is not null)
+                    .ToDictionary(
+                        x => x.User!.UserId);
 
-            tlp_Users.RowStyles.Clear();
+            // --------------------------------------------------
+            // Only active users should have buttons.
+            // --------------------------------------------------
+
+            var activeUsers =
+                _users
+                    .Where(x => x.IsActiveUser)
+                    .ToList();
+
+            var requiredUserIds =
+                activeUsers
+                    .Select(x => x.UserId)
+                    .ToHashSet();
+
+            // --------------------------------------------------
+            // Remove buttons for inactive users.
+            // --------------------------------------------------
+
+            foreach (var button in existingButtons.Values)
+            {
+                if (!requiredUserIds.Contains(
+                        button.User!.UserId))
+                {
+                    button.AvailabilityChanged -=
+                        UserButton_AvailabilityChanged;
+
+                    tlp_Users.Controls.Remove(
+                        button);
+
+                    button.Dispose();
+                }
+            }
+
+            // --------------------------------------------------
+            // Rebuild the layout positions.
+            // --------------------------------------------------
 
             int rowCount =
                 Math.Max(
                     1,
                     (int)Math.Ceiling(
-                        _users.Count / 4.0));
+                        activeUsers.Count / 4.0));
+
+            tlp_Users.RowStyles.Clear();
 
             tlp_Users.RowCount =
                 rowCount;
@@ -365,34 +497,17 @@ public class MainForm : Form
                         100F / rowCount));
             }
 
+            // --------------------------------------------------
+            // Position existing buttons and create only
+            // buttons that don't already exist.
+            // --------------------------------------------------
+
             for (int i = 0;
-                 i < _users.Count;
+                 i < activeUsers.Count;
                  i++)
             {
                 var user =
-                    _users[i];
-
-                var button =
-                    new UserButton
-                    {
-                        User =
-                            user,
-
-                        Dock =
-                            DockStyle.Fill,
-
-                        Margin =
-                            new Padding(5),
-
-                        BorderStyle =
-                            BorderStyle.None,
-
-                        BackColor =
-                            CardBackground
-                    };
-
-                button.AvailabilityChanged +=
-                    UserButton_AvailabilityChanged;
+                    activeUsers[i];
 
                 int row =
                     i / 4;
@@ -400,15 +515,73 @@ public class MainForm : Form
                 int column =
                     i % 4;
 
-                tlp_Users.Controls.Add(
-                    button,
-                    column,
-                    row);
+                if (existingButtons.TryGetValue(
+                        user.UserId,
+                        out var button))
+                {
+                    // ------------------------------------------
+                    // Existing button.
+                    // ------------------------------------------
+
+                    button.User =
+                        user;
+
+                    button.UpdateFromServer(
+                        user);
+
+                    tlp_Users.SetCellPosition(
+                        button,
+                        new TableLayoutPanelCellPosition(
+                            column,
+                            row));
+
+                    tlp_Users.SetColumnSpan(
+                        button,
+                        1);
+
+                    tlp_Users.SetRowSpan(
+                        button,
+                        1);
+                }
+                else
+                {
+                    // ------------------------------------------
+                    // New button.
+                    // ------------------------------------------
+
+                    button =
+                        new UserButton
+                        {
+                            User =
+                                user,
+
+                            Dock =
+                                DockStyle.Fill,
+
+                            Margin =
+                                new Padding(5),
+
+                            BorderStyle =
+                                BorderStyle.None,
+
+                            BackColor =
+                                CardBackground
+                        };
+
+                    button.AvailabilityChanged +=
+                        UserButton_AvailabilityChanged;
+
+                    tlp_Users.Controls.Add(
+                        button,
+                        column,
+                        row);
+                }
             }
         }
         finally
         {
-            tlp_Users.ResumeLayout();
+            tlp_Users.ResumeLayout(
+                true);
         }
     }
 
@@ -449,11 +622,12 @@ public class MainForm : Form
     }
 
 
-    /// <summary>
-    /// Handles when the server notifies the app instance that a user has been updated
-    /// </summary>
-    /// <param name="updatedUser">The user object that has been updated</param>
-    private void AvailabilityService_UserUpdated(User updatedUser)
+    // ------------------------------------------------------
+    // Individual user update from server
+    // ------------------------------------------------------
+
+    private void AvailabilityService_UserUpdated(
+        User updatedUser)
     {
         if (InvokeRequired)
         {
@@ -488,6 +662,10 @@ public class MainForm : Form
             return;
         }
 
+        // --------------------------------------------------
+        // Update the complete local user state.
+        // --------------------------------------------------
+
         localUser.Name =
             updatedUser.Name;
 
@@ -496,6 +674,33 @@ public class MainForm : Form
 
         localUser.Status =
             updatedUser.Status;
+
+        localUser.IsActiveUser =
+            updatedUser.IsActiveUser;
+
+        localUser.InOfficeStartTime =
+            updatedUser.InOfficeStartTime;
+
+        localUser.TotalTimeInOffice =
+            updatedUser.TotalTimeInOffice;
+
+        localUser.OutOfOfficeStartTime =
+            updatedUser.OutOfOfficeStartTime;
+
+        // --------------------------------------------------
+        // An inactive user should not have a button.
+        // --------------------------------------------------
+
+        if (!updatedUser.IsActiveUser)
+        {
+            RefreshUserGrid();
+
+            return;
+        }
+
+        // --------------------------------------------------
+        // Find the existing button.
+        // --------------------------------------------------
 
         var button =
             tlp_Users.Controls
@@ -507,30 +712,35 @@ public class MainForm : Form
 
         if (button is null)
         {
-            Console.WriteLine(
-                $"UserButton for " +
-                $"{updatedUser.Name} " +
-                $"was not found.");
+            // The user is active but doesn't have a button.
+            // Rebuild the grid so one is created.
+            RefreshUserGrid();
 
             return;
         }
+
+        button.User =
+            localUser;
 
         button.UpdateFromServer(
             updatedUser);
     }
 
 
-    // ------------------------------------------------------
-    // Edit users
-    // ------------------------------------------------------
+// ------------------------------------------------------
+// Edit users
+// ------------------------------------------------------
 
-    private async void Edit_Click(
-        object? sender,
-        EventArgs e)
+private async void Edit_Click(
+    object? sender,
+    EventArgs e)
     {
         using var editForm =
             new EditUsersForm(
-                _users);
+                _users
+                    .Where(x => x.IsActiveUser)
+                    .Select(CloneUser)
+                    .ToList());
 
         if (editForm.ShowDialog(this) !=
             DialogResult.OK)
@@ -538,32 +748,150 @@ public class MainForm : Form
             return;
         }
 
-        var updatedUsers =
+
+        // --------------------------------------------------
+        // These are the users that currently exist locally.
+        //
+        // This list represents the last authoritative list
+        // received from the server.
+        // --------------------------------------------------
+
+        var existingUsers =
+            _users
+                .Where(x => x.IsActiveUser)
+                .Select(CloneUser)
+                .ToList();
+
+
+        // --------------------------------------------------
+        // These are the users returned by EditUsersForm.
+        //
+        // This represents what the user wants changed.
+        // --------------------------------------------------
+
+        var editedUsers =
             editForm.Users
                 .Select(CloneUser)
                 .ToList();
 
-        Console.WriteLine(
-            $"Saving {updatedUsers.Count} " +
-            $"users to server...");
 
         try
         {
             btn_Edit.Enabled =
                 false;
 
-            await _availabilityService
-                .UpdateUserListAsync(
-                    updatedUsers);
+
+            // ==================================================
+            // Find deleted users
+            // ==================================================
+
+            var deletedUsers =
+                existingUsers
+                    .Where(
+                        existing =>
+                            !editedUsers.Any(
+                                edited =>
+                                    edited.UserId ==
+                                    existing.UserId))
+                    .ToList();
+
+
+            foreach (var user in deletedUsers)
+            {
+                Console.WriteLine(
+                    $"Requesting deletion of user: " +
+                    $"{user.Name} ({user.UserId})");
+
+                // ----------------------------------------------
+                // The application does NOT remove the user
+                // locally.
+                //
+                // It only tells the server to delete the user.
+                //
+                // The server will then broadcast the new
+                // authoritative UserList.
+                // ----------------------------------------------
+
+                await _availabilityService
+                    .DeleteUserAsync(
+                        user.UserId);
+            }
+
+
+            // ==================================================
+            // Find added and renamed users
+            // ==================================================
+
+            foreach (var editedUser in editedUsers)
+            {
+                var existingUser =
+                    existingUsers.FirstOrDefault(
+                        existing =>
+                            existing.UserId ==
+                            editedUser.UserId);
+
+
+                // --------------------------------------------------
+                // New user
+                // --------------------------------------------------
+
+                if (existingUser is null)
+                {
+                    Console.WriteLine(
+                        $"Requesting addition of user: " +
+                        $"{editedUser.Name}");
+
+                    await _availabilityService
+                        .AddUserAsync(
+                            editedUser.Name);
+
+                    continue;
+                }
+
+
+                // --------------------------------------------------
+                // Existing user whose name changed
+                // --------------------------------------------------
+
+                if (!string.Equals(
+                        existingUser.Name,
+                        editedUser.Name,
+                        StringComparison.Ordinal))
+                {
+                    Console.WriteLine(
+                        $"Requesting rename of user: " +
+                        $"{existingUser.Name} -> " +
+                        $"{editedUser.Name} " +
+                        $"({editedUser.UserId})");
+
+                    await _availabilityService
+                        .UpdateUserAsync(
+                            editedUser.UserId,
+                            editedUser.Name);
+                }
+            }
+
 
             Console.WriteLine(
-                "User list successfully sent " +
+                "User changes successfully sent " +
                 "to the server.");
+
+            // --------------------------------------------------
+            // DO NOT update _users here.
+            //
+            // The server is authoritative.
+            //
+            // AddUser, UpdateUser, and DeleteUser each cause
+            // the server to broadcast UserList.
+            //
+            // AvailabilityService_UserListReceived() receives
+            // that list and updates the application.
+            // --------------------------------------------------
         }
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"Unable to save the user list to the server.\n\n{ex.Message}",
+                $"Unable to save the user changes to the server.\n\n{ex.Message}",
                 "Save Error",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -574,6 +902,7 @@ public class MainForm : Form
                 true;
         }
     }
+
 
 
     // ------------------------------------------------------

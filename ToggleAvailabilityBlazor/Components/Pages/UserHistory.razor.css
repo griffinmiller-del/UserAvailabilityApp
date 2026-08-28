@@ -1,0 +1,489 @@
+/* CSS for UserHistory component */
+/* -------------------------------------------------- */
+/* Page */
+/* -------------------------------------------------- */
+
+.history-page {
+    min-height: 100vh;
+    padding: 32px;
+    box-sizing: border-box;
+    background: #111111;
+    color: #ffffff;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+
+/* -------------------------------------------------- */
+/* Header */
+/* -------------------------------------------------- */
+
+.history-header {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 28px auto;
+}
+
+
+::deep .back-link {
+    display: inline-block;
+    margin-bottom: 18px;
+    color: #e5bc3f !important;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+
+    ::deep .back-link:hover {
+        color: #d4aa32 !important;
+        text-decoration: underline;
+    }
+
+
+.history-header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 500;
+}
+
+
+.history-header p {
+    margin: 7px 0 0 0;
+    color: #777777;
+    font-size: 14px;
+}
+
+
+/* -------------------------------------------------- */
+/* Date Search */
+/* -------------------------------------------------- */
+
+.date-search {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 20px auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    padding: 16px;
+    box-sizing: border-box;
+    background: #1c1c1c;
+    border: 1px solid #303030;
+    border-radius: 8px;
+}
+
+
+.date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+    .date-field label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #777777;
+    }
+
+
+    .date-field input {
+        height: 38px;
+        padding: 0 10px;
+        box-sizing: border-box;
+        background: #111111;
+        border: 1px solid #3a3a3a;
+        border-radius: 6px;
+        color: #ffffff;
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 14px;
+    }
+
+
+        .date-field input:focus {
+            outline: none;
+            border-color: #f2c94c;
+        }
+
+
+/* -------------------------------------------------- */
+/* Search Buttons */
+/* -------------------------------------------------- */
+
+.date-actions {
+    display: flex;
+    gap: 8px;
+}
+
+
+.search-button,
+.clear-button {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+
+.search-button {
+    background: #f2c94c;
+    border: 1px solid #f2c94c;
+    color: #111111;
+    font-weight: 500;
+}
+
+
+    .search-button:hover {
+        background: #e5bc3f;
+        border-color: #e5bc3f;
+    }
+
+
+.clear-button {
+    background: #242424;
+    border: 1px solid #3a3a3a;
+    color: #a8a8a8;
+}
+
+
+    .clear-button:hover {
+        background: #2d2d2d;
+        color: #ffffff;
+    }
+
+
+/* -------------------------------------------------- */
+/* History List */
+/* -------------------------------------------------- */
+
+.history-list {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+
+/* -------------------------------------------------- */
+/* History Entry */
+/* -------------------------------------------------- */
+
+.history-entry {
+    width: 100%;
+}
+
+
+/* -------------------------------------------------- */
+/* History Row */
+/* -------------------------------------------------- */
+
+.history-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(130px, 1fr) minmax(130px, 1fr) minmax(150px, 1fr) minmax(180px, 1.25fr);
+    column-gap: 32px;
+    align-items: center;
+    min-height: 58px;
+    padding: 0 18px;
+    box-sizing: border-box;
+    background: #1c1c1c;
+    border: 1px solid #303030;
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: "Segoe UI", Arial, sans-serif;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+
+    .history-row:hover {
+        background: #222222;
+        border-color: #3a3a3a;
+    }
+
+
+    .history-row.expanded {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-color: #3a3a3a;
+    }
+
+
+/* -------------------------------------------------- */
+/* History Header Row */
+/* -------------------------------------------------- */
+
+.history-row-header {
+    min-height: 40px;
+    background: transparent;
+    border: none;
+    color: #666666;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: default;
+    pointer-events: none;
+}
+
+
+    .history-row-header:hover {
+        background: transparent;
+        border-color: transparent;
+    }
+
+
+/* -------------------------------------------------- */
+/* Date */
+/* -------------------------------------------------- */
+
+.history-date {
+    font-size: 15px;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+
+/* -------------------------------------------------- */
+/* Clock In */
+/* -------------------------------------------------- */
+
+.history-clock-in {
+    font-size: 15px;
+    color: #a8a8a8;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+
+/* -------------------------------------------------- */
+/* Time In Office */
+/* -------------------------------------------------- */
+
+.history-time {
+    font-size: 15px;
+    color: #a8a8a8;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+
+/* -------------------------------------------------- */
+/* Out of Office */
+/* -------------------------------------------------- */
+
+.history-out {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    min-width: 0;
+    font-size: 15px;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+}
+
+
+.out-of-office-total {
+    white-space: nowrap;
+}
+
+
+.expand-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    color: #777777;
+    font-size: 22px;
+    line-height: 1;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease, color 0.15s ease;
+}
+
+
+.history-row:hover .expand-indicator {
+    color: #f2c94c;
+}
+
+
+.expand-indicator.rotated {
+    transform: rotate(90deg);
+    color: #f2c94c;
+}
+
+
+.no-out-time {
+    color: #555555;
+}
+
+
+/* -------------------------------------------------- */
+/* Expanded Details */
+/* -------------------------------------------------- */
+
+.history-details {
+    padding: 16px 24px 18px 24px;
+    background: #181818;
+    border: 1px solid #3a3a3a;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+
+.history-details-header {
+    margin-bottom: 12px;
+    color: #666666;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+}
+
+
+.reason-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    gap: 6px;
+}
+
+
+.reason-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 34px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    background: #202020;
+    border: 1px solid #2d2d2d;
+    border-radius: 5px;
+}
+
+
+.reason-name {
+    color: #a8a8a8;
+    font-size: 13px;
+}
+
+
+.reason-duration {
+    color: #ffffff;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* -------------------------------------------------- */
+/* Loading / Empty */
+/* -------------------------------------------------- */
+
+.loading,
+.empty-history {
+    max-width: 1100px;
+    margin: 40px auto;
+    text-align: center;
+    color: #777777;
+}
+
+
+/* -------------------------------------------------- */
+/* Mobile */
+/* -------------------------------------------------- */
+
+@media (max-width: 750px) {
+
+    .history-page {
+        padding: 20px;
+    }
+
+
+    .date-search {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+
+    .date-field {
+        width: 100%;
+    }
+
+
+        .date-field input {
+            width: 100%;
+        }
+
+
+    .date-actions {
+        width: 100%;
+    }
+
+
+    .search-button,
+    .clear-button {
+        flex: 1;
+    }
+
+
+    .history-row {
+        grid-template-columns: 1fr;
+        column-gap: 0;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 12px 18px;
+    }
+
+
+    .history-row-header {
+        display: none;
+    }
+
+
+    .history-clock-in,
+    .history-time,
+    .history-out {
+        text-align: left;
+        justify-content: flex-start;
+    }
+
+
+        .history-clock-in::before {
+            content: "Clock In: ";
+            color: #666666;
+        }
+
+
+        .history-time::before {
+            content: "Time in Office: ";
+            color: #666666;
+        }
+
+
+        .history-out::before {
+            content: "Out of Office: ";
+            color: #666666;
+        }
+
+
+    .history-details {
+        padding: 14px 18px 16px 18px;
+    }
+
+
+    .reason-list {
+        max-width: none;
+    }
+
+
+    .reason-row {
+        padding: 0 10px;
+    }
+}

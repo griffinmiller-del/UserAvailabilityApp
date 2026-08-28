@@ -5,14 +5,13 @@ using ToggleAvailabilityBlazor.Models;
 public class UserDisplayService
 {
     /// <summary>
-    /// Gets the total time the user has spent in the office.
+    /// Gets the total time the user has spent in the office today.
     ///
-    /// TotalTimeInOffice contains all completed office
-    /// sessions.
+    /// TotalTimeInOffice contains completed office time for the
+    /// current day.
     ///
-    /// If the user is currently in the office, the active
-    /// session is calculated from InOfficeStartTime and
-    /// temporarily added to the completed total for display.
+    /// If the user is currently in the office, only the portion
+    /// of the active session occurring after midnight is added.
     ///
     /// The active session is NOT written back to
     /// TotalTimeInOffice here.
@@ -24,15 +23,33 @@ public class UserDisplayService
 
 
         // --------------------------------------------------
-        // Add the currently active session for display only.
+        // Add only the portion of the active session that
+        // occurred today.
         // --------------------------------------------------
 
         if (user.Status == Status.InOffice &&
             user.InOfficeStartTime.HasValue)
         {
-            TimeSpan currentSession =
-                DateTime.Now -
+            DateTime now =
+                DateTime.Now;
+
+            DateTime midnight =
+                now.Date;
+
+            DateTime sessionStart =
                 user.InOfficeStartTime.Value;
+
+
+            // If the session started before midnight,
+            // begin counting from midnight instead.
+            DateTime effectiveStart =
+                sessionStart < midnight
+                    ? midnight
+                    : sessionStart;
+
+
+            TimeSpan currentSession =
+                now - effectiveStart;
 
 
             if (currentSession > TimeSpan.Zero)

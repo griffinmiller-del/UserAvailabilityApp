@@ -15,10 +15,16 @@ public class AvailabilityService : IAsyncDisposable
     // Events
     // --------------------------------------------------
 
+    /// <summary>
+    /// Raised whenever the server sends the authoritative
+    /// active-user list.
+    /// </summary>
     public event Action<List<User>>? UserListReceived;
 
-    public event Action<List<User>>? UserListUpdated;
-
+    /// <summary>
+    /// Raised whenever the server sends an individual
+    /// user update.
+    /// </summary>
     public event Action<User>? UserUpdated;
 
 
@@ -53,7 +59,6 @@ public class AvailabilityService : IAsyncDisposable
             ?? throw new InvalidOperationException(
                 "AvailabilityServer:BaseUrl is not configured.");
 
-
         _serverUrl =
             _serverUrl.TrimEnd('/');
 
@@ -71,7 +76,7 @@ public class AvailabilityService : IAsyncDisposable
 
 
         // --------------------------------------------------
-        // Initial user list
+        // Authoritative user list
         // --------------------------------------------------
 
         _connection.On<List<User>>(
@@ -83,23 +88,6 @@ public class AvailabilityService : IAsyncDisposable
                     $"{users.Count} users.");
 
                 UserListReceived?.Invoke(
-                    users);
-            });
-
-
-        // --------------------------------------------------
-        // Updated complete user list
-        // --------------------------------------------------
-
-        _connection.On<List<User>>(
-            "UserListUpdated",
-            users =>
-            {
-                Console.WriteLine(
-                    $"[WinForms] Received UserListUpdated: " +
-                    $"{users.Count} users.");
-
-                UserListUpdated?.Invoke(
                     users);
             });
 
@@ -194,10 +182,13 @@ public class AvailabilityService : IAsyncDisposable
         HubConnectionState.Connected;
 
 
+    // --------------------------------------------------
+    // Connect
+    // --------------------------------------------------
+
     /// <summary>
-    /// Handles connecting to the server
+    /// Connects to the Availability Server.
     /// </summary>
-    /// <returns></returns>
     public async Task ConnectAsync()
     {
         if (_connection.State ==
@@ -221,10 +212,8 @@ public class AvailabilityService : IAsyncDisposable
         {
             await _connection.StartAsync();
 
-
             Console.WriteLine(
                 "[WinForms] SignalR connected.");
-
 
             Console.WriteLine(
                 $"[WinForms] Connection state: " +
@@ -232,16 +221,11 @@ public class AvailabilityService : IAsyncDisposable
 
 
             // --------------------------------------------------
-            // Explicitly request the user list.
-            //
-            // OnConnectedAsync on the server already
-            // sends it, but this guarantees that the
-            // client gets it after the connection starts.
+            // Ask the server for its authoritative list.
             // --------------------------------------------------
 
             await _connection.InvokeAsync(
                 "GetUsers");
-
 
             Console.WriteLine(
                 "[WinForms] Requested user list.");
@@ -251,16 +235,13 @@ public class AvailabilityService : IAsyncDisposable
             Console.WriteLine(
                 "[WinForms] SignalR connection FAILED.");
 
-
             Console.WriteLine(
                 $"Exception type: " +
                 $"{ex.GetType().FullName}");
 
-
             Console.WriteLine(
                 $"Message: " +
                 $"{ex.Message}");
-
 
             if (ex.InnerException is not null)
             {
@@ -269,22 +250,22 @@ public class AvailabilityService : IAsyncDisposable
                     $"{ex.InnerException.Message}");
             }
 
-
             throw;
         }
     }
 
 
+    // --------------------------------------------------
+    // Availability
+    // --------------------------------------------------
+
     /// <summary>
-    /// Handles telling the server that the availability of a user has been changed
+    /// Tells the server that a user's availability changed.
     /// </summary>
-    /// <param name="user">The user object that has been changed</param>
-    /// <returns></returns>
     public async Task SetAvailabilityAsync(
         User user)
     {
         EnsureConnected();
-
 
         await _connection.InvokeAsync(
             "SetAvailability",
@@ -294,16 +275,20 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
+    // --------------------------------------------------
+    // Add User
+    // --------------------------------------------------
+
     /// <summary>
-    /// Handles telling the server that a new user has been added
+    /// Tells the server to add a new user.
+    ///
+    /// The server is responsible for assigning the user ID
+    /// and broadcasting the resulting user list.
     /// </summary>
-    /// <param name="name">The name of the new user</param>
-    /// <returns></returns>
     public async Task AddUserAsync(
         string name)
     {
         EnsureConnected();
-
 
         await _connection.InvokeAsync(
             "AddUser",
@@ -311,18 +296,18 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
+    // --------------------------------------------------
+    // Update User
+    // --------------------------------------------------
+
     /// <summary>
-    /// Handles telling the server that a user has been updated
+    /// Tells the server to update an existing user's name.
     /// </summary>
-    /// <param name="userId">The id of the user that has been updated</param>
-    /// <param name="name">The name of the updated user</param>
-    /// <returns></returns>
     public async Task UpdateUserAsync(
         int userId,
         string name)
     {
         EnsureConnected();
-
 
         await _connection.InvokeAsync(
             "UpdateUser",
@@ -331,16 +316,21 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
+    // --------------------------------------------------
+    // Delete User
+    // --------------------------------------------------
+
     /// <summary>
-    /// Handles telling the server that a user has been deleted
+    /// Tells the server to deactivate a user.
+    ///
+    /// The application does not remove the user locally.
+    /// The server broadcasts the resulting authoritative
+    /// user list to every connected client.
     /// </summary>
-    /// <param name="userId">the id of the user that has been deleted</param>
-    /// <returns></returns>
     public async Task DeleteUserAsync(
         int userId)
     {
         EnsureConnected();
-
 
         await _connection.InvokeAsync(
             "DeleteUser",
@@ -348,26 +338,10 @@ public class AvailabilityService : IAsyncDisposable
     }
 
 
-    /// <summary>
-    /// Replaces the user list
-    /// </summary>
-    /// <param name="users">The list of users to replace the existing list with</param>
-    /// <returns></returns>
-    public async Task UpdateUserListAsync(
-        List<User> users)
-    {
-        EnsureConnected();
+    // --------------------------------------------------
+    // Connection validation
+    // --------------------------------------------------
 
-
-        await _connection.InvokeAsync(
-            "UpdateUserList",
-            users);
-    }
-
-    /// <summary>
-    /// Handles ensuring that the application is connected to the server
-    /// </summary>
-    /// <exception cref="InvalidOperationException"></exception>
     private void EnsureConnected()
     {
         if (!IsConnected)

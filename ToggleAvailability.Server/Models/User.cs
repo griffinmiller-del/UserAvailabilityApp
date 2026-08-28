@@ -15,4 +15,6 @@ public class User
     public TimeSpan TotalTimeInOffice { get; set; }
 
     public DateTime? OutOfOfficeStartTime { get; set; }
+
+    public bool IsActiveUser { get; set; }
 }

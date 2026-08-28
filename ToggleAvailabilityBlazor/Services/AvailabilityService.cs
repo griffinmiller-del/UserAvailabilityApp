@@ -287,7 +287,14 @@ public class AvailabilityService : IAsyncDisposable
 
 
     /// <summary>
-    /// Updates the user list with an updated user
+    /// Updates an existing user in the active user list.
+    ///
+    /// The server's UserList is authoritative for which users
+    /// are active. Therefore, UserUpdated must never add a new
+    /// user to the local list.
+    ///
+    /// If a user becomes inactive, the server will send an updated
+    /// UserList and the user will be removed from Users there.
     /// </summary>
     /// <param name="user">The user to update</param>
     private void UpdateUser(User user)
@@ -306,39 +313,59 @@ public class AvailabilityService : IAsyncDisposable
 
         var existingUser =
             updatedUsers.FirstOrDefault(
-                x => x.UserId == user.UserId);
+                x =>
+                    x.UserId ==
+                    user.UserId);
 
+
+        // --------------------------------------------------
+        // The server's active UserList is authoritative.
+        //
+        // Do not add a user here if it isn't already in
+        // the active list.
+        //
+        // A newly active user will arrive through UserList.
+        // --------------------------------------------------
 
         if (existingUser is null)
         {
-            updatedUsers.Add(
-                CloneUser(user));
-        }
-        else
-        {
-            existingUser.Name =
-                user.Name;
-
-            existingUser.IsAvailable =
-                user.IsAvailable;
-
-            existingUser.Status =
-                user.Status;
-
-            existingUser.InOfficeStartTime =
-                user.InOfficeStartTime;
-
-            existingUser.TotalTimeInOffice =
-                user.TotalTimeInOffice;
+            return;
         }
 
 
-        Users = updatedUsers;
+        // --------------------------------------------------
+        // Update the existing user.
+        // --------------------------------------------------
+
+        existingUser.Name =
+            user.Name;
+
+        existingUser.IsAvailable =
+            user.IsAvailable;
+
+        existingUser.Status =
+            user.Status;
+
+        existingUser.InOfficeStartTime =
+            user.InOfficeStartTime;
+
+        existingUser.TotalTimeInOffice =
+            user.TotalTimeInOffice;
+
+        existingUser.OutOfOfficeStartTime =
+            user.OutOfOfficeStartTime;
+
+        existingUser.IsActiveUser =
+            user.IsActiveUser;
+
+
+        Users =
+            updatedUsers;
     }
 
 
     /// <summary>
-    /// Creates a clone of a user
+    /// Creates a clone of a user.
     /// </summary>
     /// <param name="user">The user object to clone</param>
     /// <returns>The cloned user object</returns>
@@ -363,7 +390,13 @@ public class AvailabilityService : IAsyncDisposable
                 user.InOfficeStartTime,
 
             TotalTimeInOffice =
-                user.TotalTimeInOffice
+                user.TotalTimeInOffice,
+
+            OutOfOfficeStartTime =
+                user.OutOfOfficeStartTime,
+
+            IsActiveUser =
+                user.IsActiveUser
         };
     }
 

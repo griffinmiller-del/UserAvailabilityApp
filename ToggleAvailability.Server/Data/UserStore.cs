@@ -339,6 +339,8 @@ public static class UserStore
             existing.Status =
                 user.Status;
 
+            existing.IsActiveUser =
+                user.IsActiveUser;
 
             // --------------------------------------------------
             // DO NOT copy:
@@ -359,7 +361,7 @@ public static class UserStore
 
 
     // ==================================================
-    // Delete User
+    // Deactivate User
     // ==================================================
 
     public static void DeleteUser(
@@ -370,16 +372,13 @@ public static class UserStore
             var user =
                 FindUser(userId);
 
-
             if (user is null)
             {
                 return;
             }
 
-
-            _users.Remove(
-                user);
-
+            user.IsActiveUser =
+                false;
 
             SaveUsers();
         }
@@ -391,18 +390,76 @@ public static class UserStore
     // ==================================================
 
     public static void ReplaceUsers(
-        List<User> users)
+    List<User> users)
     {
         ArgumentNullException.ThrowIfNull(users);
 
-
         lock (_lock)
         {
-            _users =
+            var submittedUsers =
                 users
                     .Select(CloneUser)
                     .ToList();
 
+            var submittedIds =
+                submittedUsers
+                    .Select(x => x.UserId)
+                    .ToHashSet();
+
+            // --------------------------------------------------
+            // Update users that still exist in the edit list.
+            // --------------------------------------------------
+
+            foreach (var submittedUser in submittedUsers)
+            {
+                var existingUser =
+                    FindUser(
+                        submittedUser.UserId);
+
+                if (existingUser is null)
+                {
+                    _users.Add(
+                        submittedUser);
+                }
+                else
+                {
+                    existingUser.Name =
+                        submittedUser.Name;
+
+                    existingUser.IsAvailable =
+                        submittedUser.IsAvailable;
+
+                    existingUser.Status =
+                        submittedUser.Status;
+
+                    existingUser.InOfficeStartTime =
+                        submittedUser.InOfficeStartTime;
+
+                    existingUser.TotalTimeInOffice =
+                        submittedUser.TotalTimeInOffice;
+
+                    existingUser.OutOfOfficeStartTime =
+                        submittedUser.OutOfOfficeStartTime;
+
+                    existingUser.IsActiveUser =
+                        submittedUser.IsActiveUser;
+                }
+            }
+
+            // --------------------------------------------------
+            // Users that were removed from the edit list are
+            // deactivated instead of deleted.
+            // --------------------------------------------------
+
+            foreach (var existingUser in _users)
+            {
+                if (!submittedIds.Contains(
+                        existingUser.UserId))
+                {
+                    existingUser.IsActiveUser =
+                        false;
+                }
+            }
 
             SaveUsers();
         }
@@ -568,20 +625,36 @@ public static class UserStore
             InOfficeStartTime =
                 user.InOfficeStartTime,
 
-            // ------------------------------------------
-            // This is runtime state only.
-            //
-            // Do not use this as persisted history.
-            // ------------------------------------------
-
             TotalTimeInOffice =
                 user.TotalTimeInOffice,
 
             OutOfOfficeStartTime =
-                user.OutOfOfficeStartTime
+                user.OutOfOfficeStartTime,
+
+            IsActiveUser =
+                user.IsActiveUser
         };
     }
 
+    // ==================================================
+    // Get Active Users
+    // ==================================================
+
+    /// <summary>
+    /// Gets a clone of every active user.
+    /// Inactive users remain in users.json but are not
+    /// returned by this method.
+    /// </summary>
+    public static List<User> GetActiveUsers()
+    {
+        lock (_lock)
+        {
+            return _users
+                .Where(x => x.IsActiveUser)
+                .Select(CloneUser)
+                .ToList();
+        }
+    }
 
     // ==================================================
     // Find User

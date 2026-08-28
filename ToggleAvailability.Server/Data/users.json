@@ -4,53 +4,89 @@
     "Name": "John",
     "IsAvailable": true,
     "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-27T12:54:06.5691424-05:00",
-    "TotalTimeInOffice": "00:02:16.1443198",
-    "OutOfOfficeStartTime": null
+    "InOfficeStartTime": "2026-08-28T11:03:52.3285989-05:00",
+    "TotalTimeInOffice": "00:00:00",
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": true
   },
   {
     "UserId": 2,
     "Name": "Jane",
     "IsAvailable": true,
     "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-27T12:51:50.3612556-05:00",
+    "InOfficeStartTime": "2026-08-28T11:03:52.3402505-05:00",
     "TotalTimeInOffice": "00:00:00",
-    "OutOfOfficeStartTime": null
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": true
   },
   {
     "UserId": 3,
     "Name": "Joe",
     "IsAvailable": true,
     "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-27T12:54:17.1348344-05:00",
-    "TotalTimeInOffice": "00:02:23.2231648",
-    "OutOfOfficeStartTime": null
+    "InOfficeStartTime": "2026-08-28T11:04:48.0743717-05:00",
+    "TotalTimeInOffice": "00:00:00",
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": true
   },
   {
     "UserId": 4,
     "Name": "Bob",
     "IsAvailable": true,
     "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-27T12:51:55.5928305-05:00",
+    "InOfficeStartTime": "2026-08-28T11:03:52.3421949-05:00",
     "TotalTimeInOffice": "00:00:00",
-    "OutOfOfficeStartTime": null
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": true
   },
   {
     "UserId": 5,
     "Name": "Rob",
     "IsAvailable": true,
     "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-27T12:52:06.417056-05:00",
+    "InOfficeStartTime": "2026-08-28T11:03:52.3577486-05:00",
     "TotalTimeInOffice": "00:00:00",
-    "OutOfOfficeStartTime": null
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": true
   },
   {
     "UserId": 6,
     "Name": "Mike",
     "IsAvailable": true,
     "Status": "InOffice",
-    "InOfficeStartTime": "2026-08-27T12:53:55.4344996-05:00",
-    "TotalTimeInOffice": "00:01:22.7027046",
-    "OutOfOfficeStartTime": null
+    "InOfficeStartTime": "2026-08-28T11:03:52.3675948-05:00",
+    "TotalTimeInOffice": "00:00:00",
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": true
+  },
+  {
+    "UserId": 7,
+    "Name": "Mark",
+    "IsAvailable": false,
+    "Status": "GoneForTheDay",
+    "InOfficeStartTime": null,
+    "TotalTimeInOffice": "00:00:00",
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": false
+  },
+  {
+    "UserId": 8,
+    "Name": "Mark",
+    "IsAvailable": false,
+    "Status": "GoneForTheDay",
+    "InOfficeStartTime": null,
+    "TotalTimeInOffice": "00:00:18.2709193",
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": false
+  },
+  {
+    "UserId": 9,
+    "Name": "Greg",
+    "IsAvailable": true,
+    "Status": "InOffice",
+    "InOfficeStartTime": "2026-08-28T12:03:21.6875446-05:00",
+    "TotalTimeInOffice": "00:00:00",
+    "OutOfOfficeStartTime": null,
+    "IsActiveUser": true
   }
 ]

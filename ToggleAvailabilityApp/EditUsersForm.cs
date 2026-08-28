@@ -36,6 +36,7 @@ public partial class EditUsersForm : Form
         // modify the MainForm's actual user list.
         _users =
             users
+                .Where(x => x.IsActiveUser)
                 .Select(CloneUser)
                 .ToList();
 
@@ -463,8 +464,11 @@ public partial class EditUsersForm : Form
             new User(
                 temporaryId,
                 name,
-                Status.InOffice,
-                true);
+                Status.GoneForTheDay,
+                false)
+            {
+                IsActiveUser = true
+            };
 
         _users.Add(
             newUser);
@@ -538,10 +542,22 @@ public partial class EditUsersForm : Form
     private static User CloneUser(
         User user)
     {
-        return new User(
-            user.UserId,
-            user.Name,
-            user.Status,
-            user.IsAvailable);
+        var clone =
+            new User(
+                user.UserId,
+                user.Name,
+                user.Status,
+                user.IsAvailable);
+
+        clone.InOfficeStartTime =
+            user.InOfficeStartTime;
+
+        clone.TotalTimeInOffice =
+            user.TotalTimeInOffice;
+
+        clone.OutOfOfficeStartTime =
+            user.OutOfOfficeStartTime;
+
+        return clone;
     }
 }

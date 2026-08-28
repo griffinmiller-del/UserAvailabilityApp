@@ -1,3 +1,5 @@
+using System.Diagnostics.Eventing.Reader;
+
 namespace ToggleAvailabilityApp;
 
 public class User
@@ -16,6 +18,8 @@ public class User
 
     public DateTime? OutOfOfficeStartTime { get; set; }
     
+    public bool IsActiveUser { get; set; }
+    
 
     public User(int userId, string name, Status status, bool isAvailable = false)
     {
@@ -23,6 +27,7 @@ public class User
         Name = name;
         IsAvailable = isAvailable;
         Status = status;
+        IsActiveUser = true;
     }
 
     public override string ToString()
