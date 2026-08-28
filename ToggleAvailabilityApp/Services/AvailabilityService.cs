@@ -186,10 +186,11 @@ public class AvailabilityService : IAsyncDisposable
     // Connect
     // --------------------------------------------------
 
-    /// <summary>
-    /// Connects to the Availability Server.
-    /// </summary>
-    public async Task ConnectAsync()
+
+/// <summary>
+/// Handles connecting to the server.
+/// </summary>
+public async Task ConnectAsync()
     {
         if (_connection.State ==
             HubConnectionState.Connected)
@@ -212,6 +213,21 @@ public class AvailabilityService : IAsyncDisposable
         {
             await _connection.StartAsync();
 
+
+            // --------------------------------------------------
+            // Verify that the connection is actually active
+            // before continuing.
+            // --------------------------------------------------
+
+            if (_connection.State !=
+                HubConnectionState.Connected)
+            {
+                throw new InvalidOperationException(
+                    "The Availability Server connection " +
+                    "was not active after connecting.");
+            }
+
+
             Console.WriteLine(
                 "[WinForms] SignalR connected.");
 
@@ -221,14 +237,18 @@ public class AvailabilityService : IAsyncDisposable
 
 
             // --------------------------------------------------
-            // Ask the server for its authoritative list.
+            // DO NOT call GetUsers here.
+            //
+            // AvailabilityHub.OnConnectedAsync() already calls:
+            //
+            //     SendActiveUsersToCaller();
+            //
+            // which sends the UserList event to this client.
             // --------------------------------------------------
 
-            await _connection.InvokeAsync(
-                "GetUsers");
-
             Console.WriteLine(
-                "[WinForms] Requested user list.");
+                "[WinForms] Waiting for initial user list " +
+                "from server.");
         }
         catch (Exception ex)
         {
@@ -253,6 +273,7 @@ public class AvailabilityService : IAsyncDisposable
             throw;
         }
     }
+
 
 
     // --------------------------------------------------
@@ -369,4 +390,40 @@ public class AvailabilityService : IAsyncDisposable
                 $"connection: {ex.Message}");
         }
     }
+
+/// <summary>
+/// Sends the administrator passcode to the server for
+/// verification.
+///
+/// The passcode is not stored by the client.
+/// </summary>
+public async Task<bool> AuthenticateAdminAsync(
+    string passcode)
+    {
+        EnsureConnected();
+
+        try
+        {
+            bool authenticated =
+                await _connection.InvokeAsync<bool>(
+                    "VerifyAdminPasscode",
+                    passcode);
+
+            Console.WriteLine(
+                authenticated
+                    ? "[WinForms] Admin authentication successful."
+                    : "[WinForms] Admin authentication failed.");
+
+            return authenticated;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                "[WinForms] Admin authentication error: " +
+                $"{ex.Message}");
+
+            return false;
+        }
+    }
+
 }

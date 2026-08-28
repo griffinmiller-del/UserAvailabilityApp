@@ -726,7 +726,6 @@ public class MainForm : Form
             updatedUser);
     }
 
-
 // ------------------------------------------------------
 // Edit users
 // ------------------------------------------------------
@@ -735,6 +734,50 @@ private async void Edit_Click(
     object? sender,
     EventArgs e)
     {
+        // --------------------------------------------------
+        // Ask for administrator passcode.
+        // --------------------------------------------------
+
+        using var passcodeForm =
+            new PasscodeForm();
+
+        if (passcodeForm.ShowDialog(this) !=
+            DialogResult.OK)
+        {
+            return;
+        }
+
+
+        // --------------------------------------------------
+        // Authenticate the SignalR connection.
+        // --------------------------------------------------
+
+        bool authenticated =
+            await _availabilityService
+                .AuthenticateAdminAsync(
+                    passcodeForm.Passcode);
+
+
+        if (!authenticated)
+        {
+            MessageBox.Show(
+                "The administrator passcode is incorrect.",
+                "Access Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+
+            return;
+        }
+
+
+        // --------------------------------------------------
+        // Authentication succeeded.
+        //
+        // The passcode is no longer needed and is not stored.
+        // The server has marked this SignalR connection as
+        // administrator-authenticated.
+        // --------------------------------------------------
+
         using var editForm =
             new EditUsersForm(
                 _users
@@ -751,9 +794,6 @@ private async void Edit_Click(
 
         // --------------------------------------------------
         // These are the users that currently exist locally.
-        //
-        // This list represents the last authoritative list
-        // received from the server.
         // --------------------------------------------------
 
         var existingUsers =
@@ -765,8 +805,6 @@ private async void Edit_Click(
 
         // --------------------------------------------------
         // These are the users returned by EditUsersForm.
-        //
-        // This represents what the user wants changed.
         // --------------------------------------------------
 
         var editedUsers =
@@ -801,16 +839,6 @@ private async void Edit_Click(
                 Console.WriteLine(
                     $"Requesting deletion of user: " +
                     $"{user.Name} ({user.UserId})");
-
-                // ----------------------------------------------
-                // The application does NOT remove the user
-                // locally.
-                //
-                // It only tells the server to delete the user.
-                //
-                // The server will then broadcast the new
-                // authoritative UserList.
-                // ----------------------------------------------
 
                 await _availabilityService
                     .DeleteUserAsync(
@@ -875,18 +903,6 @@ private async void Edit_Click(
             Console.WriteLine(
                 "User changes successfully sent " +
                 "to the server.");
-
-            // --------------------------------------------------
-            // DO NOT update _users here.
-            //
-            // The server is authoritative.
-            //
-            // AddUser, UpdateUser, and DeleteUser each cause
-            // the server to broadcast UserList.
-            //
-            // AvailabilityService_UserListReceived() receives
-            // that list and updates the application.
-            // --------------------------------------------------
         }
         catch (Exception ex)
         {
@@ -902,6 +918,7 @@ private async void Edit_Click(
                 true;
         }
     }
+
 
 
 

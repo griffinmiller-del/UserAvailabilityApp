@@ -4,6 +4,7 @@ using ToggleAvailability.Server.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<AdminAuthenticationService>();
 builder.Services.AddHostedService<OfficeHistoryStartupService>();
 builder.Services.AddHostedService<
     OfficeHistoryMidnightService>();
