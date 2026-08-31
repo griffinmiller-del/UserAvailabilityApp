@@ -90,20 +90,74 @@ public partial class UserHistory
     private static TimeSpan GetTotalOutOfOffice(
         OfficeHistory record)
     {
-        if (record.TimeOutOfOffice is null ||
-            record.TimeOutOfOffice.Count == 0)
+        if (record.OutOfOfficeEntries is null ||
+            record.OutOfOfficeEntries.Count == 0)
         {
             return TimeSpan.Zero;
         }
 
 
-        return record.TimeOutOfOffice
+        return record.OutOfOfficeEntries
             .Where(
                 x =>
-                    x.Key != Status.GoneForTheDay)
+                    x.Status != Status.GoneForTheDay)
             .Select(
                 x =>
-                    x.Value)
+                    x.Duration)
+            .Aggregate(
+                TimeSpan.Zero,
+                (
+                    total,
+                    duration) =>
+                    total + duration);
+    }
+
+
+    // ==================================================
+    // Get Out of Office Entries
+    // ==================================================
+
+    private static IEnumerable<OfficeHistoryOutOfOffice>
+        GetOutOfOfficeEntries(
+            OfficeHistory record)
+    {
+        if (record.OutOfOfficeEntries is null)
+        {
+            return [];
+        }
+
+
+        return record.OutOfOfficeEntries
+            .Where(
+                x =>
+                    x.Status != Status.GoneForTheDay)
+            .OrderBy(
+                x =>
+                    x.Status);
+    }
+
+
+    // ==================================================
+    // Get Out of Office Time For Status
+    // ==================================================
+
+    private static TimeSpan GetOutOfOfficeTime(
+        OfficeHistory record,
+        Status status)
+    {
+        if (record.OutOfOfficeEntries is null)
+        {
+            return TimeSpan.Zero;
+        }
+
+
+        return record.OutOfOfficeEntries
+            .Where(
+                x =>
+                    x.Status == status)
+            .Select(
+                x =>
+                    x.Duration)
             .Aggregate(
                 TimeSpan.Zero,
                 (

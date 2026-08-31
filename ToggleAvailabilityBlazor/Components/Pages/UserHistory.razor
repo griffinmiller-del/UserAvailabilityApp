@@ -7,7 +7,7 @@
 
 <PageTitle>Office Time History</PageTitle>
 
- 
+
 <div class="history-page">
 
     <div class="history-header">
@@ -233,8 +233,8 @@
                         <!-- Expanded Out of Office Details -->
                         <!-- ================================================== -->
                         @if (isExpanded &&
-                                                     record.TimeOutOfOffice is not null &&
-                                                     record.TimeOutOfOffice.Count > 0)
+                                                     record.OutOfOfficeEntries is not null &&
+                                                     record.OutOfOfficeEntries.Count > 0)
                         {
                             <div class="history-details">
 
@@ -245,25 +245,24 @@
 
                                 <div class="reason-list">
 
-                                    @foreach (var entry in record.TimeOutOfOffice
-                                        .Where(x =>
-                                            x.Key != Status.GoneForTheDay &&
-                                            x.Value > TimeSpan.Zero)
-                                        .OrderBy(x => x.Key.ToString()))
+                                    @foreach (var entry in GetOutOfOfficeEntries(record))
                                     {
-                                        <div class="reason-row">
+                                        @if (entry.Duration > TimeSpan.Zero)
+                                        {
+                                            <div class="reason-row">
 
-                                            <span class="reason-name">
-                                                @FormatStatus(
-                                                    entry.Key)
-                                            </span>
+                                                <span class="reason-name">
+                                                    @FormatStatus(
+                                                        entry.Status)
+                                                </span>
 
-                                            <span class="reason-duration">
-                                                @FormatDuration(
-                                                    entry.Value)
-                                            </span>
+                                                <span class="reason-duration">
+                                                    @FormatDuration(
+                                                        entry.Duration)
+                                                </span>
 
-                                        </div>
+                                            </div>
+                                        }
                                     }
 
                                 </div>

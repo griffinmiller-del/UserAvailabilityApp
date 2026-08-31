@@ -16,6 +16,25 @@
 # Mono auto generated files
 mono_crash.*
 
+# SQL Server files
+*.mdf
+*.ldf
+*.ndf
+
+# ==================================================
+# SQLite / Entity Framework Core databases
+# ==================================================
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+# SQLite databases stored in the Data folder
+Data/*.db
+Data/*.db-shm
+Data/*.db-wal
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

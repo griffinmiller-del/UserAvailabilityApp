@@ -1,20 +1,30 @@
-﻿namespace ToggleAvailabilityBlazor.Services;
+﻿using ToggleAvailabilityBlazor.Models;
 
-using ToggleAvailabilityBlazor.Models;
+namespace ToggleAvailabilityBlazor.Services;
 
 public class UserDisplayService
 {
+    // ==================================================
+    // Get Time In Office
+    // ==================================================
+
     /// <summary>
-    /// Gets the total time the user has spent in the office today.
+    /// Gets the total time the user has spent in the
+    /// office today, including the currently active
+    /// office session.
     ///
-    /// TotalTimeInOffice contains completed office time for the
-    /// current day.
+    /// TotalTimeInOffice contains completed office time
+    /// for the current day.
     ///
-    /// If the user is currently in the office, only the portion
-    /// of the active session occurring after midnight is added.
+    /// If the user is currently in the office, the active
+    /// portion of the session is added starting at the
+    /// later of:
     ///
-    /// The active session is NOT written back to
-    /// TotalTimeInOffice here.
+    ///     - midnight today
+    ///     - the session start time
+    ///
+    /// This prevents time from a previous day from being
+    /// counted toward today's total.
     /// </summary>
     public string GetTimeInOffice(User user)
     {
@@ -23,8 +33,7 @@ public class UserDisplayService
 
 
         // --------------------------------------------------
-        // Add only the portion of the active session that
-        // occurred today.
+        // Add currently active office session.
         // --------------------------------------------------
 
         if (user.Status == Status.InOffice &&
@@ -33,18 +42,18 @@ public class UserDisplayService
             DateTime now =
                 DateTime.Now;
 
-            DateTime midnight =
+
+            DateTime todayMidnight =
                 now.Date;
+
 
             DateTime sessionStart =
                 user.InOfficeStartTime.Value;
 
 
-            // If the session started before midnight,
-            // begin counting from midnight instead.
             DateTime effectiveStart =
-                sessionStart < midnight
-                    ? midnight
+                sessionStart < todayMidnight
+                    ? todayMidnight
                     : sessionStart;
 
 
@@ -81,6 +90,10 @@ public class UserDisplayService
             $"{total.Seconds:00}";
     }
 
+
+    // ==================================================
+    // Get Status Text
+    // ==================================================
 
     /// <summary>
     /// Gets the display text for a user's current status.
@@ -136,6 +149,10 @@ public class UserDisplayService
         };
     }
 
+
+    // ==================================================
+    // Is User Available
+    // ==================================================
 
     /// <summary>
     /// Determines whether the user should be considered
