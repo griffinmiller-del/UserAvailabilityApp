@@ -279,52 +279,6 @@ public static class UserStore
                 user.Status == Status.InOffice;
 
 
-            // --------------------------------------------------
-            // User is LEAVING the office.
-            //
-            // Add the current session to the accumulated total
-            // exactly once.
-            // --------------------------------------------------
-
-            if (wasInOffice &&
-                !isInOffice)
-            {
-                TimeSpan currentSession =
-                    DateTime.Now -
-                    existing.InOfficeStartTime!.Value;
-
-
-                if (currentSession > TimeSpan.Zero)
-                {
-                    existing.TotalTimeInOffice +=
-                        currentSession;
-                }
-
-
-                // ----------------------------------------------
-                // The session has now been committed to the
-                // accumulated total, so clear the start time.
-                // ----------------------------------------------
-
-                existing.InOfficeStartTime =
-                    null;
-            }
-
-
-            // --------------------------------------------------
-            // User is RETURNING to the office.
-            //
-            // Start a completely new session, but DO NOT modify
-            // TotalTimeInOffice.
-            // --------------------------------------------------
-
-            if (!wasInOffice &&
-                isInOffice)
-            {
-                existing.InOfficeStartTime =
-                    DateTime.Now;
-            }
-
 
             // --------------------------------------------------
             // Update normal user state.

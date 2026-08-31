@@ -1,73 +1,127 @@
-﻿using Microsoft.Extensions.Hosting;
-using ToggleAvailability.Server.Data;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using ToggleAvailability.Server.Models;
 
 namespace ToggleAvailability.Server.Services;
 
 public class OfficeHistoryStartupService : IHostedService
 {
-    public Task StartAsync(
+    private readonly IServiceScopeFactory _scopeFactory;
+
+
+    public OfficeHistoryStartupService(
+        IServiceScopeFactory scopeFactory)
+    {
+        _scopeFactory =
+            scopeFactory;
+    }
+
+
+    // ==================================================
+    // Start
+    // ==================================================
+
+    public async Task StartAsync(
         CancellationToken cancellationToken)
     {
         Console.WriteLine(
             "Initializing today's office history...");
 
+
         DateOnly today =
             DateOnly.FromDateTime(
                 DateTime.Now);
 
+
+        using IServiceScope scope =
+            _scopeFactory.CreateScope();
+
+
+        var userService =
+            scope.ServiceProvider
+                .GetRequiredService<UserService>();
+
+
+        var officeHistoryStore =
+            scope.ServiceProvider
+                .GetRequiredService<Data.OfficeHistoryStore>();
+
+
         var users =
-            UserStore.GetUsers();
+            await userService.GetUsersAsync();
+
 
         foreach (var user in users)
         {
             OfficeHistory? todayRecord =
-                OfficeHistoryStore.GetUserHistoryForDate(
-                    user.UserId,
-                    today);
+                await officeHistoryStore
+                    .GetUserHistoryForDateAsync(
+                        user.UserId,
+                        today);
+
 
             if (todayRecord is null)
             {
                 // ==========================================
                 // No history exists for today.
                 //
-                // The server is starting at the beginning
-                // of a new day, so nobody has clocked in yet.
+                // Create an empty record for the new day.
                 // ==========================================
 
-                user.TotalTimeInOffice =
-                    TimeSpan.Zero;
+                await officeHistoryStore
+                    .CreateDailyRecordAsync(
+                        user.UserId,
+                        today);
+
 
                 user.InOfficeStartTime =
                     null;
 
-                OfficeHistoryStore.CreateDailyRecord(
-                    user.UserId,
-                    today);
+                user.OutOfOfficeStartTime =
+                    null;
             }
             else
             {
-                // ==========================================
-                // A record already exists for today.
-                // Restore today's accumulated state.
-                // ==========================================
+                if (user.Status == Status.InOffice)
+                {
+                    // --------------------------------------------------
+                    // IMPORTANT:
+                    //
+                    // StartTime is the first clock-in of the day.
+                    // It is NOT necessarily the start of the currently
+                    // active office session.
+                    //
+                    // Therefore it cannot safely be used here to restore
+                    // the current session after a restart.
+                    // --------------------------------------------------
 
-                user.TotalTimeInOffice =
-                    todayRecord.TimeInOffice;
+                    user.InOfficeStartTime =
+                        null;
+                }
+                else
+                {
+                    user.InOfficeStartTime =
+                        null;
+                }
 
-                user.InOfficeStartTime =
-                    todayRecord.StartTime;
+                user.OutOfOfficeStartTime =
+                    null;
             }
 
-            UserStore.UpdateUser(user);
+
+            await userService.UpdateUserAsync(
+                user);
         }
+
 
         Console.WriteLine(
             $"Today's office history initialized: {today}");
-
-        return Task.CompletedTask;
     }
 
+
+    // ==================================================
+    // Stop
+    // ==================================================
 
     public Task StopAsync(
         CancellationToken cancellationToken)

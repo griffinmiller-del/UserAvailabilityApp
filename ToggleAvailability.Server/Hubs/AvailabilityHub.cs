@@ -7,37 +7,50 @@ namespace ToggleAvailability.Server.Hubs;
 
 public class AvailabilityHub : Hub
 {
-    private readonly AdminAuthenticationService _adminAuthenticationService;
+    private readonly AdminAuthenticationService
+        _adminAuthenticationService;
+
+    private readonly UserService
+        _userService;
+
+    private readonly OfficeHistoryStore
+        _officeHistoryStore;
+
 
     public AvailabilityHub(
-        AdminAuthenticationService adminAuthenticationService)
+        AdminAuthenticationService adminAuthenticationService,
+        UserService userService,
+        OfficeHistoryStore officeHistoryStore)
     {
         _adminAuthenticationService =
             adminAuthenticationService;
+
+        _userService =
+            userService;
+
+        _officeHistoryStore =
+            officeHistoryStore;
     }
+
 
     // ==================================================
     // Connection
     // ==================================================
 
-    /// <summary>
-    /// Handles client connections.
-    /// </summary>
     public override async Task OnConnectedAsync()
     {
         Console.WriteLine(
             $"Client connected: " +
             $"{Context.ConnectionId}");
 
+
         await SendActiveUsersToCaller();
+
 
         await base.OnConnectedAsync();
     }
 
 
-    /// <summary>
-    /// Handles client disconnections.
-    /// </summary>
     public override async Task OnDisconnectedAsync(
         Exception? exception)
     {
@@ -45,12 +58,14 @@ public class AvailabilityHub : Hub
             $"Client disconnected: " +
             $"{Context.ConnectionId}");
 
+
         if (exception is not null)
         {
             Console.WriteLine(
                 $"Disconnect reason: " +
                 $"{exception.Message}");
         }
+
 
         await base.OnDisconnectedAsync(
             exception);
@@ -61,13 +76,6 @@ public class AvailabilityHub : Hub
     // Admin Authentication
     // ==================================================
 
-    /// <summary>
-    /// Verifies the administrator passcode for the
-    /// current SignalR connection.
-    ///
-    /// A successful verification authorizes the
-    /// connection to perform administrative operations.
-    /// </summary>
     public Task<bool> VerifyAdminPasscode(
         string passcode)
     {
@@ -84,13 +92,9 @@ public class AvailabilityHub : Hub
 
         if (isValid)
         {
-            // --------------------------------------------------
-            // Mark this SignalR connection as authenticated
-            // for administrative operations.
-            // --------------------------------------------------
-
             Context.Items["IsAdmin"] =
                 true;
+
 
             Console.WriteLine(
                 $"Admin authentication successful: " +
@@ -109,10 +113,6 @@ public class AvailabilityHub : Hub
     }
 
 
-    /// <summary>
-    /// Determines whether the current SignalR connection
-    /// has successfully authenticated as an administrator.
-    /// </summary>
     private bool IsAdminAuthenticated()
     {
         return
@@ -123,10 +123,6 @@ public class AvailabilityHub : Hub
     }
 
 
-    /// <summary>
-    /// Ensures that the current connection has administrator
-    /// authorization.
-    /// </summary>
     private void RequireAdminAuthentication()
     {
         if (!IsAdminAuthenticated())
@@ -141,24 +137,26 @@ public class AvailabilityHub : Hub
     // Get Users
     // ==================================================
 
-    /// <summary>
-    /// Gets the active users.
-    /// </summary>
     public async Task GetUsers()
     {
         await SendActiveUsersToCaller();
     }
 
 
+    // ==================================================
+    // Get User History
+    // ==================================================
+
     /// <summary>
-    /// Gets the complete history of a user.
+    /// Gets the complete history of a user from the
+    /// database.
     /// </summary>
-    public Task<List<OfficeHistory>> GetUserHistory(
+    public async Task<List<OfficeHistory>> GetUserHistory(
         int userId)
     {
-        return Task.FromResult(
-            OfficeHistoryStore.GetUserHistory(
-                userId));
+        return await _officeHistoryStore
+            .GetUserHistoryAsync(
+                userId);
     }
 
 
@@ -166,11 +164,6 @@ public class AvailabilityHub : Hub
     // Add User
     // ==================================================
 
-    /// <summary>
-    /// Adds a new active user.
-    ///
-    /// Administrator authentication is required.
-    /// </summary>
     public async Task AddUser(
         string name)
     {
@@ -182,20 +175,22 @@ public class AvailabilityHub : Hub
                 name);
 
 
-        EnsureUniqueUserName(
-            name);
+        bool nameExists =
+            await _userService
+                .ActiveUserNameExistsAsync(
+                    name);
 
 
-        int userId =
-            UserStore.GetNextUserId();
+        if (nameExists)
+        {
+            throw new HubException(
+                $"An active user named '{name}' already exists.");
+        }
 
 
         var user =
             new User
             {
-                UserId =
-                    userId,
-
                 Name =
                     name,
 
@@ -216,7 +211,7 @@ public class AvailabilityHub : Hub
             };
 
 
-        UserStore.AddUser(
+        await _userService.AddUserAsync(
             user);
 
 
@@ -233,11 +228,6 @@ public class AvailabilityHub : Hub
     // Update User
     // ==================================================
 
-    /// <summary>
-    /// Updates the name of an existing active user.
-    ///
-    /// Administrator authentication is required.
-    /// </summary>
     public async Task UpdateUser(
         int userId,
         string name)
@@ -251,8 +241,15 @@ public class AvailabilityHub : Hub
 
 
         var user =
-            GetRequiredUser(
+            await _userService.GetUserAsync(
                 userId);
+
+
+        if (user is null)
+        {
+            throw new HubException(
+                $"User {userId} was not found.");
+        }
 
 
         if (!user.IsActiveUser)
@@ -262,16 +259,25 @@ public class AvailabilityHub : Hub
         }
 
 
-        EnsureUniqueUserName(
-            name,
-            userId);
+        bool nameExists =
+            await _userService
+                .ActiveUserNameExistsAsync(
+                    name,
+                    userId);
+
+
+        if (nameExists)
+        {
+            throw new HubException(
+                $"An active user named '{name}' already exists.");
+        }
 
 
         user.Name =
             name;
 
 
-        UserStore.UpdateUser(
+        await _userService.UpdateUserAsync(
             user);
 
 
@@ -288,14 +294,6 @@ public class AvailabilityHub : Hub
     // Update User List
     // ==================================================
 
-    /// <summary>
-    /// Replaces the active user list.
-    ///
-    /// Users removed from the submitted list are
-    /// deactivated rather than deleted.
-    ///
-    /// Administrator authentication is required.
-    /// </summary>
     public async Task UpdateUserList(
         List<User> users)
     {
@@ -305,16 +303,6 @@ public class AvailabilityHub : Hub
         ArgumentNullException.ThrowIfNull(
             users);
 
-
-        // --------------------------------------------------
-        // Validate all submitted names before changing
-        // anything in the database.
-        //
-        // Duplicate names are allowed only when at most
-        // one of the users with that name is active.
-        // Since this method receives the active user list,
-        // duplicate active names are not allowed here.
-        // --------------------------------------------------
 
         foreach (var user in users)
         {
@@ -341,56 +329,7 @@ public class AvailabilityHub : Hub
         }
 
 
-        // --------------------------------------------------
-        // The server is authoritative for these values.
-        //
-        // The edit form should not be able to modify
-        // availability, status, office timers, or history.
-        // --------------------------------------------------
-
-        var existingUsers =
-            UserStore.GetUsers();
-
-
-        foreach (var submittedUser in users)
-        {
-            var existingUser =
-                existingUsers.FirstOrDefault(
-                    x =>
-                        x.UserId ==
-                        submittedUser.UserId);
-
-
-            if (existingUser is null)
-            {
-                // --------------------------------------------------
-                // New users should normally be created through
-                // AddUser, but this also supports a new user
-                // arriving through the edit list.
-                // --------------------------------------------------
-
-                submittedUser.IsAvailable =
-                    false;
-
-                submittedUser.Status =
-                    Status.GoneForTheDay;
-
-                submittedUser.InOfficeStartTime =
-                    null;
-
-                submittedUser.OutOfOfficeStartTime =
-                    null;
-
-                submittedUser.TotalTimeInOffice =
-                    TimeSpan.Zero;
-
-                submittedUser.IsActiveUser =
-                    true;
-            }
-        }
-
-
-        UserStore.ReplaceUsers(
+        await _userService.ReplaceUsersAsync(
             users);
 
 
@@ -407,61 +346,32 @@ public class AvailabilityHub : Hub
     // Delete / Deactivate User
     // ==================================================
 
-    /// <summary>
-    /// Deactivates a user without removing them from
-    /// users.json or their historical data.
-    ///
-    /// Administrator authentication is required.
-    /// </summary>
     public async Task DeleteUser(
         int userId)
     {
         RequireAdminAuthentication();
 
 
-        var user =
-            GetRequiredUser(
-                userId);
-
-
-        // --------------------------------------------------
-        // End any active office session before deactivating.
-        // --------------------------------------------------
-
-        if (user.InOfficeStartTime is not null)
+        try
         {
-            EndOfficeSession(
-                user,
-                DateTime.Now);
+            User user =
+                await _userService
+                    .DeactivateUserAsync(
+                        userId);
+
+
+            Console.WriteLine(
+                $"User deactivated: " +
+                $"{user.Name} ({user.UserId})");
+
+
+            await BroadcastUserList();
         }
-
-
-        user.IsActiveUser =
-            false;
-
-        user.IsAvailable =
-            false;
-
-        user.Status =
-            Status.GoneForTheDay;
-
-        user.InOfficeStartTime =
-            null;
-
-        user.OutOfOfficeStartTime =
-            null;
-
-
-        UserStore.UpdateUser(
-            user);
-
-
-        Console.WriteLine(
-            $"User deactivated: " +
-            $"{user.Name} ({user.UserId})");
-
-
-        await BroadcastUserList();
+        catch (InvalidOperationException ex)
+        {
+            throw new HubException(
+                ex.Message);
+        }
     }
 
 
@@ -469,48 +379,44 @@ public class AvailabilityHub : Hub
     // Reactivate User
     // ==================================================
 
-    /// <summary>
-    /// Reactivates an existing inactive user.
-    ///
-    /// Administrator authentication is required.
-    /// </summary>
     public async Task ReactivateUser(
         int userId)
     {
         RequireAdminAuthentication();
 
 
-        var user =
-            GetRequiredUser(
-                userId);
+        try
+        {
+            var user =
+                await _userService
+                    .GetUserAsync(
+                        userId);
 
 
-        user.IsActiveUser =
-            true;
-
-        user.IsAvailable =
-            false;
-
-        user.Status =
-            Status.GoneForTheDay;
-
-        user.InOfficeStartTime =
-            null;
-
-        user.OutOfOfficeStartTime =
-            null;
+            if (user is null)
+            {
+                throw new HubException(
+                    $"User {userId} was not found.");
+            }
 
 
-        UserStore.UpdateUser(
-            user);
+            await _userService
+                .ReactivateUserAsync(
+                    userId);
 
 
-        Console.WriteLine(
-            $"User reactivated: " +
-            $"{user.Name} ({user.UserId})");
+            Console.WriteLine(
+                $"User reactivated: " +
+                $"{user.Name} ({user.UserId})");
 
 
-        await BroadcastUserList();
+            await BroadcastUserList();
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new HubException(
+                ex.Message);
+        }
     }
 
 
@@ -523,395 +429,41 @@ public class AvailabilityHub : Hub
         bool isAvailable,
         Status status)
     {
-        User user =
-            GetRequiredUser(
-                userId);
+        try
+        {
+            User user =
+                await _userService
+                    .SetAvailabilityAsync(
+                        userId,
+                        isAvailable,
+                        status);
 
 
-        // --------------------------------------------------
-        // Inactive users cannot change availability.
-        // --------------------------------------------------
+            Console.WriteLine(
+                $"[Server] User updated: " +
+                $"{user.Name} | " +
+                $"Status={user.Status} | " +
+                $"Available={user.IsAvailable} | " +
+                $"InOfficeStart={user.InOfficeStartTime} | " +
+                $"OutOfOfficeStart={user.OutOfOfficeStartTime} | " +
+                $"Total={user.TotalTimeInOffice}");
 
-        if (!user.IsActiveUser)
+
+            await Clients.All.SendAsync(
+                "UserUpdated",
+                user);
+        }
+        catch (InvalidOperationException ex)
         {
             throw new HubException(
-                $"User {userId} is inactive.");
+                ex.Message);
         }
-
-
-        DateTime now =
-            DateTime.Now;
-
-
-        Status previousStatus =
-            user.Status;
-
-
-        bool wasInOffice =
-            previousStatus == Status.InOffice;
-
-
-        bool isInOffice =
-            status == Status.InOffice;
-
-
-        bool wasOutOfOffice =
-            !wasInOffice;
-
-
-        bool isOutOfOffice =
-            !isInOffice;
-
-
-        // --------------------------------------------------
-        // Leaving the office
-        // --------------------------------------------------
-
-        if (wasInOffice &&
-            isOutOfOffice)
-        {
-            EndOfficeSession(
-                user,
-                now);
-
-
-            StartOutOfOfficeSession(
-                user,
-                status,
-                now);
-        }
-
-
-        // --------------------------------------------------
-        // Changing out-of-office reason
-        // --------------------------------------------------
-
-        else if (
-            wasOutOfOffice &&
-            isOutOfOffice &&
-            previousStatus != status)
-        {
-            EndOutOfOfficeSession(
-                user,
-                now);
-
-
-            StartOutOfOfficeSession(
-                user,
-                status,
-                now);
-        }
-
-
-        // --------------------------------------------------
-        // Returning to office
-        // --------------------------------------------------
-
-        else if (
-            wasOutOfOffice &&
-            isInOffice)
-        {
-            EndOutOfOfficeSession(
-                user,
-                now);
-
-
-            StartOfficeSession(
-                user,
-                now);
-        }
-
-
-        user.IsAvailable =
-            isAvailable;
-
-        user.Status =
-            status;
-
-
-        UserStore.UpdateUser(
-            user);
-
-
-        Console.WriteLine(
-            $"[Server] User updated: " +
-            $"{user.Name} | " +
-            $"Status={user.Status} | " +
-            $"Available={user.IsAvailable} | " +
-            $"InOfficeStart={user.InOfficeStartTime} | " +
-            $"OutOfOfficeStart={user.OutOfOfficeStartTime} | " +
-            $"Total={user.TotalTimeInOffice}");
-
-
-        await Clients.All.SendAsync(
-            "UserUpdated",
-            user);
-    }
-
-
-    // ==================================================
-    // Office History
-    // ==================================================
-
-    private static void RecordOfficeSession(
-        User user,
-        DateTime endTime)
-    {
-        if (user.InOfficeStartTime is null)
-        {
-            return;
-        }
-
-
-        DateTime startTime =
-            user.InOfficeStartTime.Value;
-
-
-        if (endTime <= startTime)
-        {
-            return;
-        }
-
-
-        DateTime current =
-            startTime;
-
-
-        while (current.Date < endTime.Date)
-        {
-            DateTime midnight =
-                current.Date.AddDays(1);
-
-
-            TimeSpan duration =
-                midnight - current;
-
-
-            OfficeHistoryStore.AddOfficeTime(
-                user.UserId,
-                DateOnly.FromDateTime(current),
-                duration);
-
-
-            current =
-                midnight;
-        }
-
-
-        if (current < endTime)
-        {
-            TimeSpan duration =
-                endTime - current;
-
-
-            OfficeHistoryStore.AddOfficeTime(
-                user.UserId,
-                DateOnly.FromDateTime(current),
-                duration);
-        }
-    }
-
-
-    private static void EndOfficeSession(
-        User user,
-        DateTime endTime)
-    {
-        if (user.InOfficeStartTime is null)
-        {
-            return;
-        }
-
-
-        DateTime startTime =
-            user.InOfficeStartTime.Value;
-
-
-        TimeSpan duration =
-            endTime - startTime;
-
-
-        if (duration <= TimeSpan.Zero)
-        {
-            user.InOfficeStartTime =
-                null;
-
-
-            return;
-        }
-
-
-        user.TotalTimeInOffice +=
-            duration;
-
-
-        RecordOfficeSession(
-            user,
-            endTime);
-
-
-        user.InOfficeStartTime =
-            null;
-    }
-
-
-    private static void StartOfficeSession(
-        User user,
-        DateTime startTime)
-    {
-        user.InOfficeStartTime =
-            startTime;
-
-
-        OfficeHistoryStore.SetStartTime(
-            user.UserId,
-            DateOnly.FromDateTime(startTime),
-            startTime);
-    }
-
-
-    private static void EndOutOfOfficeSession(
-        User user,
-        DateTime endTime)
-    {
-        if (user.OutOfOfficeStartTime is null)
-        {
-            return;
-        }
-
-
-        DateTime startTime =
-            user.OutOfOfficeStartTime.Value;
-
-
-        Status reason =
-            user.Status;
-
-
-        if (reason ==
-            Status.GoneForTheDay)
-        {
-            user.OutOfOfficeStartTime =
-                null;
-
-
-            return;
-        }
-
-
-        if (endTime <= startTime)
-        {
-            user.OutOfOfficeStartTime =
-                null;
-
-
-            return;
-        }
-
-
-        RecordOutOfOfficeSession(
-            user,
-            reason,
-            startTime,
-            endTime);
-
-
-        user.OutOfOfficeStartTime =
-            null;
-    }
-
-
-    private static void RecordOutOfOfficeSession(
-        User user,
-        Status reason,
-        DateTime startTime,
-        DateTime endTime)
-    {
-        if (reason ==
-            Status.GoneForTheDay)
-        {
-            return;
-        }
-
-
-        DateTime current =
-            startTime;
-
-
-        while (current.Date < endTime.Date)
-        {
-            DateTime midnight =
-                current.Date.AddDays(1);
-
-
-            TimeSpan duration =
-                midnight - current;
-
-
-            if (duration > TimeSpan.Zero)
-            {
-                OfficeHistoryStore.AddOutOfOfficeTime(
-                    user.UserId,
-                    DateOnly.FromDateTime(current),
-                    reason,
-                    duration);
-            }
-
-
-            current =
-                midnight;
-        }
-
-
-        if (current < endTime)
-        {
-            TimeSpan duration =
-                endTime - current;
-
-
-            if (duration > TimeSpan.Zero)
-            {
-                OfficeHistoryStore.AddOutOfOfficeTime(
-                    user.UserId,
-                    DateOnly.FromDateTime(current),
-                    reason,
-                    duration);
-            }
-        }
-    }
-
-
-    private static void StartOutOfOfficeSession(
-        User user,
-        Status status,
-        DateTime startTime)
-    {
-        user.OutOfOfficeStartTime =
-            startTime;
     }
 
 
     // ==================================================
     // Helpers
     // ==================================================
-
-    private static User GetRequiredUser(
-        int userId)
-    {
-        var user =
-            UserStore.GetUser(
-                userId);
-
-
-        if (user is null)
-        {
-            throw new HubException(
-                $"User {userId} was not found.");
-        }
-
-
-        return user;
-    }
-
 
     private static string ValidateUserName(
         string name)
@@ -927,47 +479,15 @@ public class AvailabilityHub : Hub
     }
 
 
-    /// <summary>
-    /// Prevents duplicate names among active users.
-    ///
-    /// Inactive users are intentionally ignored, meaning
-    /// an inactive John and an active John are allowed.
-    /// </summary>
-    private static void EnsureUniqueUserName(
-        string name,
-        int? excludedUserId = null)
-    {
-        bool exists =
-            UserStore.GetUsers()
-                .Any(
-                    x =>
-                        x.UserId != excludedUserId &&
-                        x.IsActiveUser &&
-                        string.Equals(
-                            x.Name.Trim(),
-                            name,
-                            StringComparison.OrdinalIgnoreCase));
-
-
-        if (exists)
-        {
-            throw new HubException(
-                $"An active user named '{name}' already exists.");
-        }
-    }
-
-
     // ==================================================
     // User Lists
     // ==================================================
 
-    /// <summary>
-    /// Sends only active users to the requesting client.
-    /// </summary>
     private async Task SendActiveUsersToCaller()
     {
         var users =
-            UserStore.GetActiveUsers();
+            await _userService
+                .GetActiveUsersAsync();
 
 
         Console.WriteLine(
@@ -981,16 +501,11 @@ public class AvailabilityHub : Hub
     }
 
 
-    /// <summary>
-    /// Broadcasts the authoritative active-user list.
-    ///
-    /// Clients should treat this list as the complete
-    /// set of users that should currently be displayed.
-    /// </summary>
     private async Task BroadcastUserList()
     {
         var activeUsers =
-            UserStore.GetActiveUsers();
+            await _userService
+                .GetActiveUsersAsync();
 
 
         Console.WriteLine(

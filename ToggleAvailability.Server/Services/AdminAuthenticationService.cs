@@ -26,13 +26,6 @@ public class AdminAuthenticationService
                 "AdminAuthentication:PasswordHash is not configured.");
         }
 
-
-        // --------------------------------------------------
-        // Expected format:
-        //
-        // iterations$salt$hash
-        // --------------------------------------------------
-
         string[] parts =
             storedHash.Split(
                 '$',
@@ -56,14 +49,8 @@ public class AdminAuthenticationService
                 "an invalid iteration count.");
         }
 
-
         _iterations =
             iterations;
-
-
-        // --------------------------------------------------
-        // Decode salt and password hash.
-        // --------------------------------------------------
 
         try
         {
@@ -80,11 +67,6 @@ public class AdminAuthenticationService
             throw new InvalidOperationException(
                 "The configured admin password hash is invalid.");
         }
-
-
-        // --------------------------------------------------
-        // Validate sizes.
-        // --------------------------------------------------
 
         if (_salt.Length != SaltSize ||
             _hash.Length != HashSize)
@@ -123,23 +105,6 @@ public class AdminAuthenticationService
                     _iterations,
                     HashAlgorithmName.SHA256,
                     HashSize);
-
-            Console.WriteLine(
-                $"Passcode length: {passcode.Length}");
-
-            Console.WriteLine(
-                $"Configured iterations: {_iterations}");
-
-            Console.WriteLine(
-                $"Configured salt: {Convert.ToBase64String(_salt)}");
-
-            Console.WriteLine(
-                $"Configured hash: {Convert.ToBase64String(_hash)}");
-
-            Console.WriteLine(
-                $"Calculated hash: {Convert.ToBase64String(suppliedHash)}");
-
-
         }
         catch
         {

@@ -1,19 +1,26 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using ToggleAvailability.Server.Data;
 using ToggleAvailability.Server.Hubs;
+using ToggleAvailability.Server.Models;
 
 namespace ToggleAvailability.Server.Services;
 
 public class OfficeHistoryMidnightService : BackgroundService
 {
     private readonly IHubContext<AvailabilityHub> _hubContext;
+    private readonly IServiceScopeFactory _scopeFactory;
 
 
     public OfficeHistoryMidnightService(
-        IHubContext<AvailabilityHub> hubContext)
+        IHubContext<AvailabilityHub> hubContext,
+        IServiceScopeFactory scopeFactory)
     {
         _hubContext =
             hubContext;
+
+        _scopeFactory =
+            scopeFactory;
     }
 
 
@@ -28,8 +35,7 @@ public class OfficeHistoryMidnightService : BackgroundService
             "Office history midnight service started.");
 
 
-        while (
-            !stoppingToken.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested)
         {
             DateTime now =
                 DateTime.Now;
@@ -90,10 +96,28 @@ public class OfficeHistoryMidnightService : BackgroundService
 
     private async Task PerformMidnightRollover()
     {
-        // ----------------------------------------------
-        // Midnight represents the exact boundary between
-        // the previous day and the new day.
-        // ----------------------------------------------
+        // --------------------------------------------------
+        // Create a scoped lifetime for EF Core services.
+        // --------------------------------------------------
+
+        using IServiceScope scope =
+            _scopeFactory.CreateScope();
+
+
+        var userService =
+            scope.ServiceProvider
+                .GetRequiredService<UserService>();
+
+
+        var officeHistoryStore =
+            scope.ServiceProvider
+                .GetRequiredService<OfficeHistoryStore>();
+
+
+        // --------------------------------------------------
+        // Midnight is the exact boundary between the
+        // previous day and the new day.
+        // --------------------------------------------------
 
         DateTime midnight =
             DateTime.Now.Date;
@@ -114,8 +138,12 @@ public class OfficeHistoryMidnightService : BackgroundService
             $"{previousDate} -> {currentDate}");
 
 
+        // --------------------------------------------------
+        // Get all users from the database.
+        // --------------------------------------------------
+
         var users =
-            UserStore.GetUsers();
+            await userService.GetUsersAsync();
 
 
         foreach (var user in users)
@@ -124,37 +152,35 @@ public class OfficeHistoryMidnightService : BackgroundService
             // USER IS STILL IN THE OFFICE
             // ==================================================
 
-            if (user.Status == Models.Status.InOffice &&
+            if (user.Status == Status.InOffice &&
                 user.InOfficeStartTime is not null)
             {
                 DateTime startTime =
                     user.InOfficeStartTime.Value;
 
 
-                // ----------------------------------------------
-                // Calculate all office time from the current
-                // day's start until exactly midnight.
-                // ----------------------------------------------
+                // --------------------------------------------------
+                // Record only the portion of the session that
+                // belongs to the previous day.
+                // --------------------------------------------------
+
+                DateTime effectiveStart =
+                    startTime < midnight
+                        ? startTime
+                        : midnight;
+
 
                 TimeSpan duration =
-                    midnight - startTime;
+                    midnight - effectiveStart;
 
 
                 if (duration > TimeSpan.Zero)
                 {
-                    // ------------------------------------------
-                    // Finish the previous day's history.
-                    //
-                    // The end of this period is midnight.
-                    // OfficeHistory does not need an EndTime
-                    // because TimeInOffice represents the
-                    // complete duration for the day.
-                    // ------------------------------------------
-
-                    OfficeHistoryStore.AddOfficeTime(
-                        user.UserId,
-                        previousDate,
-                        duration);
+                    await officeHistoryStore
+                        .AddOfficeTimeAsync(
+                            user.UserId,
+                            previousDate,
+                            duration);
                 }
 
 
@@ -162,36 +188,39 @@ public class OfficeHistoryMidnightService : BackgroundService
                 // START NEW DAY
                 // ==================================================
 
-                // Reset the live daily counter.
-                user.TotalTimeInOffice =
-                    TimeSpan.Zero;
-
-
-                // ----------------------------------------------
-                // IMPORTANT:
-                //
-                // The user never actually left the office.
-                // Their new day's timer therefore starts
-                // exactly at midnight.
-                // ----------------------------------------------
+                // The user never left the office.
+                // Their new session begins at midnight.
 
                 user.InOfficeStartTime =
                     midnight;
 
 
-                UserStore.UpdateUser(
-                    user);
+                user.OutOfOfficeStartTime =
+                    null;
 
 
-                // ----------------------------------------------
-                // Create today's history record with midnight
-                // as the starting time.
-                // ----------------------------------------------
+                user.TotalTimeInOffice =
+                    TimeSpan.Zero;
 
-                OfficeHistoryStore.CreateDailyRecord(
-                    user.UserId,
-                    currentDate,
-                    midnight);
+
+                // --------------------------------------------------
+                // Create today's history record.
+                // --------------------------------------------------
+
+                await officeHistoryStore
+                    .CreateDailyRecordAsync(
+                        user.UserId,
+                        currentDate,
+                        midnight);
+
+
+                // --------------------------------------------------
+                // Persist the new live session state.
+                // --------------------------------------------------
+
+                await userService
+                    .UpdateUserAsync(
+                        user);
             }
 
             // ==================================================
@@ -200,11 +229,6 @@ public class OfficeHistoryMidnightService : BackgroundService
 
             else
             {
-                // ----------------------------------------------
-                // There is no active office session to carry
-                // into the new day.
-                // ----------------------------------------------
-
                 user.TotalTimeInOffice =
                     TimeSpan.Zero;
 
@@ -213,18 +237,32 @@ public class OfficeHistoryMidnightService : BackgroundService
                     null;
 
 
-                UserStore.UpdateUser(
-                    user);
+                // --------------------------------------------------
+                // No active out-of-office session should carry
+                // into the new day.
+                // --------------------------------------------------
+
+                user.OutOfOfficeStartTime =
+                    null;
 
 
-                // ----------------------------------------------
-                // Still create an empty history record for
-                // the new day.
-                // ----------------------------------------------
+                // --------------------------------------------------
+                // Create an empty record for the new day.
+                // --------------------------------------------------
 
-                OfficeHistoryStore.CreateDailyRecord(
-                    user.UserId,
-                    currentDate);
+                await officeHistoryStore
+                    .CreateDailyRecordAsync(
+                        user.UserId,
+                        currentDate);
+
+
+                // --------------------------------------------------
+                // Persist the reset state.
+                // --------------------------------------------------
+
+                await userService
+                    .UpdateUserAsync(
+                        user);
             }
 
 

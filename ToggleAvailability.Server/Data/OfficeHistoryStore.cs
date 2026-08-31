@@ -1,46 +1,17 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using Microsoft.EntityFrameworkCore;
 using ToggleAvailability.Server.Models;
 
 namespace ToggleAvailability.Server.Data;
 
-public static class OfficeHistoryStore
+public class OfficeHistoryStore
 {
-    private static readonly string _filePath =
-        Path.Combine(
-            Directory.GetParent(
-                AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName,
-            "Data",
-            "office-history.json");
+    private readonly AppDbContext _db;
 
 
-    private static readonly JsonSerializerOptions _jsonOptions =
-        new()
-        {
-            WriteIndented = true,
-
-            PropertyNameCaseInsensitive = true,
-
-            Converters =
-            {
-                new JsonStringEnumConverter()
-            }
-        };
-
-
-    private static List<OfficeHistory> _history = [];
-
-
-    private static readonly object _lock = new();
-
-
-    // ==================================================
-    // Initialize
-    // ==================================================
-
-    static OfficeHistoryStore()
+    public OfficeHistoryStore(
+        AppDbContext db)
     {
-        Load();
+        _db = db;
     }
 
 
@@ -51,19 +22,17 @@ public static class OfficeHistoryStore
     /// <summary>
     /// Gets the office history for a specific user.
     /// </summary>
-    public static List<OfficeHistory> GetUserHistory(
+    public async Task<List<OfficeHistory>> GetUserHistoryAsync(
         int userId)
     {
-        lock (_lock)
-        {
-            return _history
-                .Where(x =>
-                    x.UserId == userId)
-                .OrderByDescending(x =>
-                    x.Date)
-                .Select(Clone)
-                .ToList();
-        }
+        return await _db.OfficeHistories
+            .AsNoTracking()
+            .Include(x => x.OutOfOfficeEntries)
+            .Where(x =>
+                x.UserId == userId)
+            .OrderByDescending(x =>
+                x.Date)
+            .ToListAsync();
     }
 
 
@@ -73,23 +42,23 @@ public static class OfficeHistoryStore
 
     /// <summary>
     /// Gets the total office time that has already been
-    /// committed to office-history.json for a user.
+    /// committed to the database for a user.
     ///
     /// This does NOT include a currently active session.
     /// </summary>
-    public static TimeSpan GetTotalOfficeTime(
+    public async Task<TimeSpan> GetTotalOfficeTimeAsync(
         int userId)
     {
-        lock (_lock)
-        {
-            return _history
+        long ticks =
+            await _db.OfficeHistories
                 .Where(x =>
                     x.UserId == userId)
-                .Aggregate(
-                    TimeSpan.Zero,
-                    (total, record) =>
-                        total + record.TimeInOffice);
-        }
+                .Select(x =>
+                    x.TimeInOffice.Ticks)
+                .SumAsync();
+
+        return TimeSpan.FromTicks(
+            ticks);
     }
 
 
@@ -100,24 +69,22 @@ public static class OfficeHistoryStore
     /// <summary>
     /// Gets the amount of office time already committed
     /// to history for a specific user and date.
-    ///
-    /// This does NOT include a currently active session.
     /// </summary>
-    public static TimeSpan GetOfficeTimeForDate(
+    public async Task<TimeSpan> GetOfficeTimeForDateAsync(
         int userId,
         DateOnly date)
     {
-        lock (_lock)
-        {
-            var record =
-                FindRecord(
-                    userId,
-                    date);
+        var record =
+            await _db.OfficeHistories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date);
 
 
-            return record?.TimeInOffice
-                ?? TimeSpan.Zero;
-        }
+        return record?.TimeInOffice
+            ?? TimeSpan.Zero;
     }
 
 
@@ -128,12 +95,10 @@ public static class OfficeHistoryStore
     /// <summary>
     /// Adds completed office time to a user's history.
     ///
-    /// IMPORTANT:
-    /// This method should only receive time that has
-    /// actually been completed and is no longer part of
-    /// the user's active session.
+    /// This method only records completed time. It does
+    /// not modify the user's currently active session.
     /// </summary>
-    public static void AddOfficeTime(
+    public async Task AddOfficeTimeAsync(
         int userId,
         DateOnly date,
         TimeSpan duration)
@@ -144,34 +109,44 @@ public static class OfficeHistoryStore
         }
 
 
-        lock (_lock)
+        var existing =
+            await _db.OfficeHistories
+                .FirstOrDefaultAsync(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date);
+
+
+        if (existing is null)
         {
-            var existing =
-                FindRecord(
-                    userId,
-                    date);
-
-
-            if (existing is null)
-            {
-                existing =
-                    CreateRecord(
+            existing =
+                new OfficeHistory
+                {
+                    UserId =
                         userId,
+
+                    Date =
                         date,
-                        duration);
 
-                _history.Add(
-                    existing);
-            }
-            else
-            {
-                existing.TimeInOffice +=
-                    duration;
-            }
+                    TimeInOffice =
+                        duration,
+
+                    StartTime =
+                        null
+                };
 
 
-            Save();
+            _db.OfficeHistories.Add(
+                existing);
         }
+        else
+        {
+            existing.TimeInOffice +=
+                duration;
+        }
+
+
+        await _db.SaveChangesAsync();
     }
 
 
@@ -180,12 +155,12 @@ public static class OfficeHistoryStore
     // ==================================================
 
     /// <summary>
-    /// Adds out-of-office time to a user's history for a
-    /// specific date.
+    /// Adds out-of-office time for a specific user,
+    /// date, and reason.
     ///
     /// GoneForTheDay is intentionally ignored.
     /// </summary>
-    public static void AddOutOfOfficeTime(
+    public async Task AddOutOfOfficeTimeAsync(
         int userId,
         DateOnly date,
         Status reason,
@@ -203,47 +178,74 @@ public static class OfficeHistoryStore
         }
 
 
-        lock (_lock)
+        var history =
+            await _db.OfficeHistories
+                .FirstOrDefaultAsync(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date);
+
+
+        if (history is null)
         {
-            var existing =
-                FindRecord(
-                    userId,
-                    date);
-
-
-            if (existing is null)
-            {
-                existing =
-                    CreateRecord(
+            history =
+                new OfficeHistory
+                {
+                    UserId =
                         userId,
-                        date);
 
-                _history.Add(
-                    existing);
-            }
+                    Date =
+                        date,
 
-
-            existing.TimeOutOfOffice ??=
-                new Dictionary<Status, TimeSpan>();
+                    TimeInOffice =
+                        TimeSpan.Zero
+                };
 
 
-            if (existing.TimeOutOfOffice.TryGetValue(
-                    reason,
-                    out TimeSpan currentDuration))
-            {
-                existing.TimeOutOfOffice[reason] =
-                    currentDuration +
-                    duration;
-            }
-            else
-            {
-                existing.TimeOutOfOffice[reason] =
-                    duration;
-            }
-
-
-            Save();
+            _db.OfficeHistories.Add(
+                history);
         }
+
+
+        var existing =
+            await _db.OfficeHistoryOutOfOffice
+                .FirstOrDefaultAsync(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date &&
+                        x.Status == reason);
+
+
+        if (existing is null)
+        {
+            existing =
+                new OfficeHistoryOutOfOffice
+                {
+                    UserId =
+                        userId,
+
+                    Date =
+                        date,
+
+                    Status =
+                        reason,
+
+                    Duration =
+                        duration
+                };
+
+
+            _db.OfficeHistoryOutOfOffice.Add(
+                existing);
+        }
+        else
+        {
+            existing.Duration +=
+                duration;
+        }
+
+
+        await _db.SaveChangesAsync();
     }
 
 
@@ -255,29 +257,20 @@ public static class OfficeHistoryStore
     /// Gets all recorded out-of-office time for a user
     /// on a specific date.
     /// </summary>
-    public static Dictionary<Status, TimeSpan>
-        GetOutOfOfficeTime(
+    public async Task<Dictionary<Status, TimeSpan>>
+        GetOutOfOfficeTimeAsync(
             int userId,
             DateOnly date)
     {
-        lock (_lock)
-        {
-            var record =
-                FindRecord(
-                    userId,
-                    date);
-
-
-            if (record is null ||
-                record.TimeOutOfOffice is null)
-            {
-                return [];
-            }
-
-
-            return new Dictionary<Status, TimeSpan>(
-                record.TimeOutOfOffice);
-        }
+        return await _db.OfficeHistoryOutOfOffice
+            .AsNoTracking()
+            .Where(
+                x =>
+                    x.UserId == userId &&
+                    x.Date == date)
+            .ToDictionaryAsync(
+                x => x.Status,
+                x => x.Duration);
     }
 
 
@@ -289,33 +282,26 @@ public static class OfficeHistoryStore
     /// Gets the total amount of recorded out-of-office
     /// time for a user on a specific date.
     /// </summary>
-    public static TimeSpan GetTotalOutOfOfficeTime(
-        int userId,
-        DateOnly date)
+    public async Task<TimeSpan>
+        GetTotalOutOfOfficeTimeAsync(
+            int userId,
+            DateOnly date)
     {
-        lock (_lock)
-        {
-            var record =
-                FindRecord(
-                    userId,
-                    date);
+        long ticks =
+            await _db.OfficeHistoryOutOfOffice
+                .Where(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date &&
+                        x.Status != Status.GoneForTheDay)
+                .Select(
+                    x =>
+                        x.Duration.Ticks)
+                .SumAsync();
 
 
-            if (record is null ||
-                record.TimeOutOfOffice is null)
-            {
-                return TimeSpan.Zero;
-            }
-
-
-            return record.TimeOutOfOffice
-                .Where(x =>
-                    x.Key != Status.GoneForTheDay)
-                .Aggregate(
-                    TimeSpan.Zero,
-                    (total, entry) =>
-                        total + entry.Value);
-        }
+        return TimeSpan.FromTicks(
+            ticks);
     }
 
 
@@ -324,34 +310,46 @@ public static class OfficeHistoryStore
     // ==================================================
 
     /// <summary>
-    /// Creates a new daily history record if one does
+    /// Creates a daily history record if one does
     /// not already exist.
     /// </summary>
-    public static void CreateDailyRecord(
+    public async Task CreateDailyRecordAsync(
         int userId,
         DateOnly date,
         DateTime? startTime = null)
     {
-        lock (_lock)
+        var existing =
+            await _db.OfficeHistories
+                .FirstOrDefaultAsync(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date);
+
+
+        if (existing is not null)
         {
-            if (FindRecord(
-                    userId,
-                    date) is not null)
-            {
-                return;
-            }
-
-
-            _history.Add(
-                CreateRecord(
-                    userId,
-                    date,
-                    TimeSpan.Zero,
-                    startTime));
-
-
-            Save();
+            return;
         }
+
+
+        _db.OfficeHistories.Add(
+            new OfficeHistory
+            {
+                UserId =
+                    userId,
+
+                Date =
+                    date,
+
+                TimeInOffice =
+                    TimeSpan.Zero,
+
+                StartTime =
+                    startTime
+            });
+
+
+        await _db.SaveChangesAsync();
     }
 
 
@@ -363,22 +361,18 @@ public static class OfficeHistoryStore
     /// Gets a copy of an office history record for a
     /// specific user and date.
     /// </summary>
-    public static OfficeHistory? GetUserHistoryForDate(
-        int userId,
-        DateOnly date)
+    public async Task<OfficeHistory?>
+        GetUserHistoryForDateAsync(
+            int userId,
+            DateOnly date)
     {
-        lock (_lock)
-        {
-            var record =
-                FindRecord(
-                    userId,
-                    date);
-
-
-            return record is null
-                ? null
-                : Clone(record);
-        }
+        return await _db.OfficeHistories
+            .AsNoTracking()
+            .Include(x => x.OutOfOfficeEntries)
+            .FirstOrDefaultAsync(
+                x =>
+                    x.UserId == userId &&
+                    x.Date == date);
     }
 
 
@@ -391,238 +385,51 @@ public static class OfficeHistoryStore
     ///
     /// Once a start time exists, it is never overwritten.
     /// </summary>
-    public static void SetStartTime(
+    public async Task SetStartTimeAsync(
         int userId,
         DateOnly date,
         DateTime startTime)
     {
-        lock (_lock)
+        var existing =
+            await _db.OfficeHistories
+                .FirstOrDefaultAsync(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date == date);
+
+
+        if (existing is null)
         {
-            var existing =
-                FindRecord(
-                    userId,
-                    date);
-
-
-            if (existing is null)
-            {
-                _history.Add(
-                    CreateRecord(
+            _db.OfficeHistories.Add(
+                new OfficeHistory
+                {
+                    UserId =
                         userId,
+
+                    Date =
                         date,
+
+                    TimeInOffice =
                         TimeSpan.Zero,
-                        startTime));
+
+                    StartTime =
+                        startTime
+                });
 
 
-                Save();
+            await _db.SaveChangesAsync();
 
-
-                return;
-            }
-
-
-            if (existing.StartTime is null)
-            {
-                existing.StartTime =
-                    startTime;
-
-
-                Save();
-            }
+            return;
         }
-    }
 
 
-    // ==================================================
-    // Load
-    // ==================================================
-
-    private static void Load()
-    {
-        lock (_lock)
+        if (existing.StartTime is null)
         {
-            if (!File.Exists(_filePath))
-            {
-                Console.WriteLine(
-                    "Office history file not found. " +
-                    "Creating a new history store.");
+            existing.StartTime =
+                startTime;
 
 
-                _history = [];
-
-
-                Save();
-
-
-                return;
-            }
-
-
-            try
-            {
-                string json =
-                    File.ReadAllText(
-                        _filePath);
-
-
-                if (string.IsNullOrWhiteSpace(json))
-                {
-                    _history = [];
-
-
-                    return;
-                }
-
-
-                _history =
-                    JsonSerializer.Deserialize<
-                        List<OfficeHistory>>(
-                        json,
-                        _jsonOptions)
-                    ?? [];
-
-
-                foreach (var record in _history)
-                {
-                    record.TimeOutOfOffice ??=
-                        new Dictionary<Status, TimeSpan>();
-                }
-
-
-                Console.WriteLine(
-                    $"Loaded {_history.Count} " +
-                    $"office history records.");
-            }
-            catch (JsonException ex)
-            {
-                Console.WriteLine(
-                    $"Failed to deserialize " +
-                    $"office history: " +
-                    $"{ex.Message}");
-
-
-                _history = [];
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(
-                    $"Failed to load office history: " +
-                    $"{ex.Message}");
-
-
-                _history = [];
-            }
+            await _db.SaveChangesAsync();
         }
-    }
-
-
-    // ==================================================
-    // Save
-    // ==================================================
-
-    private static void Save()
-    {
-        try
-        {
-            string json =
-                JsonSerializer.Serialize(
-                    _history,
-                    _jsonOptions);
-
-
-            File.WriteAllText(
-                _filePath,
-                json);
-
-
-            Console.WriteLine(
-                $"Saved {_history.Count} " +
-                $"office history records.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(
-                $"Failed to save office history: " +
-                $"{ex.Message}");
-
-
-            throw;
-        }
-    }
-
-
-    // ==================================================
-    // Clone
-    // ==================================================
-
-    private static OfficeHistory Clone(
-        OfficeHistory record)
-    {
-        return new OfficeHistory
-        {
-            UserId =
-                record.UserId,
-
-            Date =
-                record.Date,
-
-            TimeInOffice =
-                record.TimeInOffice,
-
-            StartTime =
-                record.StartTime,
-
-            TimeOutOfOffice =
-                record.TimeOutOfOffice?
-                    .ToDictionary(
-                        x => x.Key,
-                        x => x.Value)
-                ?? []
-        };
-    }
-
-
-    // ==================================================
-    // Find Record
-    // ==================================================
-
-    private static OfficeHistory? FindRecord(
-        int userId,
-        DateOnly date)
-    {
-        return _history.FirstOrDefault(
-            x =>
-                x.UserId == userId &&
-                x.Date == date);
-    }
-
-
-    // ==================================================
-    // Create Record
-    // ==================================================
-
-    private static OfficeHistory CreateRecord(
-        int userId,
-        DateOnly date,
-        TimeSpan timeInOffice = default,
-        DateTime? startTime = null)
-    {
-        return new OfficeHistory
-        {
-            UserId =
-                userId,
-
-            Date =
-                date,
-
-            TimeInOffice =
-                timeInOffice,
-
-            StartTime =
-                startTime,
-
-            TimeOutOfOffice =
-                []
-        };
     }
 }

@@ -4,6 +4,7 @@
     "Date": "2026-08-18",
     "TimeInOffice": "07:42:18",
     "StartTime": "2026-08-18T08:17:42-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:42:15",
       "ClientMeeting": "01:15:32"
@@ -14,6 +15,7 @@
     "Date": "2026-08-19",
     "TimeInOffice": "08:03:51",
     "StartTime": "2026-08-19T07:56:09-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:38:47",
       "Conference": "00:52:18"
@@ -24,6 +26,7 @@
     "Date": "2026-08-20",
     "TimeInOffice": "06:51:34",
     "StartTime": "2026-08-20T08:31:26-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:45:22",
       "WFH": "01:30:18"
@@ -34,6 +37,7 @@
     "Date": "2026-08-21",
     "TimeInOffice": "07:26:43",
     "StartTime": "2026-08-21T08:03:17-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:41:09",
       "Appointment": "00:52:34"
@@ -44,6 +48,7 @@
     "Date": "2026-08-22",
     "TimeInOffice": "05:48:21",
     "StartTime": "2026-08-22T09:12:39-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:36:18",
       "ClientMeeting": "01:08:42"
@@ -54,6 +59,7 @@
     "Date": "2026-08-23",
     "TimeInOffice": "06:34:52",
     "StartTime": "2026-08-23T08:24:08-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:44:51",
       "Chicago": "01:12:27"
@@ -64,6 +70,7 @@
     "Date": "2026-08-24",
     "TimeInOffice": "07:58:16",
     "StartTime": "2026-08-24T08:02:44-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:39:26",
       "NewYork": "00:57:13"
@@ -74,6 +81,7 @@
     "Date": "2026-08-25",
     "TimeInOffice": "07:21:45",
     "StartTime": "2026-08-25T08:18:15-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:47:03",
       "ClientMeeting": "01:03:27"
@@ -84,6 +92,7 @@
     "Date": "2026-08-26",
     "TimeInOffice": "07:46:29",
     "StartTime": "2026-08-26T07:58:31-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:43:18",
       "Appointment": "00:38:54"
@@ -94,6 +103,7 @@
     "Date": "2026-08-18",
     "TimeInOffice": "08:04:33",
     "StartTime": "2026-08-18T07:52:27-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:39:42",
       "ClientMeeting": "00:58:16"
@@ -104,6 +114,7 @@
     "Date": "2026-08-19",
     "TimeInOffice": "07:36:19",
     "StartTime": "2026-08-19T08:14:41-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:44:18",
       "WFH": "01:21:36"
@@ -114,6 +125,7 @@
     "Date": "2026-08-20",
     "TimeInOffice": "06:48:36",
     "StartTime": "2026-08-20T08:37:24-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:41:27",
       "Conference": "01:02:19"
@@ -124,6 +136,7 @@
     "Date": "2026-08-21",
     "TimeInOffice": "08:12:47",
     "StartTime": "2026-08-21T07:41:13-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:36:54"
     }
@@ -133,6 +146,7 @@
     "Date": "2026-08-22",
     "TimeInOffice": "07:18:29",
     "StartTime": "2026-08-22T08:21:31-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:48:21",
       "Appointment": "00:57:44"
@@ -143,6 +157,7 @@
     "Date": "2026-08-23",
     "TimeInOffice": "06:55:38",
     "StartTime": "2026-08-23T08:07:22-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:43:17",
       "Peru": "01:18:26"
@@ -153,6 +168,7 @@
     "Date": "2026-08-24",
     "TimeInOffice": "07:49:52",
     "StartTime": "2026-08-24T08:11:08-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:40:36",
       "ClientMeeting": "00:51:48"
@@ -163,6 +179,7 @@
     "Date": "2026-08-25",
     "TimeInOffice": "08:16:05",
     "StartTime": "2026-08-25T07:54:55-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:37:49",
       "Conference": "00:46:12"
@@ -173,6 +190,7 @@
     "Date": "2026-08-26",
     "TimeInOffice": "07:34:41",
     "StartTime": "2026-08-26T08:06:19-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:42:53",
       "NewYork": "01:06:35"
@@ -183,6 +201,7 @@
     "Date": "2026-08-18",
     "TimeInOffice": "06:51:24",
     "StartTime": "2026-08-18T08:42:36-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:45:18",
       "WFH": "01:12:43"
@@ -193,6 +212,7 @@
     "Date": "2026-08-19",
     "TimeInOffice": "07:18:53",
     "StartTime": "2026-08-19T08:03:07-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:38:29",
       "ClientMeeting": "01:05:17"
@@ -203,6 +223,7 @@
     "Date": "2026-08-20",
     "TimeInOffice": "08:42:11",
     "StartTime": "2026-08-20T07:31:49-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:41:36"
     }
@@ -212,6 +233,7 @@
     "Date": "2026-08-21",
     "TimeInOffice": "07:05:37",
     "StartTime": "2026-08-21T08:16:23-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:43:52",
       "Appointment": "00:49:26"
@@ -222,6 +244,7 @@
     "Date": "2026-08-22",
     "TimeInOffice": "06:44:28",
     "StartTime": "2026-08-22T09:04:32-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:37:41",
       "Conference": "01:14:53"
@@ -232,6 +255,7 @@
     "Date": "2026-08-23",
     "TimeInOffice": "07:27:16",
     "StartTime": "2026-08-23T08:18:44-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:42:19",
       "Chicago": "00:58:37"
@@ -242,6 +266,7 @@
     "Date": "2026-08-24",
     "TimeInOffice": "06:58:43",
     "StartTime": "2026-08-24T08:35:17-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:46:05",
       "ClientMeeting": "01:11:22"
@@ -252,6 +277,7 @@
     "Date": "2026-08-25",
     "TimeInOffice": "07:41:28",
     "StartTime": "2026-08-25T08:09:32-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:39:14",
       "WFH": "01:24:36"
@@ -262,6 +288,7 @@
     "Date": "2026-08-26",
     "TimeInOffice": "08:05:17",
     "StartTime": "2026-08-26T07:47:43-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:44:27",
       "Colombia": "00:52:18"
@@ -272,6 +299,7 @@
     "Date": "2026-08-18",
     "TimeInOffice": "08:32:17",
     "StartTime": "2026-08-18T07:27:43-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:40:18",
       "ClientMeeting": "00:55:31"
@@ -282,6 +310,7 @@
     "Date": "2026-08-19",
     "TimeInOffice": "07:55:41",
     "StartTime": "2026-08-19T08:02:19-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:42:37",
       "Conference": "01:03:14"
@@ -292,6 +321,7 @@
     "Date": "2026-08-20",
     "TimeInOffice": "07:26:35",
     "StartTime": "2026-08-20T08:11:25-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:38:45",
       "Appointment": "00:47:19"
@@ -302,6 +332,7 @@
     "Date": "2026-08-21",
     "TimeInOffice": "08:11:08",
     "StartTime": "2026-08-21T07:48:52-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:41:26"
     }
@@ -311,6 +342,7 @@
     "Date": "2026-08-22",
     "TimeInOffice": "07:39:52",
     "StartTime": "2026-08-22T08:14:08-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:46:11",
       "WFH": "01:16:38"
@@ -321,6 +353,7 @@
     "Date": "2026-08-23",
     "TimeInOffice": "06:47:35",
     "StartTime": "2026-08-23T08:31:25-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:39:53",
       "NewYork": "01:05:42"
@@ -331,6 +364,7 @@
     "Date": "2026-08-24",
     "TimeInOffice": "08:18:24",
     "StartTime": "2026-08-24T07:39:36-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:43:28",
       "ClientMeeting": "00:49:17"
@@ -341,6 +375,7 @@
     "Date": "2026-08-25",
     "TimeInOffice": "07:33:46",
     "StartTime": "2026-08-25T08:05:14-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:37:56",
       "Conference": "01:02:31"
@@ -351,6 +386,7 @@
     "Date": "2026-08-26",
     "TimeInOffice": "07:57:38",
     "StartTime": "2026-08-26T07:52:22-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:45:09",
       "Appointment": "00:54:26"
@@ -361,6 +397,7 @@
     "Date": "2026-08-18",
     "TimeInOffice": "07:23:46",
     "StartTime": "2026-08-18T08:06:14-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:43:17",
       "WFH": "01:08:26"
@@ -371,6 +408,7 @@
     "Date": "2026-08-19",
     "TimeInOffice": "06:47:32",
     "StartTime": "2026-08-19T08:29:28-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:39:41",
       "ClientMeeting": "01:13:18"
@@ -381,6 +419,7 @@
     "Date": "2026-08-20",
     "TimeInOffice": "08:06:18",
     "StartTime": "2026-08-20T07:53:42-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:44:52"
     }
@@ -390,6 +429,7 @@
     "Date": "2026-08-21",
     "TimeInOffice": "07:52:04",
     "StartTime": "2026-08-21T08:04:56-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:41:08",
       "Appointment": "00:51:43"
@@ -400,6 +440,7 @@
     "Date": "2026-08-22",
     "TimeInOffice": "06:59:41",
     "StartTime": "2026-08-22T08:37:19-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:38:29",
       "Conference": "01:09:16"
@@ -410,6 +451,7 @@
     "Date": "2026-08-23",
     "TimeInOffice": "07:31:52",
     "StartTime": "2026-08-23T08:21:08-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:42:36",
       "Italy": "01:03:48"
@@ -420,6 +462,7 @@
     "Date": "2026-08-24",
     "TimeInOffice": "08:02:27",
     "StartTime": "2026-08-24T07:57:33-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:40:15",
       "ClientMeeting": "00:57:32"
@@ -430,6 +473,7 @@
     "Date": "2026-08-25",
     "TimeInOffice": "07:18:36",
     "StartTime": "2026-08-25T08:16:24-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:46:27",
       "WFH": "01:17:05"
@@ -440,6 +484,7 @@
     "Date": "2026-08-26",
     "TimeInOffice": "07:44:53",
     "StartTime": "2026-08-26T08:01:07-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:43:38",
       "Colombia": "00:48:19"
@@ -450,6 +495,7 @@
     "Date": "2026-08-18",
     "TimeInOffice": "08:18:29",
     "StartTime": "2026-08-18T07:41:31-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:41:32",
       "ClientMeeting": "01:02:18"
@@ -460,6 +506,7 @@
     "Date": "2026-08-19",
     "TimeInOffice": "07:41:55",
     "StartTime": "2026-08-19T08:09:05-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:39:26",
       "Conference": "00:57:43"
@@ -470,6 +517,7 @@
     "Date": "2026-08-20",
     "TimeInOffice": "06:35:48",
     "StartTime": "2026-08-20T08:25:12-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:44:18",
       "WFH": "01:19:37"
@@ -480,6 +528,7 @@
     "Date": "2026-08-21",
     "TimeInOffice": "08:24:16",
     "StartTime": "2026-08-21T07:35:44-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:37:52"
     }
@@ -489,6 +538,7 @@
     "Date": "2026-08-22",
     "TimeInOffice": "07:12:33",
     "StartTime": "2026-08-22T08:06:27-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:45:37",
       "Appointment": "00:52:19"
@@ -499,6 +549,7 @@
     "Date": "2026-08-23",
     "TimeInOffice": "06:48:41",
     "StartTime": "2026-08-23T08:43:19-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:40:21",
       "Philippines": "01:14:28"
@@ -509,6 +560,7 @@
     "Date": "2026-08-24",
     "TimeInOffice": "07:56:34",
     "StartTime": "2026-08-24T08:03:26-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:42:48",
       "ClientMeeting": "01:05:16"
@@ -519,6 +571,7 @@
     "Date": "2026-08-25",
     "TimeInOffice": "07:29:18",
     "StartTime": "2026-08-25T08:11:42-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:38:35",
       "Conference": "00:49:27"
@@ -529,6 +582,7 @@
     "Date": "2026-08-26",
     "TimeInOffice": "07:51:46",
     "StartTime": "2026-08-26T07:59:14-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:44:16",
       "NewYork": "01:01:38"
@@ -539,6 +593,7 @@
     "Date": "2026-08-27",
     "TimeInOffice": "15:32:23.3978654",
     "StartTime": "2026-08-27T13:25:48.9035811-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:02:30.6605905",
       "Conference": "00:00:20.0870045",
@@ -550,6 +605,7 @@
     "Date": "2026-08-27",
     "TimeInOffice": "15:27:05.1334989",
     "StartTime": "2026-08-27T13:25:49.1503662-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:02:46.4423261",
       "Conference": "00:00:20.9167396",
@@ -561,6 +617,7 @@
     "Date": "2026-08-27",
     "TimeInOffice": "15:47:02.1858308",
     "StartTime": "2026-08-27T13:25:49.4391561-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:02:34.6110028",
       "Conference": "00:00:19.0951850"
@@ -571,6 +628,7 @@
     "Date": "2026-08-27",
     "TimeInOffice": "15:17:29.0206996",
     "StartTime": "2026-08-27T13:25:49.7112667-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:02:28.9165500",
       "Conference": "00:00:18.6147714",
@@ -582,6 +640,7 @@
     "Date": "2026-08-27",
     "TimeInOffice": "15:12:28.4659963",
     "StartTime": "2026-08-27T13:25:50.3348046-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:27:13.1730158",
       "Conference": "00:00:18.3425539"
@@ -592,6 +651,7 @@
     "Date": "2026-08-27",
     "TimeInOffice": "15:32:12.9758762",
     "StartTime": "2026-08-27T13:25:50.5907733-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:02:27.9798886",
       "Conference": "00:00:17.1989926",
@@ -603,6 +663,7 @@
     "Date": "2026-08-28",
     "TimeInOffice": "10:48:45.7038226",
     "StartTime": "2026-08-28T10:19:39.3911889-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:00:16.5303922",
       "Conference": "00:03:49.1885442"
@@ -613,6 +674,7 @@
     "Date": "2026-08-28",
     "TimeInOffice": "10:48:47.7382476",
     "StartTime": "2026-08-28T10:19:40.7105389-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:00:15.5900087",
       "ClientMeeting": "00:03:48.3481033"
@@ -623,6 +685,7 @@
     "Date": "2026-08-28",
     "TimeInOffice": "10:49:45.6203208",
     "StartTime": "2026-08-28T10:19:41.3591326-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:00:18.0549308",
       "WFH": "00:03:44.0522802"
@@ -633,6 +696,7 @@
     "Date": "2026-08-28",
     "TimeInOffice": "10:48:54.6636841",
     "StartTime": "2026-08-28T10:19:41.6143551-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:00:14.4783090",
       "WFH": "00:03:43.1803268"
@@ -643,6 +707,7 @@
     "Date": "2026-08-28",
     "TimeInOffice": "10:48:56.9130763",
     "StartTime": "2026-08-28T10:19:42.3667262-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:03:56.1871541"
     }
@@ -652,6 +717,7 @@
     "Date": "2026-08-28",
     "TimeInOffice": "10:48:59.6972079",
     "StartTime": "2026-08-28T10:19:42.0709054-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:00:12.4946597",
       "Appointment": "00:03:40.7083433"
@@ -662,6 +728,7 @@
     "Date": "2026-08-28",
     "TimeInOffice": "00:00:09.0893109",
     "StartTime": "2026-08-28T10:54:10.5735293-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {
       "Lunch": "00:00:02.0771337",
       "PTO": "00:00:00.6229123",
@@ -673,6 +740,7 @@
     "Date": "2026-08-28",
     "TimeInOffice": "00:00:18.2683324",
     "StartTime": "2026-08-28T12:02:38.7713357-05:00",
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {}
   },
   {
@@ -680,6 +748,79 @@
     "Date": "2026-08-28",
     "TimeInOffice": "00:00:00",
     "StartTime": "2026-08-28T12:03:21.6852793-05:00",
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 1,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:10.5208750",
+    "StartTime": "2026-08-31T11:33:45.2456232-05:00",
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 2,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:06.7612054",
+    "StartTime": "2026-08-31T11:33:44.8861964-05:00",
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 3,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:07.2487905",
+    "StartTime": "2026-08-31T11:33:42.1304243-05:00",
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 4,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null,
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 5,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null,
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 6,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null,
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 7,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null,
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 8,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null,
+    "OutOfOfficeEntries": [],
+    "TimeOutOfOffice": {}
+  },
+  {
+    "UserId": 9,
+    "Date": "2026-08-31",
+    "TimeInOffice": "00:00:00",
+    "StartTime": null,
+    "OutOfOfficeEntries": [],
     "TimeOutOfOffice": {}
   }
 ]
