@@ -22,6 +22,8 @@ public class AvailabilityService : IAsyncDisposable
     // State
     // ==================================================
 
+    public List<User> InactiveUsers { get; private set; } = [];
+
     public List<User> Users { get; private set; } = [];
 
 
@@ -466,6 +468,50 @@ public class AvailabilityService : IAsyncDisposable
             userId);
     }
 
+    // ==================================================
+    // Get Inactive Users
+    // ==================================================
+
+    public async Task<List<User>> GetInactiveUsersAsync()
+    {
+        if (_disposed ||
+            _connection.State !=
+                HubConnectionState.Connected)
+        {
+            return [];
+        }
+
+        var users =
+            await _connection.InvokeAsync<List<User>>(
+                "GetInactiveUsers");
+
+        InactiveUsers =
+            users
+                .Select(CloneUser)
+                .ToList();
+
+        return InactiveUsers;
+    }
+
+    // ==================================================
+    // Get User
+    // ==================================================
+
+    public async Task<User?> GetUserAsync(
+        int userId)
+    {
+        if (_disposed ||
+            _connection.State !=
+                HubConnectionState.Connected)
+        {
+            return null;
+        }
+
+        return await _connection.InvokeAsync<User?>(
+            "GetUser",
+            userId);
+    }
+
     /// <summary>
     /// Handles disposing the connection
     /// </summary>
@@ -477,12 +523,11 @@ public class AvailabilityService : IAsyncDisposable
             return;
         }
 
-
         _disposed = true;
-
 
         UsersChanged = null;
 
+        InactiveUsers = [];
 
         try
         {
@@ -493,7 +538,6 @@ public class AvailabilityService : IAsyncDisposable
             // Connection may already be closed.
         }
 
-
         try
         {
             await _connection.DisposeAsync();
@@ -502,7 +546,6 @@ public class AvailabilityService : IAsyncDisposable
         {
             // Connection may already be disposed.
         }
-
 
         _connectionLock.Dispose();
     }

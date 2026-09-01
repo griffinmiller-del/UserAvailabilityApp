@@ -69,6 +69,38 @@ public class UserService
         return users;
     }
 
+    // ==================================================
+    // Get Inactive Users
+    // ==================================================
+
+    public async Task<List<User>> GetInactiveUsersAsync()
+    {
+        var users =
+            await _db.Users
+                .AsNoTracking()
+                .Where(x => !x.IsActiveUser)
+                .OrderBy(x => x.UserId)
+                .ToListAsync();
+
+
+        DateOnly today =
+            DateOnly.FromDateTime(
+                DateTime.Now);
+
+
+        foreach (var user in users)
+        {
+            user.TotalTimeInOffice =
+                await _officeHistoryStore
+                    .GetOfficeTimeForDateAsync(
+                        user.UserId,
+                        today);
+        }
+
+
+        return users;
+    }
+
 
     // ==================================================
     // Get User

@@ -44,7 +44,7 @@ public class AvailabilityHub : Hub
             $"{Context.ConnectionId}");
 
 
-        await SendActiveUsersToCaller();
+        await SendUsersToCaller();
 
 
         await base.OnConnectedAsync();
@@ -139,9 +139,36 @@ public class AvailabilityHub : Hub
 
     public async Task GetUsers()
     {
-        await SendActiveUsersToCaller();
+        await SendUsersToCaller();
     }
 
+    // ==================================================
+    // Get User
+    // ==================================================
+
+    public async Task<User?> GetUser(
+        int userId)
+    {
+        return await _userService
+            .GetUserAsync(userId);
+    }
+
+    // ==================================================
+    // Get Inactive Users
+    // ==================================================
+
+    public async Task<List<User>> GetInactiveUsers()
+    {
+        var users =
+            await _userService
+                .GetInactiveUsersAsync();
+
+        Console.WriteLine(
+            $"Sending {users.Count} inactive users to " +
+            $"{Context.ConnectionId}");
+
+        return users;
+    }
 
     // ==================================================
     // Get User History
@@ -483,12 +510,12 @@ public class AvailabilityHub : Hub
     // User Lists
     // ==================================================
 
-    private async Task SendActiveUsersToCaller()
+    private async Task SendUsersToCaller()
     {
-        var users =
-            await _userService
-                .GetActiveUsersAsync();
 
+            var users =
+                await _userService
+                    .GetActiveUsersAsync();
 
         Console.WriteLine(
             $"Sending {users.Count} active users to " +

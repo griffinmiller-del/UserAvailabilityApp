@@ -53,6 +53,10 @@ public class OfficeHistoryStartupService : IHostedService
 
         foreach (var user in users)
         {
+            if (!user.IsActiveUser)
+            {
+                continue;
+            }
             OfficeHistory? todayRecord =
                 await officeHistoryStore
                     .GetUserHistoryForDateAsync(

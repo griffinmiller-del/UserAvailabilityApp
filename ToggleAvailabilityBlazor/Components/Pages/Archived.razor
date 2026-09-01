@@ -1,42 +1,42 @@
-﻿@page "/history"
+﻿@page "/archived"
 
 @using ToggleAvailabilityBlazor.Models
 @using ToggleAvailabilityBlazor.Services
 
 @inject AvailabilityService AvailabilityService
 
-<PageTitle>Office History</PageTitle>
+<PageTitle>Archived Users</PageTitle>
 
 
-<div class="history-page">
+<div class="archived-page">
 
-    <div class="history-header">
+    <div class="archived-header">
 
-        <div class="history-header-content">
+        <div class="archived-header-content">
 
             <NavLink href="/history"
-                     class="history-link active">
+                     class="archived-link">
 
                 History
 
             </NavLink>
 
 
-            <div class="history-title">
+            <div class="archived-title">
 
                 <h1>
-                    Office Time History
+                    Archived Users
                 </h1>
 
                 <p>
-                    Select a person to view their daily office time.
+                    Select a person to view their archived office time.
                 </p>
 
             </div>
 
 
             <NavLink href="/archived"
-                     class="history-link">
+                     class="archived-link active">
 
                 Archived
 
@@ -49,20 +49,31 @@
 
     <div class="people-list">
 
-        @foreach (var user in AvailabilityService.Users)
+        @if (AvailabilityService.InactiveUsers.Count == 0)
         {
-            <NavLink href="@($"/history/{user.UserId}")"
-                     class="person-row">
+            <div class="empty-message">
 
-                <span class="person-name">
-                    @user.Name
-                </span>
+                No archived users.
 
-                <span class="person-arrow">
-                    ›
-                </span>
+            </div>
+        }
+        else
+        {
+            @foreach (var user in AvailabilityService.InactiveUsers)
+            {
+                <NavLink href="@($"/history/{user.UserId}")"
+                         class="person-row">
 
-            </NavLink>
+                    <span class="person-name">
+                        @user.Name
+                    </span>
+
+                    <span class="person-arrow">
+                        ›
+                    </span>
+
+                </NavLink>
+            }
         }
 
     </div>
@@ -70,9 +81,23 @@
 </div>
 
 
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AvailabilityService
+            .ConnectAsync();
+
+        await AvailabilityService
+            .GetInactiveUsersAsync();
+    }
+
+}
+
+
 <style>
 
-    .history-page {
+    .archived-page {
         min-height: 100vh;
         padding: 32px;
         box-sizing: border-box;
@@ -82,14 +107,14 @@
     }
 
 
-    .history-header {
+    .archived-header {
         width: 100%;
         max-width: 900px;
         margin: 0 auto 28px auto;
     }
 
 
-    .history-header-content {
+    .archived-header-content {
         display: grid;
         grid-template-columns: 120px 1fr 120px;
         align-items: center;
@@ -97,26 +122,26 @@
     }
 
 
-    .history-title {
+    .archived-title {
         text-align: center;
     }
 
 
-        .history-title h1 {
+        .archived-title h1 {
             margin: 0;
             font-size: 28px;
             font-weight: 500;
         }
 
 
-        .history-title p {
+        .archived-title p {
             margin: 7px 0 0 0;
             color: #777777;
             font-size: 14px;
         }
 
 
-    .history-link {
+    .archived-link {
         color: #777777;
         text-decoration: none;
         font-size: 15px;
@@ -124,22 +149,22 @@
     }
 
 
-        .history-link:first-child {
+        .archived-link:first-child {
             text-align: left;
         }
 
 
-        .history-link:last-child {
+        .archived-link:last-child {
             text-align: right;
         }
 
 
-        .history-link:hover {
+        .archived-link:hover {
             color: #f2c94c;
         }
 
 
-        .history-link.active {
+        .archived-link.active {
             color: #f2c94c;
         }
 
@@ -210,24 +235,39 @@
     }
 
 
+    .empty-message {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 18px;
+        box-sizing: border-box;
+        background: #1c1c1c;
+        border: 1px solid #303030;
+        border-radius: 9px;
+        color: #777777;
+        font-size: 14px;
+    }
+
+
     @@media (max-width: 600px) {
 
-        .history-page {
+        .archived-page {
             padding: 20px;
         }
 
 
-        .history-header-content {
+        .archived-header-content {
             grid-template-columns: 80px 1fr 80px;
         }
 
 
-        .history-title h1 {
+        .archived-title h1 {
             font-size: 23px;
         }
 
 
-        .history-title p {
+        .archived-title p {
             display: none;
         }
     }

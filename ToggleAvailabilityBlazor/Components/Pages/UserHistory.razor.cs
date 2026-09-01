@@ -37,11 +37,14 @@ public partial class UserHistory
 
     protected override async Task OnInitializedAsync()
     {
+        await AvailabilityService
+            .ConnectAsync();
+
+
         _user =
-            AvailabilityService.Users
-                .FirstOrDefault(
-                    x =>
-                        x.UserId == UserId);
+            await AvailabilityService
+                .GetUserAsync(
+                    UserId);
 
 
         if (_user is not null)

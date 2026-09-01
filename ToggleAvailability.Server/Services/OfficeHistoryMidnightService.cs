@@ -148,6 +148,10 @@ public class OfficeHistoryMidnightService : BackgroundService
 
         foreach (var user in users)
         {
+            if (!user.IsActiveUser)
+            {
+                continue;
+            }
             // ==================================================
             // USER IS STILL IN THE OFFICE
             // ==================================================
