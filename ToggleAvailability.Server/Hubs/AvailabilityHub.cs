@@ -72,10 +72,11 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // Admin Authentication
-    // ==================================================
-
+    /// <summary>
+    /// Verifies the passcode entered to see if it is valid.
+    /// </summary>
+    /// <param name="passcode">The passcode entered</param>
+    /// <returns></returns>
     public Task<bool> VerifyAdminPasscode(
         string passcode)
     {
@@ -112,7 +113,10 @@ public class AvailabilityHub : Hub
             isValid);
     }
 
-
+    /// <summary>
+    /// Checks if the application instance has been authenticated as admin
+    /// </summary>
+    /// <returns></returns>
     private bool IsAdminAuthenticated()
     {
         return
@@ -122,7 +126,10 @@ public class AvailabilityHub : Hub
             value is true;
     }
 
-
+    /// <summary>
+    /// Called at the beginning of methods that require admin permissions
+    /// </summary>
+    /// <exception cref="HubException"></exception>
     private void RequireAdminAuthentication()
     {
         if (!IsAdminAuthenticated())
@@ -133,19 +140,20 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // Get Users
-    // ==================================================
-
+    /// <summary>
+    /// Gets the list of users.
+    /// </summary>
+    /// <returns></returns>
     public async Task GetUsers()
     {
         await SendUsersToCaller();
     }
 
-    // ==================================================
-    // Get User
-    // ==================================================
-
+    /// <summary>
+    /// Gets a specific user.
+    /// </summary>
+    /// <param name="userId">The user id of the user to get</param>
+    /// <returns></returns>
     public async Task<User?> GetUser(
         int userId)
     {
@@ -153,10 +161,10 @@ public class AvailabilityHub : Hub
             .GetUserAsync(userId);
     }
 
-    // ==================================================
-    // Get Inactive Users
-    // ==================================================
-
+    /// <summary>
+    /// Gets the list of users that are currently set as inactive.
+    /// </summary>
+    /// <returns></returns>
     public async Task<List<User>> GetInactiveUsers()
     {
         var users =
@@ -187,10 +195,12 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // Add User
-    // ==================================================
-
+    /// <summary>
+    /// Adds a new user to the list of users
+    /// </summary>
+    /// <param name="name">The name of user to be added</param>
+    /// <returns></returns>
+    /// <exception cref="HubException"></exception>
     public async Task AddUser(
         string name)
     {
@@ -251,10 +261,13 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // Update User
-    // ==================================================
-
+    /// <summary>
+    /// Updates a specific user.
+    /// </summary>
+    /// <param name="userId">The user id of the user being updated</param>
+    /// <param name="name">The name that user id is being updated to</param>
+    /// <returns></returns>
+    /// <exception cref="HubException"></exception>
     public async Task UpdateUser(
         int userId,
         string name)
@@ -317,10 +330,12 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // Update User List
-    // ==================================================
-
+    /// <summary>
+    /// Updates the user list if something changes.
+    /// </summary>
+    /// <param name="users">The list of users that is being updated</param>
+    /// <returns></returns>
+    /// <exception cref="HubException"></exception>
     public async Task UpdateUserList(
         List<User> users)
     {
@@ -369,10 +384,12 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // Delete / Deactivate User
-    // ==================================================
-
+    /// <summary>
+    /// Deletes/Deactivates a user.
+    /// </summary>
+    /// <param name="userId">The user id of the user to deactivate</param>
+    /// <returns></returns>
+    /// <exception cref="HubException"></exception>
     public async Task DeleteUser(
         int userId)
     {
@@ -402,10 +419,12 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // Reactivate User
-    // ==================================================
-
+    /// <summary>
+    /// Reactivates a user that has been set as inactive.
+    /// </summary>
+    /// <param name="userId">The user id of the user to reactivate</param>
+    /// <returns></returns>
+    /// <exception cref="HubException"></exception>
     public async Task ReactivateUser(
         int userId)
     {
@@ -447,10 +466,14 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // Availability
-    // ==================================================
-
+    /// <summary>
+    /// Sets the availability status of the user.
+    /// </summary>
+    /// <param name="userId">The user id of the user having their status modified or set</param>
+    /// <param name="isAvailable">Whether or not that status makes them available</param>
+    /// <param name="status">The status to set for that user</param>
+    /// <returns></returns>
+    /// <exception cref="HubException"></exception>
     public async Task SetAvailability(
         int userId,
         bool isAvailable,
@@ -492,6 +515,12 @@ public class AvailabilityHub : Hub
     // Helpers
     // ==================================================
 
+    /// <summary>
+    /// Validates that the name is valid.
+    /// </summary>
+    /// <param name="name">The name to be assigned to the user</param>
+    /// <returns></returns>
+    /// <exception cref="HubException"></exception>
     private static string ValidateUserName(
         string name)
     {
@@ -506,9 +535,10 @@ public class AvailabilityHub : Hub
     }
 
 
-    // ==================================================
-    // User Lists
-    // ==================================================
+    /// <summary>
+    /// Sends the user list to the connection that requested it.
+    /// </summary>
+    /// <returns></returns>
 
     private async Task SendUsersToCaller()
     {

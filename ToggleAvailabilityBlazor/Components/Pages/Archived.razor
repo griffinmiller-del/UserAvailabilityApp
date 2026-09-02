@@ -61,7 +61,7 @@
         {
             @foreach (var user in AvailabilityService.InactiveUsers)
             {
-                <NavLink href="@($"/history/{user.UserId}")"
+                <NavLink href="@($"/archived/{user.UserId}")"
                          class="person-row">
 
                     <span class="person-name">

@@ -82,9 +82,11 @@ public class AdminAuthenticationService
     // ==================================================
 
     /// <summary>
-    /// Determines whether the supplied passcode matches
+    ///  Determines whether the supplied passcode matches
     /// the configured administrator passcode.
     /// </summary>
+    /// <param name="passcode">The passcode entered</param>
+    /// <returns></returns>
     public bool VerifyPasscode(
         string passcode)
     {

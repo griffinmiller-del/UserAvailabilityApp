@@ -468,10 +468,10 @@ public class AvailabilityService : IAsyncDisposable
             userId);
     }
 
-    // ==================================================
-    // Get Inactive Users
-    // ==================================================
-
+    /// <summary>
+    /// Get the list of inactive users from the server
+    /// </summary>
+    /// <returns></returns>
     public async Task<List<User>> GetInactiveUsersAsync()
     {
         if (_disposed ||
@@ -493,10 +493,11 @@ public class AvailabilityService : IAsyncDisposable
         return InactiveUsers;
     }
 
-    // ==================================================
-    // Get User
-    // ==================================================
-
+    /// <summary>
+    /// Gets a specific user from the server
+    /// </summary>
+    /// <param name="userId">the user id of the user to get</param>
+    /// <returns></returns>
     public async Task<User?> GetUserAsync(
         int userId)
     {

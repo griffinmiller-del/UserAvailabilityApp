@@ -1,0 +1,280 @@
+﻿@page "/archived/{UserId:int}"
+
+@using ToggleAvailabilityBlazor.Models
+@using ToggleAvailabilityBlazor.Services
+
+@inject AvailabilityService AvailabilityService
+
+<PageTitle>Office Time History</PageTitle>
+
+
+<div class="history-page">
+
+    <div class="history-header">
+
+        <NavLink href="/archived"
+                 class="back-link">
+
+            ← Archived
+
+        </NavLink>
+
+
+        @if (_user is not null)
+        {
+            <h1>
+                @_user.Name
+            </h1>
+
+            <p>
+                Daily time in office
+            </p>
+        }
+
+    </div>
+
+
+    @if (_loading)
+    {
+        <div class="loading">
+            Loading history...
+        </div>
+    }
+    else if (_user is null)
+    {
+        <div class="empty-history">
+            User not found.
+        </div>
+    }
+    else
+    {
+        <!-- ================================================== -->
+        <!-- Date Search -->
+        <!-- ================================================== -->
+
+        <div class="date-search">
+
+            <div class="date-field">
+
+                <label for="fromDate">
+                    From
+                </label>
+
+                <input id="fromDate"
+                       type="date"
+                       @bind="_fromDate" />
+
+            </div>
+
+
+            <div class="date-field">
+
+                <label for="toDate">
+                    To
+                </label>
+
+                <input id="toDate"
+                       type="date"
+                       @bind="_toDate" />
+
+            </div>
+
+
+            <div class="date-actions">
+
+                <button class="search-button"
+                        @onclick="SearchHistory">
+
+                    Search
+
+                </button>
+
+
+                <button class="clear-button"
+                        @onclick="ClearSearch">
+
+                    Clear
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================== -->
+        <!-- History -->
+        <!-- ================================================== -->
+        @if (_filteredHistory.Count == 0)
+        {
+            <div class="empty-history">
+
+                No office time was recorded
+                for the selected date range.
+
+            </div>
+        }
+        else
+        {
+            <div class="history-list">
+
+                <!-- ================================================== -->
+                <!-- History Header -->
+                <!-- ================================================== -->
+
+                <div class="history-row history-row-header">
+
+                    <span class="history-date">
+                        Date
+                    </span>
+
+                    <span class="history-clock-in">
+                        Clock In
+                    </span>
+
+                    <span class="history-time">
+                        Time in Office
+                    </span>
+
+                    <span class="history-out">
+                        Out of Office
+                    </span>
+
+                </div>
+
+
+                @foreach (var record in _filteredHistory)
+                {
+                    var isExpanded =
+                        _expandedDates.Contains(record.Date);
+
+                    var totalOutOfOffice =
+                        GetTotalOutOfOffice(record);
+
+
+                    <!-- ================================================== -->
+                    <!-- History Entry -->
+                    <!-- ================================================== -->
+
+                    <div class="history-entry">
+
+                        <button class="history-row @(isExpanded ? "expanded" : "")"
+                                @onclick="() => ToggleExpanded(record.Date)">
+
+                            <!-- ========================================== -->
+                            <!-- Date -->
+                            <!-- ========================================== -->
+
+                            <span class="history-date">
+
+                                @record.Date.ToString(
+                                    "MM/dd/yyyy")
+
+                            </span>
+
+
+                            <!-- ========================================== -->
+                            <!-- Clock In -->
+                            <!-- ========================================== -->
+
+                            <span class="history-clock-in">
+
+                                @(record.StartTime.HasValue
+                                    ? record.StartTime.Value.ToString("h:mm tt")
+                                    : "—")
+
+                            </span>
+
+
+                            <!-- ========================================== -->
+                            <!-- Time In Office -->
+                            <!-- ========================================== -->
+
+                            <span class="history-time">
+
+                                @FormatDuration(
+                                    record.TimeInOffice)
+
+                            </span>
+
+
+                            <!-- ========================================== -->
+                            <!-- Total Out of Office -->
+                            <!-- ========================================== -->
+
+                            <span class="history-out">
+
+                                @if (totalOutOfOffice > TimeSpan.Zero)
+                                {
+                                    <span class="out-of-office-total">
+
+                                        @FormatDuration(
+                                            totalOutOfOffice)
+
+                                    </span>
+
+                                    <span class="expand-indicator @(isExpanded ? "rotated" : "")">
+                                        ›
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="no-out-time">
+                                        —
+                                    </span>
+                                }
+
+                            </span>
+
+                        </button>
+
+
+                        <!-- ================================================== -->
+                        <!-- Expanded Out of Office Details -->
+                        <!-- ================================================== -->
+                        @if (isExpanded &&
+                                                     record.OutOfOfficeEntries is not null &&
+                                                     record.OutOfOfficeEntries.Count > 0)
+                        {
+                            <div class="history-details">
+
+                                <div class="history-details-header">
+                                    Out of Office Breakdown
+                                </div>
+
+
+                                <div class="reason-list">
+
+                                    @foreach (var entry in GetOutOfOfficeEntries(record))
+                                    {
+                                        @if (entry.Duration > TimeSpan.Zero)
+                                        {
+                                            <div class="reason-row">
+
+                                                <span class="reason-name">
+                                                    @FormatStatus(
+                                                        entry.Status)
+                                                </span>
+
+                                                <span class="reason-duration">
+                                                    @FormatDuration(
+                                                        entry.Duration)
+                                                </span>
+
+                                            </div>
+                                        }
+                                    }
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+                }
+
+            </div>
+        }
+    }
+
+</div>

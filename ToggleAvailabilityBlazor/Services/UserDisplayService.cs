@@ -98,6 +98,8 @@ public class UserDisplayService
     /// <summary>
     /// Gets the display text for a user's current status.
     /// </summary>
+    /// <param name="user">The user to get the display text for</param>
+    /// <returns></returns>
     public string GetStatusText(User user)
     {
         return user.Status switch

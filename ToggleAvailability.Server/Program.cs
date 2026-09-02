@@ -23,7 +23,8 @@ builder.Services.AddDbContext<AppDbContext>(
 // ==================================================
 
 builder.Services.AddScoped<UserService>();
-
+builder.Services.AddSingleton<IClock, SystemClock>();
+builder.Services.AddScoped<OfficeHistoryInitializer>();
 builder.Services.AddScoped<OfficeHistoryStore>();
 
 
@@ -48,7 +49,7 @@ builder.Services.AddSingleton<
 
 builder.Services.AddHostedService<
     OfficeHistoryStartupService>();
-
+builder.Services.AddScoped<OfficeHistoryService>();
 builder.Services.AddHostedService<
     OfficeHistoryMidnightService>();
 

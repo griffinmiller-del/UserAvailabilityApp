@@ -12,15 +12,16 @@ public class OfficeHistoryMidnightService : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
 
 
+    private readonly IClock _clock;
+
     public OfficeHistoryMidnightService(
         IHubContext<AvailabilityHub> hubContext,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        IClock clock)
     {
-        _hubContext =
-            hubContext;
-
-        _scopeFactory =
-            scopeFactory;
+        _hubContext = hubContext;
+        _scopeFactory = scopeFactory;
+        _clock = clock;
     }
 
 
@@ -38,7 +39,7 @@ public class OfficeHistoryMidnightService : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             DateTime now =
-                DateTime.Now;
+                _clock.Now;
 
 
             DateTime nextMidnight =

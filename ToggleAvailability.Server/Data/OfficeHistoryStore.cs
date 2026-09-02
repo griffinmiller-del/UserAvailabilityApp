@@ -11,23 +11,26 @@ public class OfficeHistoryStore
     public OfficeHistoryStore(
         AppDbContext db)
     {
-        _db = db;
+        _db =
+            db;
     }
 
 
     // ==================================================
-    // Get User History
+    // History
     // ==================================================
 
     /// <summary>
     /// Gets the office history for a specific user.
     /// </summary>
-    public async Task<List<OfficeHistory>> GetUserHistoryAsync(
-        int userId)
+    public async Task<List<OfficeHistory>>
+        GetUserHistoryAsync(
+            int userId)
     {
         return await _db.OfficeHistories
             .AsNoTracking()
-            .Include(x => x.OutOfOfficeEntries)
+            .Include(x =>
+                x.OutOfOfficeEntries)
             .Where(x =>
                 x.UserId == userId)
             .OrderByDescending(x =>
@@ -36,18 +39,15 @@ public class OfficeHistoryStore
     }
 
 
-    // ==================================================
-    // Get Completed Office Time
-    // ==================================================
-
     /// <summary>
-    /// Gets the total office time that has already been
-    /// committed to the database for a user.
+    /// Gets the total office time recorded
+    /// for a specific user.
     ///
-    /// This does NOT include a currently active session.
+    /// This does not include a currently active session.
     /// </summary>
-    public async Task<TimeSpan> GetTotalOfficeTimeAsync(
-        int userId)
+    public async Task<TimeSpan>
+        GetTotalOfficeTimeAsync(
+            int userId)
     {
         long ticks =
             await _db.OfficeHistories
@@ -57,22 +57,20 @@ public class OfficeHistoryStore
                     x.TimeInOffice.Ticks)
                 .SumAsync();
 
+
         return TimeSpan.FromTicks(
             ticks);
     }
 
 
-    // ==================================================
-    // Get Completed Office Time For Date
-    // ==================================================
-
     /// <summary>
-    /// Gets the amount of office time already committed
-    /// to history for a specific user and date.
+    /// Gets the office time recorded for a specific
+    /// user and date.
     /// </summary>
-    public async Task<TimeSpan> GetOfficeTimeForDateAsync(
-        int userId,
-        DateOnly date)
+    public async Task<TimeSpan>
+        GetOfficeTimeForDateAsync(
+            int userId,
+            DateOnly date)
     {
         var record =
             await _db.OfficeHistories
@@ -89,26 +87,21 @@ public class OfficeHistoryStore
 
 
     // ==================================================
-    // Add Office Time
+    // Office Time
     // ==================================================
 
     /// <summary>
-    /// Adds completed office time to a user's history.
+    /// Adds office time to a user's history.
     ///
-    /// This method only records completed time. It does
-    /// not modify the user's currently active session.
+    /// This method performs persistence only.
+    /// Validation of the duration belongs to the
+    /// service layer.
     /// </summary>
     public async Task AddOfficeTimeAsync(
         int userId,
         DateOnly date,
         TimeSpan duration)
     {
-        if (duration <= TimeSpan.Zero)
-        {
-            return;
-        }
-
-
         var existing =
             await _db.OfficeHistories
                 .FirstOrDefaultAsync(
@@ -151,14 +144,16 @@ public class OfficeHistoryStore
 
 
     // ==================================================
-    // Add Out-of-Office Time
+    // Out Of Office Time
     // ==================================================
 
     /// <summary>
-    /// Adds out-of-office time for a specific user,
-    /// date, and reason.
+    /// Adds out-of-office time for a specific
+    /// user, date, and reason.
     ///
-    /// GoneForTheDay is intentionally ignored.
+    /// This method performs persistence only.
+    /// Validation of the reason and duration belongs
+    /// to the service layer.
     /// </summary>
     public async Task AddOutOfOfficeTimeAsync(
         int userId,
@@ -166,18 +161,6 @@ public class OfficeHistoryStore
         Status reason,
         TimeSpan duration)
     {
-        if (duration <= TimeSpan.Zero)
-        {
-            return;
-        }
-
-
-        if (reason == Status.GoneForTheDay)
-        {
-            return;
-        }
-
-
         var history =
             await _db.OfficeHistories
                 .FirstOrDefaultAsync(
@@ -249,69 +232,31 @@ public class OfficeHistoryStore
     }
 
 
-    // ==================================================
-    // Get Out-of-Office Time
-    // ==================================================
-
     /// <summary>
-    /// Gets all recorded out-of-office time for a user
-    /// on a specific date.
+    /// Gets all recorded out-of-office entries
+    /// for a user on a specific date.
     /// </summary>
-    public async Task<Dictionary<Status, TimeSpan>>
-        GetOutOfOfficeTimeAsync(
+    public async Task<List<OfficeHistoryOutOfOffice>>
+        GetOutOfOfficeEntriesAsync(
             int userId,
             DateOnly date)
     {
         return await _db.OfficeHistoryOutOfOffice
             .AsNoTracking()
-            .Where(
-                x =>
-                    x.UserId == userId &&
-                    x.Date == date)
-            .ToDictionaryAsync(
-                x => x.Status,
-                x => x.Duration);
+            .Where(x =>
+                x.UserId == userId &&
+                x.Date == date)
+            .ToListAsync();
     }
 
 
     // ==================================================
-    // Get Total Out-of-Office Time
+    // Daily Records
     // ==================================================
 
     /// <summary>
-    /// Gets the total amount of recorded out-of-office
-    /// time for a user on a specific date.
-    /// </summary>
-    public async Task<TimeSpan>
-        GetTotalOutOfOfficeTimeAsync(
-            int userId,
-            DateOnly date)
-    {
-        long ticks =
-            await _db.OfficeHistoryOutOfOffice
-                .Where(
-                    x =>
-                        x.UserId == userId &&
-                        x.Date == date &&
-                        x.Status != Status.GoneForTheDay)
-                .Select(
-                    x =>
-                        x.Duration.Ticks)
-                .SumAsync();
-
-
-        return TimeSpan.FromTicks(
-            ticks);
-    }
-
-
-    // ==================================================
-    // Create Daily Record
-    // ==================================================
-
-    /// <summary>
-    /// Creates a daily history record if one does
-    /// not already exist.
+    /// Creates a daily history record if one
+    /// does not already exist.
     /// </summary>
     public async Task CreateDailyRecordAsync(
         int userId,
@@ -353,12 +298,8 @@ public class OfficeHistoryStore
     }
 
 
-    // ==================================================
-    // Get History For Date
-    // ==================================================
-
     /// <summary>
-    /// Gets a copy of an office history record for a
+    /// Gets an office history record for a
     /// specific user and date.
     /// </summary>
     public async Task<OfficeHistory?>
@@ -368,7 +309,8 @@ public class OfficeHistoryStore
     {
         return await _db.OfficeHistories
             .AsNoTracking()
-            .Include(x => x.OutOfOfficeEntries)
+            .Include(x =>
+                x.OutOfOfficeEntries)
             .FirstOrDefaultAsync(
                 x =>
                     x.UserId == userId &&
@@ -376,12 +318,9 @@ public class OfficeHistoryStore
     }
 
 
-    // ==================================================
-    // Set Start Time
-    // ==================================================
-
     /// <summary>
-    /// Sets the first punch-in time for a user on a day.
+    /// Sets the first punch-in time for a user
+    /// on a specific day.
     ///
     /// Once a start time exists, it is never overwritten.
     /// </summary>
